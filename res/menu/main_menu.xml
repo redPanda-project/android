@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/prefMenuButton"
+          android:title="Settings"
+          android:showAsAction="ifRoom"/>
+    <item android:id="@+id/FL"
+          android:title="FL"
+          android:showAsAction="ifRoom"/>
+</menu>
