@@ -31,6 +31,10 @@ public class BackgroundService extends Service {
         super.onCreate();
         
         new ExceptionLogger(this);
+        
+        
+        PRNGFixes.apply();
+        
 
         try {
 
