@@ -43,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.Settings;
 
 /**
  *
@@ -55,6 +56,9 @@ public class FlActivity extends Activity {
 
     public void onCreate(Bundle savedInstanceState) {
         new ExceptionLogger(this);
+
+        Settings.connectToNewClients = true;
+
         super.onCreate(savedInstanceState);
         adapter = new ArrayAdapter<Channel>(this, R.layout.listitem, R.id.text1, channels);
         startService(new Intent(this, BS.class));
@@ -65,6 +69,7 @@ public class FlActivity extends Activity {
 
         Button newChButton = (Button) findViewById(R.id.NKButton);
         newChButton.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
 
 
@@ -88,6 +93,7 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -105,6 +111,7 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -129,6 +136,7 @@ public class FlActivity extends Activity {
         });
         Button impButton = (Button) findViewById(R.id.imbutton);
         impButton.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
@@ -152,6 +160,7 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -179,6 +188,7 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -297,16 +307,16 @@ public class FlActivity extends Activity {
 
                 break;
             case 3:
-                        Main.removeChannel(channels.get(pos));
+                Main.removeChannel(channels.get(pos));
 
-                        Message msg = Message.obtain(null,
-                                BS.GET_CHANNELS);
-                        msg.replyTo = mMessenger;
-                        try {
-                            mService.send(msg);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                Message msg = Message.obtain(null,
+                        BS.GET_CHANNELS);
+                msg.replyTo = mMessenger;
+                try {
+                    mService.send(msg);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 break;
             default:
                 break;
@@ -361,6 +371,7 @@ public class FlActivity extends Activity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
+
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
 //            Toast.makeText(FlActivity.this, "Serviceconnected", Toast.LENGTH_SHORT).show();
@@ -465,5 +476,29 @@ public class FlActivity extends Activity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Settings.connectToNewClients = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Settings.connectToNewClients = false;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Settings.connectToNewClients = false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Settings.connectToNewClients = false;
     }
 }

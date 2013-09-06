@@ -54,7 +54,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 93;
+    public static final int VERSION = 102;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -289,6 +289,8 @@ public class BS extends Service {
 
         new ExceptionLogger(this);
 
+        PRNGFixes.apply();
+
         try {
 
 
@@ -299,7 +301,8 @@ public class BS extends Service {
 
             //Settings.STD_PORT += 2;
             Settings.lightClient = true;
-            Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
+            Settings.connectToNewClients = false;
+            //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
 
             HsqlConnection.db_file = getFilesDir() + "/data/";
 
@@ -430,7 +433,7 @@ public class BS extends Service {
                     m = its.next();
                     if (msg.getChannel().equals(chan)) {
                         b = new Bundle();
-                        
+
                         b.putString("msg", msg.getText());
                         b.putLong("sendtime", msg.getTimestamp());
                         b.putBoolean("fromMe", msg.isFromMe());
