@@ -33,6 +33,7 @@ import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.TextMessageContent;
+import org.redPandaLib.crypt.AddressFormatException;
 import org.redPandaLib.database.HsqlConnection;
 
 /**
@@ -199,7 +200,12 @@ public class BS extends Service {
                     break;
                 case ADD_CHANNEL:
                     b = mesg.getData();
-                    Main.importChannelFromHuman(b.getString("key"), b.getString("name"));
+            try {
+                Main.importChannelFromHuman(b.getString("key"), b.getString("name"));
+            } catch (AddressFormatException ex) {
+                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                //todo
+            }
                     chanlist = Main.getChannels();
                     break;
                 case CHANGE_NAME:
