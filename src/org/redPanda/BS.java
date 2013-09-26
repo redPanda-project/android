@@ -66,6 +66,7 @@ public class BS extends Service {
     static final int CHANGE_NAME = 9;
     static final int FL_REG = 10;
     static final int FL_UNREG = 11;
+    static final int NEW_MSGL = 12;
     private static long lastUpdateChecked = 0;
     /**
      * Handler of incoming messages from clients.
@@ -104,29 +105,22 @@ public class BS extends Service {
 
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
-
+                    b = new Bundle();
                     if (ml != null) {
-                        Iterator<TextMessageContent> iterator = ml.iterator();
-                        TextMessageContent msg;
-                        while (iterator.hasNext()) {
-                            msg = iterator.next();
 
-                            b = new Bundle();
-                            b.putString("msg", msg.getText());
-                            b.putLong("sendtime", msg.getTimestamp());
-                            b.putBoolean("fromMe", msg.isFromMe());
-                            ms = Message.obtain(null,
-                                    BS.NEW_MSG);
-                            ms.setData(b);
-                            try {
-                                mesg.replyTo.send(ms);
-                            } catch (RemoteException ex) {
-                                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-
-
-
+                        ms = Message.obtain(null,
+                                BS.NEW_MSGL);
+                        b.putSerializable("msgList", ml);
+                        ms.setData(b);
+                        try {
+                            mesg.replyTo.send(ms);
+                        } catch (RemoteException ex) {
+                            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                         }
+
+
+
+
                     }
                     break;
                 case MSG_UNREGISTER_CLIENT:
@@ -147,7 +141,6 @@ public class BS extends Service {
 
                     final String msgContent = mesg.getData().getString("msg");
                     new Thread() {
-
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
@@ -160,7 +153,6 @@ public class BS extends Service {
                     final Messenger replyTo = mesg.replyTo;
 
                     new Thread() {
-
                         @Override
                         public void run() {
                             chanlist = Main.getChannels();
@@ -412,7 +404,7 @@ public class BS extends Service {
 
     class MessageListener implements NewMessageListener {
 
-        public void newMessage(final TextMessageContent msg) {
+        public void newMessage(TextMessageContent msg) {
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             Channel chan = msg.getChannel();
             Message ms;
@@ -463,7 +455,6 @@ public class BS extends Service {
         lastUpdateChecked = System.currentTimeMillis();
 
         new Thread() {
-
             @Override
             public void run() {
 //                Properties systemProperties = System.getProperties();

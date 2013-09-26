@@ -11,16 +11,18 @@ package org.redPanda;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.os.Message;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.TextView;
+import android.widget.ListView;
 import java.util.Date;
+import org.redPanda.ListMessage.Mes;
 
 /**
  *
@@ -28,9 +30,9 @@ import java.util.Date;
 public class ChatAdapter extends BaseAdapter {
 
     private Context mContext;
-    public ArrayList<Bundle> mMessages;
+    public ArrayList<ListMessage> mMessages;
 
-    public ChatAdapter(Context context, ArrayList<Bundle> messages) {
+    public ChatAdapter(Context context, ArrayList<ListMessage> messages) {
         super();
         this.mContext = context;
         this.mMessages = messages;
@@ -48,24 +50,30 @@ public class ChatAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Bundle b = (Bundle) this.getItem(position);
+        ListMessage b = (ListMessage) this.getItem(position);
 
         ViewHolder holder;
         if (convertView == null) {
             holder = new ViewHolder();
             convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
-            holder.message = (TextView) convertView.findViewById(R.id.message_text);
+            holder.ll = (LinearLayout) convertView.findViewById(R.id.chatrow);
+//            holder.head = (TextView) convertView.findViewById(R.id.head);
+            holder.bubble = (ListView) convertView.findViewById(R.id.bubble);
+            //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
+        inAdapter iA =new inAdapter(mContext, mMessages.get(position).text);
+        holder.bubble.setAdapter(iA);
 
-        //System.out.println("1234 "+message.getData().getString("msg"));
-        holder.message.setText(genReadableText(b));
-        boolean fromMe = b.getBoolean("fromMe");
+        //System.out.println("1234 "+message.getData().getString("msg"));       
+//        holder.message.setText(genReadableText(b));
+        boolean fromMe = b.fromMe;
 
 
-        LayoutParams lp = (LayoutParams) holder.message.getLayoutParams();
+        LayoutParams lp = (LayoutParams) holder.bubble.getLayoutParams();
+
 //check if it is a status message then remove background, and change text color.
 //        if (message.isStatusMessage()) {
 //            holder.message.setBackgroundDrawable(null);
@@ -73,25 +81,39 @@ public class ChatAdapter extends BaseAdapter {
 //
 //        } else {
 //Check whether message is mine to show green background and align to right
+
         if (fromMe) {
-            holder.message.setBackgroundResource(R.drawable.ich);
-            System.out.println(" ich");
+            holder.bubble.setBackgroundResource(R.drawable.ich);
+            // System.out.println(" ich");
+               holder.ll.setGravity(Gravity.RIGHT);
             lp.gravity = Gravity.RIGHT;
+//            holder.im.setVisibility(View.VISIBLE);
+//            holder.im.getLayoutParams().width = 30;
+//            holder.im.getLayoutParams().height = 30;
         } //If not mine then it is from sender to show orange background and align to left
         else {
-            holder.message.setBackgroundResource(R.drawable.du);
-            System.out.println(" du");
+//            holder.im.setVisibility(View.INVISIBLE);
+//            holder.im.getLayoutParams().width = 0;
+//            holder.im.getLayoutParams().height = 0;
+            holder.bubble.setBackgroundResource(R.drawable.du);
+            // System.out.println(" du");
+             holder.ll.setGravity(Gravity.LEFT);
             lp.gravity = Gravity.LEFT;
         }
-        holder.message.setLayoutParams(lp);
+        //Math.min(lp.width, (int) (getWidestView(mContext, iA)*1.05));
+        holder.bubble.setLayoutParams(lp);
 //            holder.message.setTextColor(R.color.textColor);
-
+        System.out.println("123456 " + b.text.size());
+     //   holder.bubble.getLayoutParams().width = (int) (getWidestView(mContext, iA)*1.05);
         return convertView;
     }
 
     private static class ViewHolder {
 
-        TextView message;
+        //  ImageView im;
+        ListView bubble;
+//        TextView head;
+        LinearLayout ll;
     }
 
     @Override
@@ -100,9 +122,9 @@ public class ChatAdapter extends BaseAdapter {
         return 0;
     }
 
-    public static String genReadableText(Bundle msg) {
-        long sendTime = msg.getLong("sendtime");
-        String str = msg.getString("msg");
+    public static String genReadableText(Mes msg) {
+        long sendTime = msg.ts;
+        String str = msg.getMes();
 
         Date date = new Date(sendTime);
 
@@ -132,5 +154,20 @@ public class ChatAdapter extends BaseAdapter {
         return hours + ":" + minutes + ":" + seconds;
 
 
+    }
+
+    public static int getWidestView(Context context, Adapter adapter) {
+        int maxWidth = 0;
+        View view = null;
+        FrameLayout fakeParent = new FrameLayout(context);
+        for (int i = 0, count = adapter.getCount(); i < count; i++) {
+            view = adapter.getView(i, view, fakeParent);
+            view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            int width = view.getMeasuredWidth();
+            if (width > maxWidth) {
+                maxWidth = width;
+            }
+        }
+        return maxWidth;
     }
 }

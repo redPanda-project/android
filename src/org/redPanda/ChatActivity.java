@@ -4,6 +4,7 @@
  */
 package org.redPanda;
 
+import android.app.LauncherActivity;
 import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,8 +27,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import static org.redPanda.ChatAdapter.genReadableText;
+import org.redPanda.ListMessage.Mes;
 
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
  *
@@ -40,7 +43,7 @@ public class ChatActivity extends ListActivity {
     private EditText editText;
     private Channel chan;
     private long lastTouched = 0;
-    private ArrayList<Bundle> messages;
+    private ArrayList<ListMessage> messages;
     private ChatAdapter cA;
 
     @Override
@@ -58,11 +61,11 @@ public class ChatActivity extends ListActivity {
         doBindService();
         final TextView mainLayouthead = (TextView) findViewById(R.id.mainLayouthead);
         LayoutInflater.from(this).inflate(R.layout.chatrow, null);
-        conversationText = (TextView) findViewById(R.id.message_text);
+       // conversationText = (TextView) findViewById(R.id.message_text);
         //scrollView = (ScrollView) findViewById(R.id.mainScrollView);
         // listView = (ListView) findViewById(R.id.chatlist);
         editText = (EditText) findViewById(R.id.mainEditText);
-        messages = new ArrayList<Bundle>();
+        messages = new ArrayList<ListMessage>();
         cA = new ChatAdapter(this, messages);
         setListAdapter(cA);
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
@@ -142,22 +145,55 @@ public class ChatActivity extends ListActivity {
 
         @Override
         public void handleMessage(final Message msg) {
+            ArrayList<TextMessageContent> al;
             switch (msg.what) {
                 case BS.NEW_MSG:
                     // final String str = genReadableText(msg);
                     //Toast.makeText(MA.this, "gotnewmsg: \n" + str, Toast.LENGTH_SHORT).show();
-                    messages.add((Bundle) msg.getData().clone());
+                    //  long newid = msg.getData().getLong("id");
+
+                    al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msg");
+                    merge(al.get(0));
                     cA.notifyDataSetChanged();
-                    getListView().setSelection(messages.size()-1);
-                    //  System.out.println( "12345 "+genReadableText(msg));
+                    getListView().setSelection(cA.mMessages.size() - 1);
+                    //  System.out.println( "12345 "+genReadableText(msg));                   
+
 
                     break;
-
+                case BS.NEW_MSGL:
+                   cA.mMessages = new ArrayList<ListMessage>();
+                    al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msgList");
+                    Iterator<TextMessageContent> it = al.iterator();
+                    while (it.hasNext()) {
+                        merge(it.next());
+                    }
+                    cA.notifyDataSetChanged();
+                    getListView().setSelection(cA.mMessages.size() - 1);
+                    System.out.println("12345 " + cA.mMessages.size());
+                    break;
 
 
                 default:
                     super.handleMessage(msg);
             }
+        }
+
+        public void merge(TextMessageContent tmc) {
+            ListMessage lm;
+            if (cA.mMessages == null|| cA.mMessages.size()==0) {
+                cA.mMessages = new ArrayList<ListMessage>();
+                lm = new ListMessage(tmc);
+
+            } else {
+                lm = cA.mMessages.get(cA.mMessages.size() - 1);
+                if (tmc.getIdentity() == lm.identity) {
+                    Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text,tmc.fromMe);
+                    lm.text.add(mes);
+                } else {
+                    lm = new ListMessage(tmc);
+                }
+            }
+            cA.mMessages.add(lm);
         }
     }
     /**

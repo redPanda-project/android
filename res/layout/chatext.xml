@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+              android:id="@+id/textrow" >     
+    
+    <TextView
+        android:id="@+id/message_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dip"
+        android:layout_marginBottom="2dip"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:textColor="#000000"
+        android:text="Medium Text"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+            
+        android:textSize="20sp"
+    />    
+    <ImageView
+        android:id="@+id/thereic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_notthere"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/message_text"
+            
+    />    
+</LinearLayout>
