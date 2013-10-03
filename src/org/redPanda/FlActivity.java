@@ -57,7 +57,8 @@ public class FlActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         new ExceptionLogger(this);
 
-        Settings.connectToNewClients = true;
+        Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
+
 
         super.onCreate(savedInstanceState);
         adapter = new ArrayAdapter<Channel>(this, R.layout.listitem, R.id.text1, channels);
@@ -481,24 +482,21 @@ public class FlActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Settings.connectToNewClients = true;
+        Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Settings.connectToNewClients = false;
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Settings.connectToNewClients = false;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Settings.connectToNewClients = false;
     }
 }
