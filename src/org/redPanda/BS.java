@@ -55,7 +55,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 105;
+    public static final int VERSION = 108;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -432,9 +432,10 @@ public class BS extends Service {
                     if (msg.getChannel().equals(chan)) {
                         b = new Bundle();
 
-                        b.putString("msg", msg.getText());
-                        b.putLong("sendtime", msg.getTimestamp());
-                        b.putBoolean("fromMe", msg.isFromMe());
+                        //b.putString("msg", msg.getText());
+                        //b.putLong("sendtime", msg.getTimestamp());
+                        //b.putBoolean("fromMe", msg.isFromMe());
+                        b.putSerializable("msg", msg);
                         ms = Message.obtain(null,
                                 BS.NEW_MSG);
                         ms.setData(b);

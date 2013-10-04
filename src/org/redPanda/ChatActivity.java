@@ -152,8 +152,15 @@ public class ChatActivity extends ListActivity {
                     //Toast.makeText(MA.this, "gotnewmsg: \n" + str, Toast.LENGTH_SHORT).show();
                     //  long newid = msg.getData().getLong("id");
 
-                    al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msg");
-                    merge(al.get(0));
+                    //maltes altes
+                    //al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msg");
+                    //merge(al.get(0));
+                    
+                    //von robin
+                    TextMessageContent t = (TextMessageContent) msg.getData().getSerializable("msg");
+                    merge(t);
+                    //von robin ende
+                    
                     cA.notifyDataSetChanged();
                     getListView().setSelection(cA.mMessages.size() - 1);
                     //  System.out.println( "12345 "+genReadableText(msg));                   
