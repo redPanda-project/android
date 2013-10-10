@@ -57,7 +57,7 @@ public class FlActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         new ExceptionLogger(this);
 
-        Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
+        //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
 
 
         super.onCreate(savedInstanceState);
@@ -482,7 +482,7 @@ public class FlActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
+        //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
     }
 
     @Override
