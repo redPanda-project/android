@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,7 +56,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 114;
+    public static final int VERSION = 115;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -296,13 +297,14 @@ public class BS extends Service {
 
 //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
             AndroidSaver androidSaver = new AndroidSaver(this);
-
             //Settings.STD_PORT += 2;
             //Settings.lightClient = true;
             //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
             //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
-
-            HsqlConnection.db_file = getFilesDir() + "/data/";
+            //HsqlConnection.db_file = getFilesDir() + "/data/";
+            SqLiteConnection sqLiteConnection = new SqLiteConnection(this);
+            
+            Main.setMessageStore(sqLiteConnection.getConnection());
 
             Main.startUp(false, androidSaver);
             PopupListener popupListener = new PopupListener(this);
@@ -313,6 +315,8 @@ public class BS extends Service {
 
 
 
+        } catch (SQLException ex) {
+            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
         }
