@@ -29,13 +29,19 @@ public class SqLiteConnection {
 //            return;
 //        }
 
+        try {
+            // Treiberklasse laden
+            Class.forName("org.hsqldb.jdbcDriver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Treiberklasse nicht gefunden!");
+            return;
+        }
+
         con = null;
 
-        //con = DriverManager.getConnection(                "jdbc:sqldroid:" + context.getFilesDir() + db_file);
-        
-        
-        con = new org.sqldroid.SQLDroidDriver().connect("jdbc:sqldroid:" + context.getFilesDir() + db_file, new Properties());
-        
+        con = DriverManager.getConnection("jdbc:hsqldb:" + context.getFilesDir() + db_file);
+        //con = new org.sqldroid.SQLDroidDriver().connect("jdbc:sqldroid:" + context.getFilesDir() + db_file, new Properties());
+
         Statement stmt = con.createStatement();
 
 
@@ -56,7 +62,9 @@ public class SqLiteConnection {
             stmt.executeUpdate("drop table if exists pubkey");
         }
 
-        stmt.executeUpdate("create table if not exists pubkey (pubkey_id integer PRIMARY KEY AUTOINCREMENT, pubkey BINARY(33) UNIQUE)");
+        //AUTOINCREMENT -- IDENTITY
+
+        stmt.executeUpdate("create CACHED table if not exists pubkey (pubkey_id integer PRIMARY KEY IDENTITY, pubkey BINARY(33) UNIQUE)");
 
 
 
@@ -65,7 +73,7 @@ public class SqLiteConnection {
 //pubkey_id INTEGER
 //private_key BINARY(32)
 //name LONGVARBINARY
-        stmt.executeUpdate("create table if not exists channel (channel_id integer PRIMARY KEY AUTOINCREMENT, pubkey_id INTEGER UNIQUE, private_key BINARY(32) UNIQUE, name LONGVARBINARY)");
+        stmt.executeUpdate("create table if not exists channel (channel_id integer PRIMARY KEY IDENTITY, pubkey_id INTEGER UNIQUE, private_key BINARY(32) UNIQUE, name LONGVARBINARY)");
 
 
 
@@ -81,7 +89,7 @@ public class SqLiteConnection {
 //readable boolean
 //decrypted_content LONGVARBINARY
         //stmt.executeUpdate("drop table if exists message");
-        stmt.executeUpdate("create table if not exists message (message_id INTEGER PRIMARY KEY AUTOINCREMENT, pubkey_id INTEGER, public_type TINYINT, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
+        stmt.executeUpdate("create table if not exists message (message_id INTEGER PRIMARY KEY IDENTITY, pubkey_id INTEGER, public_type TINYINT, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
 
         stmt.executeUpdate("create table if not exists channelmessage (pubkey_id INTEGER, message_id INTEGER, message_type INTEGER, decryptedContent LONGVARBINARY, identity BIGINT, fromMe BOOLEAN, FOREIGN KEY (pubkey_id) REFERENCES pubkey(pubkey_id))");
 //        ResultSet executeQuery = stmt.executeQuery("SELECT * FROM information_schema.statistics");
@@ -90,18 +98,18 @@ public class SqLiteConnection {
 //        System.out.println("d3uwne3quzne " + executeQuery.getFetchSize());
 //        executeQuery.close();
 
-//        try {
-//            stmt.executeUpdate("CREATE INDEX messagePubkeyIndex ON message(pubkey_id)");
-//        } catch (SQLSyntaxErrorException e) {
-//        }
-//        try {
-//            stmt.executeUpdate("CREATE INDEX messageTimestampIndex ON message(timestamp)");
-//        } catch (SQLSyntaxErrorException e) {
-//        }
-//        try {
-//            stmt.executeUpdate("CREATE INDEX messageNonceIndex ON message(nonce)");
-//        } catch (SQLSyntaxErrorException e) {
-//        }
+        try {
+            stmt.executeUpdate("CREATE INDEX messagePubkeyIndex ON message(pubkey_id)");
+        } catch (SQLSyntaxErrorException e) {
+        }
+        try {
+            stmt.executeUpdate("CREATE INDEX messageTimestampIndex ON message(timestamp)");
+        } catch (SQLSyntaxErrorException e) {
+        }
+        try {
+            stmt.executeUpdate("CREATE INDEX messageNonceIndex ON message(nonce)");
+        } catch (SQLSyntaxErrorException e) {
+        }
 
 
         //stmt.executeUpdate("create CACHED table if not exists stick (stick_id INTEGER PRIMARY KEY IDENTITY, pubkey_id INTEGER, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
@@ -146,7 +154,4 @@ public class SqLiteConnection {
     public Connection getConnection() {
         return con;
     }
-    
-    
-    
 }

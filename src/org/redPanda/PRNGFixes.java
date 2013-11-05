@@ -55,8 +55,8 @@ public final class PRNGFixes {
      * @throws SecurityException if a fix is needed but could not be applied.
      */
     public static void apply() {
-        applyOpenSSLFix();
-        installLinuxPRNGSecureRandom();
+        //applyOpenSSLFix();
+        //installLinuxPRNGSecureRandom();
     }
 
     /**

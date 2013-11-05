@@ -193,7 +193,7 @@ public class ChatActivity extends ListActivity {
 
             } else {
                 lm = cA.mMessages.get(cA.mMessages.size() - 1);
-                if (tmc.getIdentity() == lm.identity) {
+                if (tmc.getIdentity() == lm.identity && false) {
                     Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text,tmc.fromMe);
                     lm.text.add(mes);
                 } else {
