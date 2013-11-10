@@ -15,6 +15,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.TaskStackBuilder;
 import org.redPandaLib.NewMessageListener;
+import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
@@ -24,6 +25,16 @@ import org.redPandaLib.core.messages.TextMessageContent;
 public class PopupListener implements NewMessageListener {
 
     Context context;
+    int dot = 200;      // Length of a Morse Code "dot" in milliseconds
+    int dash = 500;     // Length of a Morse Code "dash" in milliseconds
+    int short_gap = 200;    // Length of Gap Between dots/dashes
+    int medium_gap = 500;   // Length of Gap Between Letters
+    int long_gap = 1000;    // Length of Gap Between Words
+    long[] pattern = {
+        0, // Start immediately
+        dot, short_gap, dot, short_gap, dot
+    };
+    long lastVibrated = 0;
 
     public PopupListener(Context context) {
         this.context = context;
@@ -36,6 +47,10 @@ public class PopupListener implements NewMessageListener {
         }
 
         if (BS.currentViewedChannel == msg.getChannel().getId()) {
+            return;
+        }
+
+        if (msg.message_type == DeliveredMsg.BYTE) {
             return;
         }
 
@@ -64,7 +79,7 @@ public class PopupListener implements NewMessageListener {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setSound(soundUri).setContentIntent(contentIntent);
 
-
+        mBuilder.setAutoCancel(true);
 
         BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
 
@@ -73,6 +88,17 @@ public class PopupListener implements NewMessageListener {
         bigTextStyle.setBigContentTitle(msg.getChannel().toString());
         bigTextStyle.setSummaryText("message from redPanda");
         mBuilder.setStyle(bigTextStyle);
+
+        mBuilder.setLights(0x88ff0000, 300, 5000);
+        mBuilder.setPriority(1);
+
+
+        if (lastVibrated < System.currentTimeMillis() - 5000) {
+            lastVibrated = System.currentTimeMillis();
+            mBuilder.setVibrate(pattern);
+        }
+
+
 
         //        NotificationCompat.InboxStyle inboxStyle =
         //                new NotificationCompat.InboxStyle();
@@ -86,12 +112,9 @@ public class PopupListener implements NewMessageListener {
         //
         //// Moves the big view style object into the notification object.
         //        mBuilder.setStyle(inboxStyle);
-
-
-//        notification.flags = Notification.FLAG_AUTO_CANCEL;
-//        notification.sound = soundUri;
+        //        notification.flags = Notification.FLAG_AUTO_CANCEL;
+        //        notification.sound = soundUri;
         //notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "6");
-
         // Send the notification.
         // We use a string id because it is a unique number.  We use it later to cancel.
         // ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(msg.getChannel().getId(), notification);
@@ -121,7 +144,7 @@ public class PopupListener implements NewMessageListener {
 
 
         Notification build = mBuilder.build();
-        build.flags = Notification.FLAG_AUTO_CANCEL;
+        //build.flags = Notification.FLAG_AUTO_CANCEL;
 
         mNotificationManager.notify(msg.getChannel().getId(), build);
 

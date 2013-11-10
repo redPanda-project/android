@@ -339,7 +339,7 @@ public class FlActivity extends Activity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case BS.CHANNELS:
-                    Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 
                     channels = ((ArrayList<Channel>) msg.getData().get("CHANNELS"));
                     if (!channels.isEmpty()) {

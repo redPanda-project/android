@@ -16,7 +16,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,7 +34,6 @@ import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.TextMessageContent;
 import org.redPandaLib.crypt.AddressFormatException;
-import org.redPandaLib.database.HsqlConnection;
 
 /**
  *
@@ -56,7 +54,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 136;
+    public static final int VERSION = 150;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -91,7 +89,7 @@ public class BS extends Service {
 
             switch (mesg.what) {
                 case MSG_REGISTER_CLIENT:
-                    Toast.makeText(BS.this, "regclient", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(BS.this, "regclient", Toast.LENGTH_SHORT).show();
                     //   mClients.add(msg.replyTo);
                     int chanid = mesg.getData().getInt("chanid");
                     chanlist = Main.getChannels();
@@ -264,7 +262,7 @@ public class BS extends Service {
      */
     @Override
     public void onCreate() {
-        Toast.makeText(this, "Sevice onCreate", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Sevice onCreate", Toast.LENGTH_SHORT).show();
 
 //        super.onCreate();
 //
@@ -302,6 +300,7 @@ public class BS extends Service {
             AndroidSaver androidSaver = new AndroidSaver(this);
             //Settings.STD_PORT += 2;
             //Settings.lightClient = true;
+            Settings.MIN_CONNECTIONS = 2;
             //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
             //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
             //HsqlConnection.db_file = getFilesDir() + "/data/";

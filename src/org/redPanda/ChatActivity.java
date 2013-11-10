@@ -21,12 +21,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import org.redPanda.ListMessage.Mes;
 
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
@@ -161,7 +163,12 @@ public class ChatActivity extends ListActivity {
                     //von robin ende
 
                     cA.notifyDataSetChanged();
-                    getListView().setSelection(cA.mMessages.size() - 1);
+
+                    if (t.message_type != DeliveredMsg.BYTE) {
+                        getListView().setSelection(cA.mMessages.size() - 1);
+                    }
+
+
                     //  System.out.println( "12345 "+genReadableText(msg));                   
 
 
@@ -185,6 +192,56 @@ public class ChatActivity extends ListActivity {
         }
 
         public void merge(TextMessageContent tmc) {
+
+            if (tmc.message_type == DeliveredMsg.BYTE) {
+
+                if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
+                    System.out.println("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
+                    return;
+                }
+
+                System.out.println("bztes: " + tmc.decryptedContent.length);
+
+                ByteBuffer wrap = ByteBuffer.wrap(tmc.decryptedContent);
+
+                //delivered msg points to a message, getting infos from that message
+                wrap.get();//skip message_type
+                long identity = wrap.getLong();
+                byte public_type = wrap.get();
+                long time = wrap.getLong();
+                int nonce = wrap.getInt();
+
+                tmc.identity = identity;
+
+                System.out.println("asdhhg " + time + " ");
+
+
+
+                for (ListMessage listMessage : cA.mMessages) {
+
+                    for (Mes message : listMessage.text) {
+                        System.out.println(time + "          / ////      " + message.ts);
+                        if (time == message.ts) {
+                            System.out.println("right!");
+
+                            if (message.deliveredTo == null) {
+                                message.deliveredTo = new ArrayList<String>();
+                            }
+
+                            message.deliveredTo.add(tmc.getName());
+
+
+                            return;
+                        } else {
+                            System.out.println("wrong!");
+                        }
+                    }
+
+                }
+
+                return;
+            }
+
             ListMessage lm;
             if (cA.mMessages == null || cA.mMessages.size() == 0) {
                 cA.mMessages = new ArrayList<ListMessage>();

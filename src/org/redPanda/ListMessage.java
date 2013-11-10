@@ -39,6 +39,7 @@ public class ListMessage {
         long ts;
         String name;
         int message_type;
+        ArrayList<String> deliveredTo;
 
         public Mes(int database_id, long timestamp, String text, boolean fromMe, int message_type) {
             this.database_id = database_id;

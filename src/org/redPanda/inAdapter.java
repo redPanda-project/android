@@ -57,7 +57,19 @@ public class inAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.message.setText(ChatAdapter.genReadableText(mes));
+
+
+        String text = ChatAdapter.genReadableText(mes);
+
+        if (mes.deliveredTo != null) {
+            text += " -";
+
+            for (String name : mes.deliveredTo) {
+                text += " " + name;
+            }
+        }
+
+        holder.message.setText(text);
 
         if (mes.fromMe) {
             holder.im.setVisibility(View.VISIBLE);
