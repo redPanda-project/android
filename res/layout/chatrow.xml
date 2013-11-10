@@ -5,6 +5,16 @@
               android:orientation="horizontal"
               android:id="@+id/chatrow" >     
 
+    <TextView
+    
+        android:id="@+id/bubbleHead"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dip"
+        android:layout_marginBottom="2dip"
+    
+    />
+
     <ListView
         android:id="@+id/bubble"
         android:layout_width="wrap_content"

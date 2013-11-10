@@ -4,13 +4,12 @@
  */
 package org.redPanda;
 
-import android.app.LauncherActivity;
 import android.app.ListActivity;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,12 +20,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import static org.redPanda.ChatAdapter.genReadableText;
 import org.redPanda.ListMessage.Mes;
 
 import org.redPandaLib.core.Channel;
@@ -61,7 +58,7 @@ public class ChatActivity extends ListActivity {
         doBindService();
         final TextView mainLayouthead = (TextView) findViewById(R.id.mainLayouthead);
         LayoutInflater.from(this).inflate(R.layout.chatrow, null);
-       // conversationText = (TextView) findViewById(R.id.message_text);
+        // conversationText = (TextView) findViewById(R.id.message_text);
         //scrollView = (ScrollView) findViewById(R.id.mainScrollView);
         // listView = (ListView) findViewById(R.id.chatlist);
         editText = (EditText) findViewById(R.id.mainEditText);
@@ -94,10 +91,12 @@ public class ChatActivity extends ListActivity {
 
         Button button = (Button) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
 
                 final String text = editText.getText().toString();
                 Runnable runnable = new Runnable() {
+
                     public void run() {
                         editText.setText("");
                     }
@@ -155,12 +154,12 @@ public class ChatActivity extends ListActivity {
                     //maltes altes
                     //al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msg");
                     //merge(al.get(0));
-                    
+
                     //von robin
                     TextMessageContent t = (TextMessageContent) msg.getData().getSerializable("msg");
                     merge(t);
                     //von robin ende
-                    
+
                     cA.notifyDataSetChanged();
                     getListView().setSelection(cA.mMessages.size() - 1);
                     //  System.out.println( "12345 "+genReadableText(msg));                   
@@ -168,7 +167,7 @@ public class ChatActivity extends ListActivity {
 
                     break;
                 case BS.NEW_MSGL:
-                   cA.mMessages = new ArrayList<ListMessage>();
+                    cA.mMessages = new ArrayList<ListMessage>();
                     al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msgList");
                     Iterator<TextMessageContent> it = al.iterator();
                     while (it.hasNext()) {
@@ -187,14 +186,14 @@ public class ChatActivity extends ListActivity {
 
         public void merge(TextMessageContent tmc) {
             ListMessage lm;
-            if (cA.mMessages == null|| cA.mMessages.size()==0) {
+            if (cA.mMessages == null || cA.mMessages.size() == 0) {
                 cA.mMessages = new ArrayList<ListMessage>();
                 lm = new ListMessage(tmc);
 
             } else {
                 lm = cA.mMessages.get(cA.mMessages.size() - 1);
                 if (tmc.getIdentity() == lm.identity && false) {
-                    Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text,tmc.fromMe);
+                    Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text, tmc.fromMe, tmc.message_type);
                     lm.text.add(mes);
                 } else {
                     lm = new ListMessage(tmc);
@@ -211,6 +210,7 @@ public class ChatActivity extends ListActivity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
+
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
             // This is called when the connection with the service has been
@@ -285,7 +285,6 @@ public class ChatActivity extends ListActivity {
     public static String genReadableText(Message msg) {
         long sendTime = msg.getData().getLong("sendtime");
         String str = msg.getData().getString("msg");
-
         Date date = new Date(sendTime);
 
         String out = "";
@@ -316,6 +315,23 @@ public class ChatActivity extends ListActivity {
         return hours + ":" + minutes + ":" + seconds;
 
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (chan != null) {
+            BS.currentViewedChannel = chan.getId();
+            NotificationManager mNotificationManager =
+                    (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.cancel(chan.getId());
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        BS.currentViewedChannel = -100;
     }
 
     @Override

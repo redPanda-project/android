@@ -8,21 +8,29 @@ package org.redPanda;
  *
  * @author Tyrael
  */
+import android.app.AlertDialog;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Color;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
+import android.widget.TextView;
 import java.util.Date;
 import org.redPanda.ListMessage.Mes;
+import org.redPandaLib.core.Test;
+import org.redPandaLib.core.messages.DeliveredMsg;
 
 /**
  *
@@ -58,13 +66,14 @@ public class ChatAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
             holder.ll = (LinearLayout) convertView.findViewById(R.id.chatrow);
 //            holder.head = (TextView) convertView.findViewById(R.id.head);
+            holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
             holder.bubble = (ListView) convertView.findViewById(R.id.bubble);
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        inAdapter iA =new inAdapter(mContext, mMessages.get(position).text);
+        inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
         holder.bubble.setAdapter(iA);
 
         //System.out.println("1234 "+message.getData().getString("msg"));       
@@ -83,36 +92,47 @@ public class ChatAdapter extends BaseAdapter {
 //Check whether message is mine to show green background and align to right
 
         if (fromMe) {
+            holder.bubbleHead.setText("");
             holder.bubble.setBackgroundResource(R.drawable.ich);
             // System.out.println(" ich");
-               holder.ll.setGravity(Gravity.RIGHT);
+            holder.ll.setGravity(Gravity.RIGHT);
             lp.gravity = Gravity.RIGHT;
 //            holder.im.setVisibility(View.VISIBLE);
 //            holder.im.getLayoutParams().width = 30;
 //            holder.im.getLayoutParams().height = 30;
         } //If not mine then it is from sender to show orange background and align to left
         else {
-//            holder.im.setVisibility(View.INVISIBLE);
-//            holder.im.getLayoutParams().width = 0;
-//            holder.im.getLayoutParams().height = 0;
+
+
+            holder.bubbleHead.setText(b.name);
+            //holder.bubbleHead.setText(Test.localSettings.identity2Name.get(b.identity));
+            //            holder.im.setVisibility(View.INVISIBLE);
+            //            holder.im.getLayoutParams().width = 0;
+            //            holder.im.getLayoutParams().height = 0;
             holder.bubble.setBackgroundResource(R.drawable.du);
             // System.out.println(" du");
-             holder.ll.setGravity(Gravity.LEFT);
+            holder.ll.setGravity(Gravity.LEFT);
             lp.gravity = Gravity.LEFT;
         }
         //Math.min(lp.width, (int) (getWidestView(mContext, iA)*1.05));
         holder.bubble.setLayoutParams(lp);
 //            holder.message.setTextColor(R.color.textColor);
         System.out.println("123456 " + b.text.size());
-     //   holder.bubble.getLayoutParams().width = (int) (getWidestView(mContext, iA)*1.05);
+        //   holder.bubble.getLayoutParams().width = (int) (getWidestView(mContext, iA)*1.05);
+
+
+        holder.bubbleHead.setOnLongClickListener(new BubbleOnClickListener(b));
+
+
+
         return convertView;
     }
 
     private static class ViewHolder {
 
         //  ImageView im;
+        TextView bubbleHead;
         ListView bubble;
-//        TextView head;
         LinearLayout ll;
     }
 
@@ -125,6 +145,11 @@ public class ChatAdapter extends BaseAdapter {
     public static String genReadableText(Mes msg) {
         long sendTime = msg.ts;
         String str = msg.getMes();
+
+        if (msg.message_type == DeliveredMsg.BYTE) {
+            //str = "delivered...";
+            return "";
+        }
 
         Date date = new Date(sendTime);
 
@@ -169,5 +194,53 @@ public class ChatAdapter extends BaseAdapter {
             }
         }
         return maxWidth;
+    }
+
+    class BubbleOnClickListener implements View.OnLongClickListener {
+
+        ListMessage b;
+
+        private BubbleOnClickListener(ListMessage b) {
+            this.b = b;
+        }
+
+        public boolean onLongClick(View arg0) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle("Name setzen fuer: " + b.identity);
+
+//// Set up the input
+
+            final EditText input = new EditText(mContext);
+//                
+//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
+            input.setHint("Name");
+            input.setHintTextColor(Color.RED);
+
+
+            builder.setView(input);
+
+// Set up the buttons
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Test.localSettings.identity2Name.remove(b.identity);
+                    Test.localSettings.identity2Name.put(b.identity, input.getText().toString());
+                    Test.localSettings.save();
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            builder.show();
+            return true;
+        }
     }
 }

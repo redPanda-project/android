@@ -26,9 +26,9 @@ public class ListMessage {
         text = new ArrayList<Mes>();
         channel = tmc.channel;
         identity = tmc.identity;
-        text.add(new Mes(tmc.database_id, tmc.timestamp, tmc.text, fromMe));
+        text.add(new Mes(tmc.database_id, tmc.timestamp, tmc.text, fromMe, tmc.message_type));
         fromMe = tmc.fromMe;
-        name = tmc.name;
+        name = tmc.getName();
     }
 
     public static class Mes {
@@ -37,12 +37,15 @@ public class ListMessage {
         int database_id;
         String mes = "";
         long ts;
+        String name;
+        int message_type;
 
-        public Mes(int database_id, long ts, String mes, boolean fromMe) {
+        public Mes(int database_id, long timestamp, String text, boolean fromMe, int message_type) {
             this.database_id = database_id;
-            this.ts = ts;
-            this.mes = mes;
+            this.ts = timestamp;
+            this.mes = text;
             this.fromMe = fromMe;
+            this.message_type = message_type;
         }
 
         public String getMes() {

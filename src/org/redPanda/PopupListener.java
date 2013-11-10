@@ -16,7 +16,6 @@ import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.TaskStackBuilder;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.messages.TextMessageContent;
-import org.redPandaLib.core.messages.TextMsg;
 
 /**
  *
@@ -33,6 +32,10 @@ public class PopupListener implements NewMessageListener {
     public void newMessage(TextMessageContent msg) {
 
         if (msg.fromMe) {
+            return;
+        }
+
+        if (BS.currentViewedChannel == msg.getChannel().getId()) {
             return;
         }
 
@@ -60,17 +63,17 @@ public class PopupListener implements NewMessageListener {
 
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setSound(soundUri).setContentIntent(contentIntent);
-      
-        
-        
+
+
+
         BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
-        
-        
-        bigTextStyle.bigText(msg.getText());
+
+
+        bigTextStyle.bigText(msg.getName() + ": " + msg.getText());
         bigTextStyle.setBigContentTitle(msg.getChannel().toString());
-        bigTextStyle.setSummaryText("messages from redPanda");
+        bigTextStyle.setSummaryText("message from redPanda");
         mBuilder.setStyle(bigTextStyle);
-        
+
         //        NotificationCompat.InboxStyle inboxStyle =
         //                new NotificationCompat.InboxStyle();
         //
@@ -123,6 +126,4 @@ public class PopupListener implements NewMessageListener {
         mNotificationManager.notify(msg.getChannel().getId(), build);
 
     }
-
-
 }

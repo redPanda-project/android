@@ -56,7 +56,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 121;
+    public static final int VERSION = 136;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -70,6 +70,7 @@ public class BS extends Service {
     static final int FL_UNREG = 11;
     static final int NEW_MSGL = 12;
     private static long lastUpdateChecked = 0;
+    public static int currentViewedChannel = -100;
     /**
      * Handler of incoming messages from clients.
      */
@@ -143,6 +144,7 @@ public class BS extends Service {
 
                     final String msgContent = mesg.getData().getString("msg");
                     new Thread() {
+
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
@@ -155,6 +157,7 @@ public class BS extends Service {
                     final Messenger replyTo = mesg.replyTo;
 
                     new Thread() {
+
                         @Override
                         public void run() {
                             chanlist = Main.getChannels();
@@ -201,12 +204,12 @@ public class BS extends Service {
                     break;
                 case ADD_CHANNEL:
                     b = mesg.getData();
-            try {
-                Main.importChannelFromHuman(b.getString("key"), b.getString("name"));
-            } catch (AddressFormatException ex) {
-                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
-                //todo
-            }
+                    try {
+                        Main.importChannelFromHuman(b.getString("key"), b.getString("name"));
+                    } catch (AddressFormatException ex) {
+                        Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                        //todo
+                    }
                     chanlist = Main.getChannels();
                     break;
                 case CHANGE_NAME:
@@ -303,7 +306,7 @@ public class BS extends Service {
             //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
             //HsqlConnection.db_file = getFilesDir() + "/data/";
             SqLiteConnection sqLiteConnection = new SqLiteConnection(this);
-            
+
             Main.setMessageStore(sqLiteConnection.getConnection());
 
             Main.startUp(false, androidSaver);
@@ -466,6 +469,7 @@ public class BS extends Service {
         lastUpdateChecked = System.currentTimeMillis();
 
         new Thread() {
+
             @Override
             public void run() {
 //                Properties systemProperties = System.getProperties();
