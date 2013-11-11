@@ -400,7 +400,13 @@ public class BS extends Service {
 
     @Override
     public void onTrimMemory(int level) {
-        Test.savePeers();
+        //HACK!
+        try {
+            Test.savePeers();
+        } catch (Exception e) {
+            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+            Main.sendBroadCastMsg("prevented exception: \n" + ownStackTrace);
+        }
     }
     final Messenger mMessenger = new Messenger(new IncomingHandler());
 
