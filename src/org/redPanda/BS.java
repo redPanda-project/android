@@ -10,12 +10,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
+import android.os.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -54,7 +49,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 150;
+    public static final int VERSION = 156;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -75,6 +70,7 @@ public class BS extends Service {
     private ArrayList<Channel> chanlist;
     private final HashMap<Channel, ArrayList<Messenger>> hm = new HashMap<Channel, ArrayList<Messenger>>();
     private Messenger flm;
+    private SqLiteConnection sqLiteConnection;
 
     class IncomingHandler extends Handler {
 
@@ -289,39 +285,48 @@ public class BS extends Service {
 
         new ExceptionLogger(this);
 
-        PRNGFixes.apply();
+        new Thread() {
 
-        try {
+            @Override
+            public void run() {
+
+                PRNGFixes.apply();
+
+                try {
 
 
 
 
 //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
-            AndroidSaver androidSaver = new AndroidSaver(this);
-            //Settings.STD_PORT += 2;
-            //Settings.lightClient = true;
-            Settings.MIN_CONNECTIONS = 2;
-            //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
-            //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
-            //HsqlConnection.db_file = getFilesDir() + "/data/";
-            SqLiteConnection sqLiteConnection = new SqLiteConnection(this);
+                    AndroidSaver androidSaver = new AndroidSaver(BS.this);
+                    //Settings.STD_PORT += 2;
+                    //Settings.lightClient = true;
+                    Settings.MIN_CONNECTIONS = 2;
+                    //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
+                    //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
+                    //HsqlConnection.db_file = getFilesDir() + "/data/";
+                    sqLiteConnection = new SqLiteConnection(BS.this);
 
-            Main.setMessageStore(sqLiteConnection.getConnection());
+                    Main.setMessageStore(sqLiteConnection.getConnection());
 
-            Main.startUp(false, androidSaver);
-            PopupListener popupListener = new PopupListener(this);
-            Main.addListener(popupListener);
-            Main.addListener(new MessageListener());
-
-
+                    Main.startUp(false, androidSaver);
+                    PopupListener popupListener = new PopupListener(BS.this);
+                    Main.addListener(popupListener);
+                    Main.addListener(new MessageListener());
 
 
 
-        } catch (SQLException ex) {
-            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
+
+                } catch (SQLException ex) {
+                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+
+            }
+        }.start();
 
 
 
@@ -394,18 +399,31 @@ public class BS extends Service {
     }
 
     @Override
-    public void onLowMemory() {
-        Test.savePeers();
-    }
-
-    @Override
     public void onTrimMemory(int level) {
-        //HACK!
-        try {
-            Test.savePeers();
-        } catch (Exception e) {
-            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-            Main.sendBroadCastMsg("prevented exception: \n" + ownStackTrace);
+        super.onTrimMemory(level);
+
+        if (level == TRIM_MEMORY_COMPLETE) {
+
+            //HACK!
+            try {
+                Test.savePeers();
+            } catch (Exception e) {
+                String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                Main.sendBroadCastMsg("prevented exception: \n" + ownStackTrace);
+            }
+
+//            try {
+//                Toast.makeText(BS.this, "rebooting database - low memory", Toast.LENGTH_SHORT).show();
+//                //SqLiteConnection oldCon = sqLiteConnection;
+//                Statement stmt = sqLiteConnection.getConnection().createStatement();
+//                stmt.executeUpdate("SHUTDOWN");
+//                sqLiteConnection.getConnection().close();
+//                sqLiteConnection = new SqLiteConnection(this);
+//                Main.setMessageStore(sqLiteConnection.getConnection());
+//            } catch (SQLException ex) {
+//                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+
         }
     }
     final Messenger mMessenger = new Messenger(new IncomingHandler());

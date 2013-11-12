@@ -25,8 +25,8 @@ import org.redPandaLib.core.messages.TextMessageContent;
 public class PopupListener implements NewMessageListener {
 
     Context context;
-    int dot = 200;      // Length of a Morse Code "dot" in milliseconds
-    int dash = 500;     // Length of a Morse Code "dash" in milliseconds
+    int dot = 50;      // Length of a Morse Code "dot" in milliseconds
+    int dash = 300;     // Length of a Morse Code "dash" in milliseconds
     int short_gap = 200;    // Length of Gap Between dots/dashes
     int medium_gap = 500;   // Length of Gap Between Letters
     int long_gap = 1000;    // Length of Gap Between Words
@@ -34,7 +34,7 @@ public class PopupListener implements NewMessageListener {
         0, // Start immediately
         dot, short_gap, dot, short_gap, dot
     };
-    long lastVibrated = 0;
+   static long lastVibrated = 0;
 
     public PopupListener(Context context) {
         this.context = context;
