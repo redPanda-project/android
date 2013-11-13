@@ -51,7 +51,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 160;
+    public static final int VERSION = 162;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -66,6 +66,7 @@ public class BS extends Service {
     static final int NEW_MSGL = 12;
     private static long lastUpdateChecked = 0;
     public static int currentViewedChannel = -100;
+    private long lastTrimmed = 0;
     /**
      * Handler of incoming messages from clients.
      */
@@ -404,28 +405,32 @@ public class BS extends Service {
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
 
-        if (level == TRIM_MEMORY_COMPLETE || level == TRIM_MEMORY_MODERATE) {
+        if (lastTrimmed < System.currentTimeMillis() - 1000 * 30) {
+            lastTrimmed = System.currentTimeMillis();
 
-            //HACK!
-            try {
-                Test.savePeers();
-            } catch (Exception e) {
-                String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                Main.sendBroadCastMsg("prevented exception: \n" + ownStackTrace);
-            }
+            if (level == TRIM_MEMORY_COMPLETE || level == TRIM_MEMORY_MODERATE) {
 
-            try {
-                Toast.makeText(BS.this, "rebooting database - low memory", Toast.LENGTH_SHORT).show();
-                //SqLiteConnection oldCon = sqLiteConnection;
-                Statement stmt = sqLiteConnection.getConnection().createStatement();
-                stmt.executeUpdate("CHECKPOINT");//shutdown + reopen
+                //HACK!
+                try {
+                    Test.savePeers();
+                } catch (Exception e) {
+                    String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                    Main.sendBroadCastMsg("prevented exception: \n" + ownStackTrace);
+                }
+
+                try {
+                    Toast.makeText(BS.this, "rebooting database - low memory", Toast.LENGTH_SHORT).show();
+                    //SqLiteConnection oldCon = sqLiteConnection;
+                    Statement stmt = sqLiteConnection.getConnection().createStatement();
+                    stmt.executeUpdate("CHECKPOINT");//shutdown + reopen
 //                sqLiteConnection.getConnection().close();
 //                sqLiteConnection = new SqLiteConnection(this);
-                //Main.setMessageStore(sqLiteConnection.getConnection());
-            } catch (SQLException ex) {
-                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
-            }
+                    //Main.setMessageStore(sqLiteConnection.getConnection());
+                } catch (SQLException ex) {
+                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
+            }
         }
     }
     final Messenger mMessenger = new Messenger(new IncomingHandler());

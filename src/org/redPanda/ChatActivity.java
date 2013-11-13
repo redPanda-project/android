@@ -126,9 +126,8 @@ public class ChatActivity extends ListActivity {
 
     @Override
     protected void onDestroy() {
-        doUnbindService();
         super.onDestroy();
-
+        doUnbindService();
     }
     /**
      * Messenger for communicating with service.
