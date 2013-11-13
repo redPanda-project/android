@@ -43,7 +43,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.Peer;
 import org.redPandaLib.core.Settings;
+import org.redPandaLib.core.Test;
 
 /**
  *
@@ -53,6 +55,8 @@ public class FlActivity extends Activity {
 
     public ArrayList<Channel> channels = new ArrayList<Channel>();
     public ArrayAdapter<Channel> adapter;
+    private boolean active;
+    TextView infotext;
 
     public void onCreate(Bundle savedInstanceState) {
         new ExceptionLogger(this);
@@ -69,6 +73,8 @@ public class FlActivity extends Activity {
         setContentView(R.layout.fl);
 
         Button newChButton = (Button) findViewById(R.id.NKButton);
+        infotext = (TextView) findViewById(R.id.infotext);
+        infotext.setTextColor(Color.BLUE);
         newChButton.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View arg0) {
@@ -488,6 +494,65 @@ public class FlActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        active = false;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        active = true;
+
+
+        new Thread() {
+
+            @Override
+            public void run() {
+                while (active) {
+
+                    if (Test.peerList != null) {
+
+                        int actCons = 0;
+                        final ArrayList<Peer> list = (ArrayList<Peer>) Test.peerList.clone();
+
+                        for (Peer peer : list) {
+                            if (peer.isConnected()) {
+                                actCons++;
+                            }
+                        }
+
+
+                        final int activeConnections = actCons;
+
+                        infotext.post(new Runnable() {
+
+                            public void run() {
+                                infotext.setText("Nodes: " + activeConnections + "/" + list.size());
+                            }
+                        });
+                    } else {
+                        infotext.post(new Runnable() {
+
+                            public void run() {
+                                infotext.setText("loading...");
+                            }
+                        });
+                    }
+                    try {
+                        sleep(100);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+
+                infotext.post(new Runnable() {
+
+                    public void run() {
+                        infotext.setText("Nodes: -/-");
+                    }
+                });
+
+
+            }
+        }.start();
     }
 
     @Override
