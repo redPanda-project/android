@@ -512,21 +512,26 @@ public class FlActivity extends Activity {
                     if (Test.peerList != null) {
 
                         int actCons = 0;
+                        int connectingCons = 0;
                         final ArrayList<Peer> list = (ArrayList<Peer>) Test.peerList.clone();
 
                         for (Peer peer : list) {
                             if (peer.isConnected()) {
                                 actCons++;
                             }
+                            if (peer.isConnecting) {
+                                connectingCons++;
+                            }
                         }
 
 
                         final int activeConnections = actCons;
+                        final int connectingConnections = connectingCons;
 
                         infotext.post(new Runnable() {
 
                             public void run() {
-                                infotext.setText("Nodes: " + activeConnections + "/" + list.size());
+                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size());
                             }
                         });
                     } else {
@@ -546,7 +551,7 @@ public class FlActivity extends Activity {
                 infotext.post(new Runnable() {
 
                     public void run() {
-                        infotext.setText("Nodes: -/-");
+                        infotext.setText("Nodes: -/-/-");
                     }
                 });
 
