@@ -5,6 +5,7 @@
 package org.redPanda;
 
 import android.content.Context;
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -100,7 +101,7 @@ public class AndroidSaver implements SaverInterface {
         }
 
         try {
-            File file = new File(context.getFilesDir(), SAVE_DIR + "/peers" + getPrefix() + ".dat");
+            File file = new File(context.getFilesDir(), SAVE_DIR + "/prepeers" + getPrefix() + ".dat");
 
             file.createNewFile();
             FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -109,9 +110,14 @@ public class AndroidSaver implements SaverInterface {
             objectOutputStream.close();
             fileOutputStream.close();
 
+            //if write fails at writeObject, file will not be damaged!
+            File newFile = new File(context.getFilesDir(), SAVE_DIR + "/peers" + getPrefix() + ".dat");
+            Files.move(file, newFile);
         } catch (Exception ex) {
             Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+
 
     }
 
@@ -250,7 +256,7 @@ public class AndroidSaver implements SaverInterface {
     }
 
     public ArrayList<PeerTrustData> loadTrustedPeers() {
-        
+
         try {
             File file = new File(context.getFilesDir(), SAVE_DIR + "/trustData" + getPrefix() + ".dat");
 

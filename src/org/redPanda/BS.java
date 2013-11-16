@@ -51,7 +51,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 177;
+    public static final int VERSION = 187;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -101,7 +101,7 @@ public class BS extends Service {
                         al = new ArrayList<Messenger>();
                     }
 
-                    ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 12 * 60 * 60 * 1000, Long.MAX_VALUE);
+                    ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
 
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
@@ -403,7 +403,6 @@ public class BS extends Service {
 
     @Override
     public void onTrimMemory(int level) {
-        super.onTrimMemory(level);
 
         if (lastTrimmed < System.currentTimeMillis() - 1000 * 30) {
             lastTrimmed = System.currentTimeMillis();

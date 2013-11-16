@@ -199,7 +199,6 @@ public class ChatActivity extends ListActivity {
                     return;
                 }
 
-                System.out.println("bztes: " + tmc.decryptedContent.length);
 
                 ByteBuffer wrap = ByteBuffer.wrap(tmc.decryptedContent);
 
@@ -212,16 +211,13 @@ public class ChatActivity extends ListActivity {
 
                 tmc.identity = identity;
 
-                System.out.println("asdhhg " + time + " ");
 
 
 
                 for (ListMessage listMessage : cA.mMessages) {
 
                     for (Mes message : listMessage.text) {
-                        System.out.println(time + "          / ////      " + message.ts);
                         if (time == message.ts) {
-                            System.out.println("right!");
 
                             if (message.deliveredTo == null) {
                                 message.deliveredTo = new ArrayList<String>();
@@ -232,7 +228,6 @@ public class ChatActivity extends ListActivity {
 
                             return;
                         } else {
-                            System.out.println("wrong!");
                         }
                     }
 

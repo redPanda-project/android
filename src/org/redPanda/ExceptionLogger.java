@@ -8,6 +8,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.widget.Toast;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import org.apache.http.util.ExceptionUtils;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.MessageHolder;
 
@@ -42,9 +45,9 @@ public class ExceptionLogger {
 
 
 //                ownStackTrace = ownStackTrace.replaceAll(":", "");
-                
-                Main.sendBroadCastMsg(ownStackTrace);
-                
+
+                Main.sendBroadCastMsg("Version: " + BS.VERSION + " \n" + ownStackTrace);
+
                 defaultUEH.uncaughtException(thread, thrwbl);
 
             }
@@ -52,19 +55,25 @@ public class ExceptionLogger {
     }
 
     public static String stacktrace2String(Throwable thrwbl) {
-        String ownStackTrace = "";
-        ownStackTrace += thrwbl.getMessage() + "\n";
-        for (StackTraceElement a : thrwbl.getStackTrace()) {
-            ownStackTrace += a.toString() + "\n";
-        }
 
-        if (thrwbl.getCause() != null) {
-            ownStackTrace += "caused by: " + thrwbl.getCause().getMessage() + "\n";
-            for (StackTraceElement a : thrwbl.getCause().getStackTrace()) {
-                ownStackTrace += a.toString() + "\n";
-            }
-        }
-        
-        return ownStackTrace;
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        thrwbl.printStackTrace(pw);
+        return sw.toString();
+
+//        String ownStackTrace = "";
+//        ownStackTrace += thrwbl.getMessage() + "\n";
+//        for (StackTraceElement a : thrwbl.getStackTrace()) {
+//            ownStackTrace += a.toString() + "\n";
+//        }
+//
+//        if (thrwbl.getCause() != null) {
+//            ownStackTrace += "caused by: " + thrwbl.getCause().getMessage() + "\n";
+//            for (StackTraceElement a : thrwbl.getCause().getStackTrace()) {
+//                ownStackTrace += a.toString() + "\n";
+//            }
+//        }
+//        
+//        return ownStackTrace;
     }
 }
