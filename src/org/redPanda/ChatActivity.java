@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Iterator;
 import org.redPanda.ListMessage.Mes;
 
+import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
@@ -190,12 +191,18 @@ public class ChatActivity extends ListActivity {
             }
         }
 
-        public void merge(TextMessageContent tmc) {
+        public void merge(final TextMessageContent tmc) {
 
             if (tmc.message_type == DeliveredMsg.BYTE) {
 
                 if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
-                    System.out.println("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
+                    new Thread() {
+
+                        @Override
+                        public void run() {
+                            Main.sendBroadCastMsg("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
+                        }
+                    }.start();
                     return;
                 }
 
@@ -213,11 +220,16 @@ public class ChatActivity extends ListActivity {
 
 
 
-
+                boolean found = false;
+                //String hans = "";
                 for (ListMessage listMessage : cA.mMessages) {
 
                     for (Mes message : listMessage.text) {
+                        
+                        //hans += " " + message.ts;
+                        
                         if (time == message.ts) {
+                            found = true;
 
                             if (message.deliveredTo == null) {
                                 message.deliveredTo = new ArrayList<String>();
@@ -232,6 +244,18 @@ public class ChatActivity extends ListActivity {
                     }
 
                 }
+
+                //final String hhans = hans;
+                
+//                if (!found) {
+//                    new Thread() {
+//
+//                        @Override
+//                        public void run() {
+//                            Main.sendBroadCastMsg("not found -.- " + tmc.timestamp + " " + tmc.getName() + hhans);
+//                        }
+//                    }.start();
+//                }
 
                 return;
             }
