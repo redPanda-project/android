@@ -6,12 +6,9 @@ package org.redPanda;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceScreen;
+import android.preference.*;
 import org.redPandaLib.Main;
+import org.redPandaLib.core.Settings;
 
 /**
  *
@@ -20,6 +17,7 @@ import org.redPandaLib.Main;
 public class Preferences extends PreferenceActivity {
 
     public static final String KEY_NICK = "a";
+    public static final String KEY_SAVE_MOBILE_INTERNET = "b";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,6 +43,7 @@ public class Preferences extends PreferenceActivity {
         activePref.setSummary("Dies ist dein Master Key, er wird fuer ");
         //activePref.setText(Test.getNick());
         activePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+
             public boolean onPreferenceChange(Preference arg0, Object arg1) {
                 String newNick = arg1.toString();
                 //Test.setNick(newNick);
@@ -57,6 +56,7 @@ public class Preferences extends PreferenceActivity {
         fullSyncInit.setTitle("Full Sync");
         fullSyncInit.setSummary("Initializes a full sync with the network, may cause huge traffic.");
         fullSyncInit.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+
             public boolean onPreferenceClick(Preference pref) {
                 Intent i = new Intent(Preferences.this, BS.class);
                 i.setAction("c");
@@ -72,6 +72,7 @@ public class Preferences extends PreferenceActivity {
         button.setSummary("Adds the Main Channel to your channel list.");
 
         button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+
             @Override
             public boolean onPreferenceClick(Preference arg0) {
                 Main.addMainChannel();
@@ -79,6 +80,21 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(button);
+
+        CheckBoxPreference saveMobileInternet = new CheckBoxPreference(this);
+        saveMobileInternet.setDefaultValue(false);
+        saveMobileInternet.setKey(KEY_SAVE_MOBILE_INTERNET);
+        saveMobileInternet.setTitle("Reduce traffic over 2G/3G/4G.");
+        saveMobileInternet.setSummary("Doesn't stay connected over mobile internet. Messages may be delayed,"
+                + " but saves your mobile traffic.");
+        mainc.addPreference(saveMobileInternet);
+
         return root;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Settings.connectToNewClientsTill = Long.MAX_VALUE;
     }
 }

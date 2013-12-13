@@ -29,6 +29,7 @@ import org.redPanda.ListMessage.Mes;
 
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 
@@ -225,9 +226,9 @@ public class ChatActivity extends ListActivity {
                 for (ListMessage listMessage : cA.mMessages) {
 
                     for (Mes message : listMessage.text) {
-                        
+
                         //hans += " " + message.ts;
-                        
+
                         if (time == message.ts) {
                             found = true;
 
@@ -246,7 +247,7 @@ public class ChatActivity extends ListActivity {
                 }
 
                 //final String hhans = hans;
-                
+
 //                if (!found) {
 //                    new Thread() {
 //
@@ -401,6 +402,9 @@ public class ChatActivity extends ListActivity {
                     (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.cancel(chan.getId());
         }
+
+        Settings.connectToNewClientsTill = Long.MAX_VALUE;
+
     }
 
     @Override

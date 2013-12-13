@@ -51,7 +51,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 193;
+    public static final int VERSION = 198;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -333,6 +333,22 @@ public class BS extends Service {
 
 
 
+        new Thread() {
+
+            @Override
+            public void run() {
+                ConnectivityChanged connectivityChanged = new ConnectivityChanged();
+
+                while (true) {
+                    connectivityChanged.onReceive(BS.this, null);
+                    try {
+                        sleep(1000 * 60 * 2);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            }
+        }.start();
+
 
 
 //        Intent intent = new Intent(this, FlActivity.class);
@@ -517,7 +533,7 @@ public class BS extends Service {
 
                         int v = Integer.parseInt(str);
 
-                        if (v != VERSION) {
+                        if (v > VERSION) {
                             //System.out.println("MVersion: " + LBS.VERSION + " found: " + v);
                             updateFound();
                             break;
