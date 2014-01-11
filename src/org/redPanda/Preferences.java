@@ -18,6 +18,7 @@ public class Preferences extends PreferenceActivity {
 
     public static final String KEY_NICK = "a";
     public static final String KEY_SAVE_MOBILE_INTERNET = "b";
+    public static final String KEY_START_AFTER_BOOTING = "c";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,6 +89,14 @@ public class Preferences extends PreferenceActivity {
         saveMobileInternet.setSummary("Doesn't stay connected over mobile internet. Messages may be delayed,"
                 + " but saves your mobile traffic.");
         mainc.addPreference(saveMobileInternet);
+
+
+        CheckBoxPreference startAfterBoot = new CheckBoxPreference(this);
+        startAfterBoot.setDefaultValue(true);
+        startAfterBoot.setKey(KEY_START_AFTER_BOOTING);
+        startAfterBoot.setTitle("Autostart.");
+        startAfterBoot.setSummary("If checked, this app will start after the system booted. (Recommended)");
+        mainc.addPreference(startAfterBoot);
 
         return root;
     }
