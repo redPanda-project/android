@@ -298,20 +298,30 @@ public class ChatActivity extends ListActivity {
 
             // We want to monitor the service for as long as we are
             // connected to it.
-            try {
-                Message msg = Message.obtain(null,
-                        BS.MSG_REGISTER_CLIENT);
-                Bundle b = new Bundle();
-                b.putInt("chanid", chan.getId());
-                msg.setData(b);
-                msg.replyTo = mMessenger;
-                mService.send(msg);
-            } catch (RemoteException e) {
-                // In this case the service has crashed before we could even
-                // do anything with it; we can count on soon being
-                // disconnected (and then reconnected if it can be restarted)
-                // so there is no need to do anything here.
-            }
+            new Thread() {
+
+                @Override
+                public void run() {
+                    Message msg = Message.obtain(null,
+                            BS.MSG_REGISTER_CLIENT);
+                    Bundle b = new Bundle();
+                    b.putInt("chanid", chan.getId());
+                    msg.setData(b);
+                    msg.replyTo = mMessenger;
+                    try {
+                        mService.send(msg);
+
+                    } catch (RemoteException e) {
+                        // In this case the service has crashed before we could even
+                        // do anything with it; we can count on soon being
+                        // disconnected (and then reconnected if it can be restarted)
+                        // so there is no need to do anything here.
+                    }
+
+                }
+            }.start();
+
+
 
         }
 

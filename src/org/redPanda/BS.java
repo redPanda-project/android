@@ -51,7 +51,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 203;
+    public static final int VERSION = 206;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -79,7 +79,7 @@ public class BS extends Service {
 
         //Channel chan;
         @Override
-        public void handleMessage(Message mesg) {
+        public void handleMessage(final Message mesg) {
 
             checkForUpdate();
 
@@ -90,6 +90,9 @@ public class BS extends Service {
                 case MSG_REGISTER_CLIENT:
                     //Toast.makeText(BS.this, "regclient", Toast.LENGTH_SHORT).show();
                     //   mClients.add(msg.replyTo);
+
+
+
                     int chanid = mesg.getData().getInt("chanid");
                     chanlist = Main.getChannels();
 
@@ -105,20 +108,18 @@ public class BS extends Service {
 
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
-                    b = new Bundle();
+                    Bundle b2 = new Bundle();
                     if (ml != null) {
 
                         ms = Message.obtain(null,
                                 BS.NEW_MSGL);
-                        b.putSerializable("msgList", ml);
-                        ms.setData(b);
+                        b2.putSerializable("msgList", ml);
+                        ms.setData(b2);
                         try {
                             mesg.replyTo.send(ms);
                         } catch (RemoteException ex) {
                             Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                         }
-
-
 
 
                     }
