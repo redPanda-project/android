@@ -348,11 +348,11 @@ public class FlActivity extends Activity {
 
                     Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
 
-                    channels.clear();
+                    ArrayList<ChannelViewElement> arrayList = new ArrayList<ChannelViewElement>();
                     for (Channel ch : (ArrayList<Channel>) msg.getData().get("CHANNELS")) {
-                        channels.add(ChannelViewElement.getInstanceFromChannel(ch));
+                        arrayList.add(ChannelViewElement.getInstanceFromChannel(ch));
                     }
-
+                    channels = arrayList;
 
 
                     Collections.sort(channels);
