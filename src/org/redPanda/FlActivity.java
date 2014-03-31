@@ -39,6 +39,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPandaLib.Main;
@@ -53,8 +54,8 @@ import org.redPandaLib.core.Test;
  */
 public class FlActivity extends Activity {
 
-    public ArrayList<Channel> channels = new ArrayList<Channel>();
-    public ArrayAdapter<Channel> adapter;
+    public ArrayList<ChannelViewElement> channels = new ArrayList<ChannelViewElement>();
+    public ArrayAdapter<ChannelViewElement> adapter;
     private boolean active;
     TextView infotext;
 
@@ -65,7 +66,7 @@ public class FlActivity extends Activity {
 
 
         super.onCreate(savedInstanceState);
-        adapter = new ArrayAdapter<Channel>(this, R.layout.listitem, R.id.text1, channels);
+        adapter = new ArrayAdapter<ChannelViewElement>(this, R.layout.listitem, R.id.text1, channels);
         startService(new Intent(this, BS.class));
 //        Intent intent = new Intent(this, BS.class);
 //        startService(intent);
@@ -76,7 +77,6 @@ public class FlActivity extends Activity {
         infotext = (TextView) findViewById(R.id.infotext);
         infotext.setTextColor(Color.BLUE);
         newChButton.setOnClickListener(new View.OnClickListener() {
-
             public void onClick(View arg0) {
 
 
@@ -100,7 +100,6 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -118,7 +117,6 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -143,7 +141,6 @@ public class FlActivity extends Activity {
         });
         Button impButton = (Button) findViewById(R.id.imbutton);
         impButton.setOnClickListener(new View.OnClickListener() {
-
             public void onClick(View arg0) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
@@ -167,7 +164,6 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -195,7 +191,6 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -236,15 +231,17 @@ public class FlActivity extends Activity {
 
         public OnItemClickListenerImpl() {
         }
-        ArrayList<Channel> array;
+        ArrayList<ChannelViewElement> array;
 
-        private OnItemClickListenerImpl(ArrayList<Channel> al) {
+        private OnItemClickListenerImpl(ArrayList<ChannelViewElement> al) {
             array = al;
         }
 
         @Override
         public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                 long arg3) {
+            ChannelViewElement clickedChannel = array.get(arg2);
+            clickedChannel.displayPriority++;
 
             Intent intent;
             intent = new Intent(FlActivity.this, ChatActivity.class);
@@ -347,13 +344,20 @@ public class FlActivity extends Activity {
                 case BS.CHANNELS:
                     //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 
-                    channels = ((ArrayList<Channel>) msg.getData().get("CHANNELS"));
+                    
+                    channels.clear();
+                    for (Channel ch : (ArrayList<Channel>) msg.getData().get("CHANNELS")) {
+                        channels.add(ChannelViewElement.getInstanceFromChannel(ch));
+                    }
+                    
+                    
+                    
                     if (!channels.isEmpty()) {
                         //ListView lv = (ListView) findViewById(R.id.chanlist);
 
 //                    ArrayAdapter<Channel> adapter;
                         adapter.clear();
-                        for (Channel chan : channels) {
+                        for (ChannelViewElement chan : channels) {
                             adapter.add(chan);
                         }
                         adapter.notifyDataSetChanged();
@@ -378,7 +382,6 @@ public class FlActivity extends Activity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
-
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
 //            Toast.makeText(FlActivity.this, "Serviceconnected", Toast.LENGTH_SHORT).show();
@@ -489,6 +492,8 @@ public class FlActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
+        Collections.sort(channels);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -504,7 +509,6 @@ public class FlActivity extends Activity {
 
 
         new Thread() {
-
             @Override
             public void run() {
                 while (active) {
@@ -529,14 +533,12 @@ public class FlActivity extends Activity {
                         final int connectingConnections = connectingCons;
 
                         infotext.post(new Runnable() {
-
                             public void run() {
                                 infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size());
                             }
                         });
                     } else {
                         infotext.post(new Runnable() {
-
                             public void run() {
                                 infotext.setText("loading...");
                             }
@@ -549,7 +551,6 @@ public class FlActivity extends Activity {
                 }
 
                 infotext.post(new Runnable() {
-
                     public void run() {
                         infotext.setText("Nodes: -/-/-");
                     }
