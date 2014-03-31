@@ -344,14 +344,14 @@ public class FlActivity extends Activity {
                 case BS.CHANNELS:
                     //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 
-                    
+
                     channels.clear();
                     for (Channel ch : (ArrayList<Channel>) msg.getData().get("CHANNELS")) {
                         channels.add(ChannelViewElement.getInstanceFromChannel(ch));
                     }
-                    
-                    
-                    
+
+                    Collections.sort(channels);
+
                     if (!channels.isEmpty()) {
                         //ListView lv = (ListView) findViewById(R.id.chanlist);
 
@@ -492,8 +492,6 @@ public class FlActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
-        Collections.sort(channels);
-        adapter.notifyDataSetChanged();
     }
 
     @Override

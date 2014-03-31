@@ -5,7 +5,6 @@
 package org.redPanda;
 
 import org.redPandaLib.core.Channel;
-import org.redPandaLib.crypt.ECKey;
 
 /**
  *
@@ -14,11 +13,6 @@ import org.redPandaLib.crypt.ECKey;
 public class ChannelViewElement extends Channel {
 
     int displayPriority;
-    int id = -1;
-    ECKey key;
-    String securityHash;
-    String name;
-    double diffuculty = 0;
 
     public static ChannelViewElement getInstanceFromChannel(Channel channel) {
         ChannelViewElement channelViewElement = new ChannelViewElement();
