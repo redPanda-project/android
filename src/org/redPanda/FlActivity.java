@@ -240,7 +240,7 @@ public class FlActivity extends Activity {
         @Override
         public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                 long arg3) {
-            ChannelViewElement clickedChannel = array.get(arg2);
+            ChannelViewElement clickedChannel = channels.get(arg2);
             clickedChannel.displayPriority++;
 
             Intent intent;
@@ -344,9 +344,9 @@ public class FlActivity extends Activity {
                 case BS.CHANNELS:
                     //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 
-                    new ExceptionLogger(FlActivity.this);
+//                    new ExceptionLogger(FlActivity.this);
 
-                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
 
                     ArrayList<ChannelViewElement> arrayList = new ArrayList<ChannelViewElement>();
                     for (Channel ch : (ArrayList<Channel>) msg.getData().get("CHANNELS")) {
@@ -357,7 +357,7 @@ public class FlActivity extends Activity {
 
                     Collections.sort(channels);
 
-                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
 
                     if (!channels.isEmpty()) {
                         //ListView lv = (ListView) findViewById(R.id.chanlist);
@@ -366,10 +366,10 @@ public class FlActivity extends Activity {
                         adapter.clear();
                         for (ChannelViewElement chan : channels) {
                             adapter.add(chan);
-                            Toast.makeText(FlActivity.this, "name: " + chan.toString(), Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(FlActivity.this, "name: " + chan.toString(), Toast.LENGTH_SHORT).show();
                         }
                         adapter.notifyDataSetChanged();
-                        Toast.makeText(FlActivity.this, "adapterbla", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(FlActivity.this, "adapterbla", Toast.LENGTH_SHORT).show();
                     }
 
 

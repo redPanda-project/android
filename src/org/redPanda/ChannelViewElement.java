@@ -12,7 +12,7 @@ import org.redPandaLib.core.Channel;
  */
 public class ChannelViewElement extends Channel {
 
-    int displayPriority;
+    Channel channel;
 
     public static ChannelViewElement getInstanceFromChannel(Channel channel) {
         ChannelViewElement channelViewElement = new ChannelViewElement();
@@ -20,14 +20,18 @@ public class ChannelViewElement extends Channel {
         channelViewElement.id = channel.getId();
         channelViewElement.name = channel.getName();
         channelViewElement.key = channel.getKey();
+        channelViewElement.channel = channel;
+        channelViewElement.displayPriority = channel.displayPriority;
 
         return channelViewElement;
     }
 
     public int compareTo(ChannelViewElement o) {
-        return displayPriority - o.displayPriority;
+        return (int) (displayPriority - o.displayPriority);
     }
 
-    
-    
+    public void incDisplayPriority() {
+        channel.displayPriority++;
+        displayPriority++;
+    }
 }
