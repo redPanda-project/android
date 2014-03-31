@@ -44,7 +44,6 @@ public class Preferences extends PreferenceActivity {
         activePref.setSummary("Dies ist dein Master Key, er wird fuer ");
         //activePref.setText(Test.getNick());
         activePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-
             public boolean onPreferenceChange(Preference arg0, Object arg1) {
                 String newNick = arg1.toString();
                 //Test.setNick(newNick);
@@ -57,7 +56,6 @@ public class Preferences extends PreferenceActivity {
         fullSyncInit.setTitle("Full Sync");
         fullSyncInit.setSummary("Initializes a full sync with the network, may cause huge traffic.");
         fullSyncInit.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
             public boolean onPreferenceClick(Preference pref) {
                 Intent i = new Intent(Preferences.this, BS.class);
                 i.setAction("c");
@@ -73,7 +71,6 @@ public class Preferences extends PreferenceActivity {
         button.setSummary("Adds the Main Channel to your channel list.");
 
         button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
             @Override
             public boolean onPreferenceClick(Preference arg0) {
                 Main.addMainChannel();
@@ -97,6 +94,22 @@ public class Preferences extends PreferenceActivity {
         startAfterBoot.setTitle("Autostart.");
         startAfterBoot.setSummary("If checked, this app will start after the system booted. (Recommended)");
         mainc.addPreference(startAfterBoot);
+
+
+        Preference licenseButton = new Preference(this);
+        licenseButton.setTitle("Show license.");
+        licenseButton.setSummary("redPanda is distributed over GPL 3.0 license.");
+
+        licenseButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+
+                startActivity(new Intent(Preferences.this, License.class));
+
+                return true;
+            }
+        });
+        mainc.addPreference(licenseButton);
 
         return root;
     }

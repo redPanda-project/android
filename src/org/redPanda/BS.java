@@ -51,7 +51,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 206;
+    public static final int VERSION = 215;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -421,10 +421,11 @@ public class BS extends Service {
     @Override
     public void onTrimMemory(int level) {
 
-        if (lastTrimmed < System.currentTimeMillis() - 1000 * 30) {
+        if (lastTrimmed < System.currentTimeMillis() - 1000 * 60*30) {
             lastTrimmed = System.currentTimeMillis();
 
-            if (level == TRIM_MEMORY_COMPLETE || level == TRIM_MEMORY_MODERATE) {
+            // if (level == TRIM_MEMORY_COMPLETE || level == TRIM_MEMORY_MODERATE) {
+            if (level == TRIM_MEMORY_COMPLETE) {
 
                 //HACK!
                 try {
@@ -442,6 +443,7 @@ public class BS extends Service {
 //                sqLiteConnection.getConnection().close();
 //                sqLiteConnection = new SqLiteConnection(this);
                     //Main.setMessageStore(sqLiteConnection.getConnection());
+                    //Main.sendBroadCastMsg("low memory - rebooted database...");
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 }
