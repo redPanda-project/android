@@ -19,20 +19,37 @@
             android:layout_height="wrap_content" >
         </TextView>
     
-    
-        <ListView
-            android:id="@+id/chanlist"
+        <LinearLayout
+            android:id="@+id/flInnerLinLayout"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-        </ListView>
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+        >
+    
+            <ScrollView
+                android:id="@+id/flScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+            >
+    
+                <ListView
+                    android:id="@+id/chanlist"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" >
+                </ListView>
+            </ScrollView>
+            
         
             
-
+        </LinearLayout>
+            
         <LinearLayout
             android:id="@+id/flLayout"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:padding="3dp">      
      
             <Button
@@ -41,15 +58,16 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="Neuer Kanal"
-        />
+            />
             <Button
                 android:id="@+id/imbutton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="Import Channel"
-        />
+            />
         </LinearLayout>
+      
     </LinearLayout>
 
 </LinearLayout>

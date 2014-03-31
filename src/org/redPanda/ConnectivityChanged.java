@@ -39,7 +39,7 @@ public class ConnectivityChanged extends BroadcastReceiver {
 
         if (wifi.isConnected()) {
             Settings.connectToNewClientsTill = Long.MAX_VALUE;
-            Settings.MIN_CONNECTIONS = 3;
+            Settings.MIN_CONNECTIONS = 6;
         } else if (mobile.isConnected()) {
 
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
