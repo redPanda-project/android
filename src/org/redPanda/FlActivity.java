@@ -344,13 +344,20 @@ public class FlActivity extends Activity {
                 case BS.CHANNELS:
                     //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 
+                    new ExceptionLogger(FlActivity.this);
+
+                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
 
                     channels.clear();
                     for (Channel ch : (ArrayList<Channel>) msg.getData().get("CHANNELS")) {
                         channels.add(ChannelViewElement.getInstanceFromChannel(ch));
                     }
 
+
+
                     Collections.sort(channels);
+
+                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
 
                     if (!channels.isEmpty()) {
                         //ListView lv = (ListView) findViewById(R.id.chanlist);
@@ -359,8 +366,10 @@ public class FlActivity extends Activity {
                         adapter.clear();
                         for (ChannelViewElement chan : channels) {
                             adapter.add(chan);
+                            Toast.makeText(FlActivity.this, "name: " + chan.toString(), Toast.LENGTH_SHORT).show();
                         }
                         adapter.notifyDataSetChanged();
+                        Toast.makeText(FlActivity.this, "adapterbla", Toast.LENGTH_SHORT).show();
                     }
 
 

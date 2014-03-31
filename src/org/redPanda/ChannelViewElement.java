@@ -27,4 +27,7 @@ public class ChannelViewElement extends Channel {
     public int compareTo(ChannelViewElement o) {
         return displayPriority - o.displayPriority;
     }
+
+    
+    
 }
