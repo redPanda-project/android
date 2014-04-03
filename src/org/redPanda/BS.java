@@ -51,7 +51,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 234;
+    public static final int VERSION = 247;
     static final int SEND_MSG = 1;
     static final int MSG_REGISTER_CLIENT = 2;
     static final int MSG_UNREGISTER_CLIENT = 3;
@@ -304,7 +304,7 @@ public class BS extends Service {
 //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
                     //Settings.STD_PORT += 2;
-                    //Settings.lightClient = true;
+                    Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;

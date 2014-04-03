@@ -5,6 +5,8 @@
 package org.redPanda;
 
 import android.content.Context;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +16,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import java.util.ArrayList;
+import java.util.Date;
+import static org.redPanda.ChatAdapter.formatTime;
 import org.redPanda.ListMessage.Mes;
+import org.redPandaLib.core.messages.DeliveredMsg;
 
 /**
  *
@@ -52,34 +57,53 @@ public class inAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.chatext, parent, false);
             holder.message = (TextView) convertView.findViewById(R.id.message_text);
 
-            holder.im = (ImageView) convertView.findViewById(R.id.thereic);
+            //holder.im = (ImageView) convertView.findViewById(R.id.thereic);
+
+            //wieder hinzufuegen in der chatext.xml vor dem schliessen des Linearlayout,
+            //temporaer nicht drin:
+//                <ImageView
+//        android:id="@+id/thereic"
+//        android:layout_width="wrap_content"
+//        android:layout_height="wrap_content"
+//        android:src="@drawable/ic_notthere"
+//        android:layout_alignParentTop="true"
+//        android:layout_toRightOf="@id/message_text"
+//            
+//    /> 
+
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
 
-        String text = ChatAdapter.genReadableText(mes);
+        long sendTime = mes.ts;
+        Date date = new Date(sendTime);
+
+
+        String time = formatTime(date);
+        String content = mes.getMes();
+        String readText = "";
 
         if (mes.deliveredTo != null) {
-            text += " -";
+            //readText += " -";
 
             for (String name : mes.deliveredTo) {
-                text += " " + name;
+                readText += " " + name;
             }
         }
 
-        holder.message.setText(text);
+        holder.message.setText(Html.fromHtml("<small>" +time + "</small> " + content + " <br> " + "<small>" + readText + "</small>"));
 
-        if (mes.fromMe) {
-            holder.im.setVisibility(View.VISIBLE);
-            holder.im.getLayoutParams().width = 30;
-            holder.im.getLayoutParams().height = 30;
-        } else {
-            holder.im.setVisibility(View.INVISIBLE);
-            holder.im.getLayoutParams().width = 0;
-            holder.im.getLayoutParams().height = 0;
-        }
+//        if (mes.fromMe) {
+//            holder.im.setVisibility(View.VISIBLE);
+//            holder.im.getLayoutParams().width = 30;
+//            holder.im.getLayoutParams().height = 30;
+//        } else {
+//            holder.im.setVisibility(View.INVISIBLE);
+//            holder.im.getLayoutParams().width = 0;
+//            holder.im.getLayoutParams().height = 0;
+//        }
 
 
 

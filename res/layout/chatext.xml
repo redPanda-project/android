@@ -17,16 +17,7 @@
         android:text="Medium Text"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-            
-        android:textSize="20sp"
-    />    
-    <ImageView
-        android:id="@+id/thereic"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_notthere"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@id/message_text"
-            
-    />    
+        android:autoLink="web"
+        android:textSize="17sp"
+    />       
 </LinearLayout>

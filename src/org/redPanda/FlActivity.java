@@ -40,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPandaLib.Main;
@@ -58,8 +59,10 @@ public class FlActivity extends Activity {
     public ArrayAdapter<ChannelViewElement> adapter;
     private boolean active;
     TextView infotext;
+    static Context context;
 
     public void onCreate(Bundle savedInstanceState) {
+        context = this;
         new ExceptionLogger(this);
 
         //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
@@ -240,14 +243,23 @@ public class FlActivity extends Activity {
         @Override
         public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                 long arg3) {
-            ChannelViewElement clickedChannel = channels.get(arg2);
-            clickedChannel.displayPriority++;
+            ChannelViewElement clickedChannel = array.get(arg2);
+            new ExceptionLogger(FlActivity.this);
+            if (clickedChannel != null) {
+                clickedChannel.setLastMessageTime(System.currentTimeMillis());
+                adapter.sort(new Comparator<ChannelViewElement>() {
+                    public int compare(ChannelViewElement t, ChannelViewElement t1) {
+                        return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
+                    }
+                });
+                adapter.notifyDataSetChanged();
+            }
 
             Intent intent;
             intent = new Intent(FlActivity.this, ChatActivity.class);
 
-            intent.putExtra("title", array.get(arg2).toString());
-            intent.putExtra("Channel", array.get(arg2));
+            intent.putExtra("title", clickedChannel.toString());
+            intent.putExtra("Channel", clickedChannel);
             //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
@@ -355,7 +367,7 @@ public class FlActivity extends Activity {
                     channels = arrayList;
 
 
-                    Collections.sort(channels);
+                    //Collections.sort(channels);
 
 //                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
 
@@ -368,6 +380,11 @@ public class FlActivity extends Activity {
                             adapter.add(chan);
 //                            Toast.makeText(FlActivity.this, "name: " + chan.toString(), Toast.LENGTH_SHORT).show();
                         }
+                        adapter.sort(new Comparator<ChannelViewElement>() {
+                            public int compare(ChannelViewElement t, ChannelViewElement t1) {
+                                return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
+                            }
+                        });
                         adapter.notifyDataSetChanged();
 //                        Toast.makeText(FlActivity.this, "adapterbla", Toast.LENGTH_SHORT).show();
                     }
@@ -501,6 +518,7 @@ public class FlActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
+        adapter.notifyDataSetChanged();
     }
 
     @Override
