@@ -66,6 +66,7 @@ public class BS extends Service {
     public static final int FL_REG = 10;
     public static final int FL_UNREG = 11;
     public static final int NEW_MSGL = 12;
+    public static final int FL_DSC = 13;
     private static long lastUpdateChecked = 0;
     public static int currentViewedChannel = -100;
     private long lastTrimmed = 0;
@@ -458,14 +459,26 @@ public class BS extends Service {
                 from = msg.getName();
             }
 
-            String text = from + " :" + msg.getText();
+            String text = from + " : " + msg.getText();
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
             SharedPreferences.Editor edit = sharedPref.edit();
             edit.putLong("lastMessageForChannel" + id, time);
             edit.putString("lastMessageTextForChannel" + id, text);
             edit.commit();
-            
+
             //
+            //Msg FlAct for DataSetChanged
+            if (flm != null) {
+                ms = Message.obtain(null,
+                        BS.FL_DSC);
+                try {
+                    flm.send(ms);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            //
+
             for (Channel a : hm.keySet()) {
                 System.out.println("chans: " + a.getId() + " " + a.toString());
             }

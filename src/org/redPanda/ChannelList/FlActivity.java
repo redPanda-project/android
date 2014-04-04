@@ -401,6 +401,9 @@ public class FlActivity extends Activity {
 //                    lv.setAdapter(adapter);
 //                    lv.setOnItemClickListener(new OnItemClickListenerImpl(channels));
                     break;
+                case BS.FL_DSC:
+                        adapter.notifyDataSetChanged();
+                        break;
                 default:
                     super.handleMessage(msg);
             }
