@@ -19,5 +19,6 @@
         android:textSize="18dip"
         android:paddingBottom="8dip"
         android:maxLines="2"
+        android:ellipsize="end"
     />
 </LinearLayout>
