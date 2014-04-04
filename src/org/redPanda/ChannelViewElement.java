@@ -74,6 +74,9 @@ public class ChannelViewElement extends Channel {
     public String toString() {
         return name;
     }
-    
-    
+
+    public void resetPersistentData() {
+        lastMessage = 0;
+        lastMessageText = null;
+    }
 }

@@ -228,7 +228,7 @@ public class FlActivity extends Activity {
             ChannelViewElement clickedChannel = array.get(arg2);
             new ExceptionLogger(FlActivity.this);
             if (clickedChannel != null) {
-                clickedChannel.setLastMessageTime(System.currentTimeMillis());
+//                clickedChannel.setLastMessageTime(System.currentTimeMillis());
                 adapter.sort(new Comparator<ChannelViewElement>() {
                     public int compare(ChannelViewElement t, ChannelViewElement t1) {
                         return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
@@ -380,6 +380,11 @@ public class FlActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         public void run() {
                             lv.invalidateViews();
+                            
+                            for (ChannelViewElement channel :channels) {
+                                channel.resetPersistentData();
+                            }
+                            
                         }
                     });
 
