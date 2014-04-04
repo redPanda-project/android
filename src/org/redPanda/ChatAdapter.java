@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.text.Html;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -68,21 +69,38 @@ public class ChatAdapter extends BaseAdapter {
             holder.ll = (LinearLayout) convertView.findViewById(R.id.chatrow);
 //            holder.head = (TextView) convertView.findViewById(R.id.head);
             holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
-            holder.bubble = (ListView) convertView.findViewById(R.id.bubble);
+            holder.bubble = (TextView) convertView.findViewById(R.id.bubble);
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
             // holder.bubble.setPadding(0, 0, 0, 0);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
-        holder.bubble.setAdapter(iA);
+        //   Toast.makeText(mContext, "blablabla", Toast.LENGTH_SHORT).show();
+        Mes mes = (Mes) b.text.get(0);
+        long sendTime = mes.ts;
+        Date date = new Date(sendTime);
+
+        String time = formatTime(date);
+        String content = mes.getMes();
+        String readText = "";
+
+        if (mes.deliveredTo != null) {
+            //readText += " -";
+
+            for (String name : mes.deliveredTo) {
+                readText += " " + name;
+            }
+        }
+
+        //inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
+        holder.bubble.setText(Html.fromHtml("<small>" + time + "</small> " + content + " <br> " + "<small>" + readText + "</small>"));
 
         //System.out.println("1234 "+message.getData().getString("msg"));       
 //        holder.message.setText(genReadableText(b));
         boolean fromMe = b.fromMe;
 
-        LayoutParams lp = (LayoutParams) holder.bubble.getLayoutParams();
+        LayoutParams lp;
 
 //check if it is a status message then remove background, and change text color.
 //        if (message.isStatusMessage()) {
@@ -92,17 +110,21 @@ public class ChatAdapter extends BaseAdapter {
 //        } else {
 //Check whether message is mine to show green background and align to right
         if (fromMe) {
+          //  holder.bubble.setGravity(Gravity.RIGHT);
+            lp = (LayoutParams) holder.bubble.getLayoutParams();
             holder.bubbleHead.setText("");
             holder.bubble.setBackgroundResource(R.drawable.ich);
             // System.out.println(" ich");
             holder.ll.setGravity(Gravity.RIGHT);
-            lp.gravity = Gravity.RIGHT;
+
+            //lp.gravity = Gravity.RIGHT;
 //            holder.im.setVisibility(View.VISIBLE);
 //            holder.im.getLayoutParams().width = 30;
 //            holder.im.getLayoutParams().height = 30;
         } //If not mine then it is from sender to show orange background and align to left
         else {
-
+           // holder.bubble.setGravity(Gravity.LEFT);
+            lp = (LayoutParams) holder.bubble.getLayoutParams();
             holder.bubbleHead.setText(b.name);
             //holder.bubbleHead.setText(Test.localSettings.identity2Name.get(b.identity));
             //            holder.im.setVisibility(View.INVISIBLE);
@@ -111,13 +133,14 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubble.setBackgroundResource(R.drawable.du);
             // System.out.println(" du");
             holder.ll.setGravity(Gravity.LEFT);
-            lp.gravity = Gravity.LEFT;
+            //lp.gravity = Gravity.LEFT;
+
         }
         //Math.min(lp.width, (int) (getWidestView(mContext, iA)*1.05));
         holder.bubble.setLayoutParams(lp);
 //            holder.message.setTextColor(R.color.textColor);
         System.out.println("123456 " + b.text.size());
-       // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
+        // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
 
         holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(b));
         holder.bubble.setOnLongClickListener(new BubbleOnClickListener(b));
@@ -129,7 +152,7 @@ public class ChatAdapter extends BaseAdapter {
 
         //  ImageView im;
         TextView bubbleHead;
-        ListView bubble;
+        TextView bubble;
         LinearLayout ll;
     }
 
@@ -219,14 +242,14 @@ public class ChatAdapter extends BaseAdapter {
             if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
                 android.text.ClipboardManager clipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
                 clipboard.setText(b.text.get(0).mes);
-                 
+
             } else {
                 android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
                 android.content.ClipData clip = android.content.ClipData.newPlainText("text label", b.text.get(0).mes);
                 clipboard.setPrimaryClip(clip);
             }
             Toast.makeText(mContext, "Copied message to Clipboard", Toast.LENGTH_SHORT).show();
-            
+
             return true;
 
         }
