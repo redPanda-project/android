@@ -234,6 +234,11 @@ public class FlActivity extends Activity {
                         return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                     }
                 });
+                Collections.sort(channels, new Comparator<ChannelViewElement>() {
+                    public int compare(ChannelViewElement t, ChannelViewElement t1) {
+                        return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
+                    }
+                });
                 adapter.notifyDataSetChanged();
             }
 
@@ -363,6 +368,11 @@ public class FlActivity extends Activity {
                                 return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                             }
                         });
+                        Collections.sort(channels, new Comparator<ChannelViewElement>() {
+                            public int compare(ChannelViewElement t, ChannelViewElement t1) {
+                                return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
+                            }
+                        });
                         adapter.notifyDataSetChanged();
 //                        Toast.makeText(FlActivity.this, "adapterbla", Toast.LENGTH_SHORT).show();
                     }
@@ -383,6 +393,11 @@ public class FlActivity extends Activity {
                     }
 
                     adapter.sort(new Comparator<ChannelViewElement>() {
+                        public int compare(ChannelViewElement t, ChannelViewElement t1) {
+                            return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
+                        }
+                    });
+                    Collections.sort(channels, new Comparator<ChannelViewElement>() {
                         public int compare(ChannelViewElement t, ChannelViewElement t1) {
                             return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                         }

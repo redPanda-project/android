@@ -41,7 +41,7 @@
                   android:label="Settings">
         </activity>
         
-        <activity android:name="ChanPref"
+        <activity android:name="org.redPanda.ChannelList.ChanPref"
                   android:theme="@style/customtheme"
                   android:label="Settings">
         </activity>
