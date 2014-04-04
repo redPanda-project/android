@@ -7,6 +7,7 @@ package org.redPanda.ChannelList;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +54,7 @@ public class FLAdapter extends ArrayAdapter<ChannelViewElement> {
         }
         ChannelViewElement ch = objects.get(position);
         holder.CN.setText(ch.getName());
-        holder.msg.setText(ch.getLastMessageText());
+        holder.msg.setText(Html.fromHtml("<small>" + ch.getLastMessageText() + "</small>"));
 
         return row;
     }

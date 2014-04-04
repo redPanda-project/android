@@ -31,7 +31,9 @@ import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
+import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
+import org.redPandaLib.core.messages.TextMsg;
 import org.redPandaLib.crypt.AddressFormatException;
 
 /**
@@ -53,7 +55,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 249;
+    public static final int VERSION = 253;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -140,7 +142,6 @@ public class BS extends Service {
 
                     final String msgContent = mesg.getData().getString("msg");
                     new Thread() {
-
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
@@ -153,7 +154,6 @@ public class BS extends Service {
                     final Messenger replyTo = mesg.replyTo;
 
                     new Thread() {
-
                         @Override
                         public void run() {
                             chanlist = Main.getChannels();
@@ -281,7 +281,6 @@ public class BS extends Service {
         new ExceptionLogger(this);
 
         new Thread() {
-
             @Override
             public void run() {
 
@@ -316,7 +315,6 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
-
             @Override
             public void run() {
                 ConnectivityChanged connectivityChanged = new ConnectivityChanged();
@@ -449,36 +447,40 @@ public class BS extends Service {
             Iterator<Messenger> its;
             System.out.println(chan.getId() + " " + chan.toString() + " " + hm.get(chan));
 
-            //Set shared Pref for FLActivity
-            int id = msg.getChannel().getId();
-            long time = msg.getTimestamp();
-            String from;
-            if (msg.fromMe) {
-                from = "Ich";
-            } else {
-                from = msg.getName();
-            }
-
-            String text = from + ": " + msg.getText();
-            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
-            SharedPreferences.Editor edit = sharedPref.edit();
-            edit.putLong("lastMessageForChannel" + id, time);
-            edit.putString("lastMessageTextForChannel" + id, text);
-            edit.commit();
-
-            //
-            //Msg FlAct for DataSetChanged
-            if (flm != null) {
-                ms = Message.obtain(null,
-                        BS.FL_DSC);
-                try {
-                    flm.send(ms);
-                } catch (RemoteException ex) {
-                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            if (msg.message_type == TextMsg.BYTE) {
+                //Set shared Pref for FLActivity
+                int id = msg.getChannel().getId();
+                long time = msg.getTimestamp();
+                String from;
+                if (msg.fromMe) {
+                    from = "Ich";
+                } else {
+                    from = msg.getName();
                 }
+
+                String text = from + ": " + msg.getText();
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+                SharedPreferences.Editor edit = sharedPref.edit();
+                edit.putLong("lastMessageForChannel" + id, time);
+                edit.putString("lastMessageTextForChannel" + id, text);
+                edit.commit();
+
+                //
+                //Msg FlAct for DataSetChanged
+                if (flm != null) {
+                    ms = Message.obtain(null,
+                            BS.FL_DSC);
+                    try {
+                        flm.send(ms);
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                // Toast.makeText(BS.this, text+" ", Toast.LENGTH_SHORT).show();
+                //
             }
-           // Toast.makeText(BS.this, text+" ", Toast.LENGTH_SHORT).show();
-            //
+
+
 
             for (Channel a : hm.keySet()) {
                 System.out.println("chans: " + a.getId() + " " + a.toString());
@@ -523,7 +525,6 @@ public class BS extends Service {
         lastUpdateChecked = System.currentTimeMillis();
 
         new Thread() {
-
             @Override
             public void run() {
 //                Properties systemProperties = System.getProperties();
