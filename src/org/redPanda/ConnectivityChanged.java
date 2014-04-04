@@ -4,6 +4,7 @@
  */
 package org.redPanda;
 
+import org.redPanda.ChannelList.Preferences;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;

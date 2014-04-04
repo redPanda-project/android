@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.redPanda;
+package org.redPanda.ChannelList;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,6 +20,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.redPanda.BS;
 import org.redPandaLib.core.Channel;
 
 /**

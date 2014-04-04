@@ -70,19 +70,21 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubble = (ListView) convertView.findViewById(R.id.bubble);
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
+           // holder.bubble.setPadding(0, 0, 0, 0);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
         inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
         holder.bubble.setAdapter(iA);
-
+        
         //System.out.println("1234 "+message.getData().getString("msg"));       
 //        holder.message.setText(genReadableText(b));
         boolean fromMe = b.fromMe;
 
 
         LayoutParams lp = (LayoutParams) holder.bubble.getLayoutParams();
-
+        
+     
 //check if it is a status message then remove background, and change text color.
 //        if (message.isStatusMessage()) {
 //            holder.message.setBackgroundDrawable(null);
@@ -118,7 +120,7 @@ public class ChatAdapter extends BaseAdapter {
         holder.bubble.setLayoutParams(lp);
 //            holder.message.setTextColor(R.color.textColor);
         System.out.println("123456 " + b.text.size());
-        //   holder.bubble.getLayoutParams().width = (int) (getWidestView(mContext, iA)*1.05);
+       // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
 
 
         holder.bubbleHead.setOnLongClickListener(new BubbleOnClickListener(b));
@@ -195,7 +197,18 @@ public class ChatAdapter extends BaseAdapter {
         }
         return maxWidth;
     }
-
+    public static int getHeight(Context context, Adapter adapter) {
+        int height = 0;
+        View view = null;
+        FrameLayout fakeParent = new FrameLayout(context);
+        for (int i = 0, count = adapter.getCount(); i < count; i++) {
+            view = adapter.getView(i, view, fakeParent);
+            view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+             
+            height+= view.getMeasuredHeight();
+        }
+        return height;
+    }
     class BubbleOnClickListener implements View.OnLongClickListener {
 
         ListMessage b;

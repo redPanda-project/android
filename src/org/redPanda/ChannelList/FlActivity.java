@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.redPanda;
+package org.redPanda.ChannelList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -43,6 +43,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.redPanda.BS;
+import org.redPanda.ChannelViewElement;
+import org.redPanda.ChatActivity;
+import org.redPanda.ExceptionLogger;
+import org.redPanda.R;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Peer;
@@ -56,10 +61,10 @@ import org.redPandaLib.core.Test;
 public class FlActivity extends Activity {
 
     public ArrayList<ChannelViewElement> channels = new ArrayList<ChannelViewElement>();
-    public ArrayAdapter<ChannelViewElement> adapter;
+    public FLAdapter adapter;
     private boolean active;
     TextView infotext;
-    static Context context;
+    public static Context context;
 
     public void onCreate(Bundle savedInstanceState) {
         context = this;
@@ -69,7 +74,7 @@ public class FlActivity extends Activity {
 
 
         super.onCreate(savedInstanceState);
-        adapter = new ArrayAdapter<ChannelViewElement>(this, R.layout.listitem, R.id.text1, channels);
+        adapter = new FLAdapter(this, R.layout.listitem, channels);
         startService(new Intent(this, BS.class));
 //        Intent intent = new Intent(this, BS.class);
 //        startService(intent);
@@ -81,7 +86,6 @@ public class FlActivity extends Activity {
         infotext.setTextColor(Color.BLUE);
         newChButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
-
 
 
 
@@ -361,8 +365,10 @@ public class FlActivity extends Activity {
 //                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
 
                     ArrayList<ChannelViewElement> arrayList = new ArrayList<ChannelViewElement>();
+                    ChannelViewElement cve;
                     for (Channel ch : (ArrayList<Channel>) msg.getData().get("CHANNELS")) {
-                        arrayList.add(ChannelViewElement.getInstanceFromChannel(ch));
+                        cve = ChannelViewElement.getInstanceFromChannel(ch);                        
+                        arrayList.add(cve);
                     }
                     channels = arrayList;
 

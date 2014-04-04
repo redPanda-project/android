@@ -9,8 +9,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.*;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,18 +54,18 @@ public class BS extends Service {
      * where callbacks should be sent.
      */
     public static final int VERSION = 247;
-    static final int SEND_MSG = 1;
-    static final int MSG_REGISTER_CLIENT = 2;
-    static final int MSG_UNREGISTER_CLIENT = 3;
-    static final int NEW_MSG = 4;
-    static final int GET_CHANNELS = 5;
-    static final int CHANNELS = 6;
-    static final int Send_MM = 7;
-    static final int ADD_CHANNEL = 8;
-    static final int CHANGE_NAME = 9;
-    static final int FL_REG = 10;
-    static final int FL_UNREG = 11;
-    static final int NEW_MSGL = 12;
+    public static final int SEND_MSG = 1;
+    public static final int MSG_REGISTER_CLIENT = 2;
+    public static final int MSG_UNREGISTER_CLIENT = 3;
+    public static final int NEW_MSG = 4;
+    public static final int GET_CHANNELS = 5;
+    public static final int CHANNELS = 6;
+    public static final int Send_MM = 7;
+    public static final int ADD_CHANNEL = 8;
+    public static final int CHANGE_NAME = 9;
+    public static final int FL_REG = 10;
+    public static final int FL_UNREG = 11;
+    public static final int NEW_MSGL = 12;
     private static long lastUpdateChecked = 0;
     public static int currentViewedChannel = -100;
     private long lastTrimmed = 0;
@@ -91,12 +93,8 @@ public class BS extends Service {
                     //Toast.makeText(BS.this, "regclient", Toast.LENGTH_SHORT).show();
                     //   mClients.add(msg.replyTo);
 
-
-
                     int chanid = mesg.getData().getInt("chanid");
                     chanlist = Main.getChannels();
-
-
 
                     Channel chan = Channel.getChannelById(chanid);
                     ArrayList<Messenger> al = hm.get(chan);
@@ -120,7 +118,6 @@ public class BS extends Service {
                         } catch (RemoteException ex) {
                             Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                         }
-
 
                     }
                     break;
@@ -164,7 +161,6 @@ public class BS extends Service {
                                     break;
                                 }
 
-
                                 try {
                                     sleep(100);
                                 } catch (InterruptedException ex) {
@@ -185,7 +181,6 @@ public class BS extends Service {
                                     "CHANNELS", chanlist);
                             ms.setData(b);
 
-
                             try {
 
                                 replyTo.send(ms);
@@ -194,7 +189,6 @@ public class BS extends Service {
                             }
                         }
                     }.start();
-
 
                     break;
                 case Send_MM:
@@ -234,7 +228,6 @@ public class BS extends Service {
                             "CHANNELS", chanlist);
                     ms.setData(b);
 
-
                     try {
                         if (flm != null) {
                             flm.send(ms);
@@ -242,7 +235,6 @@ public class BS extends Service {
                     } catch (RemoteException ex) {
                         Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                     }
-
 
                     break;
                 case FL_REG:
@@ -283,8 +275,6 @@ public class BS extends Service {
 //        } catch (IOException ex) {
 //            Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
 //        };
-
-
         super.onCreate();
 
         new ExceptionLogger(this);
@@ -297,9 +287,6 @@ public class BS extends Service {
                 PRNGFixes.apply();
 
                 try {
-
-
-
 
 //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
@@ -318,21 +305,14 @@ public class BS extends Service {
                     Main.addListener(popupListener);
                     Main.addListener(new MessageListener());
 
-
-
-
-
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
                     Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-
             }
         }.start();
-
-
 
         new Thread() {
 
@@ -349,8 +329,6 @@ public class BS extends Service {
                 }
             }
         }.start();
-
-
 
 //        Intent intent = new Intent(this, FlActivity.class);
 //        final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -400,10 +378,6 @@ public class BS extends Service {
 //
 //            }
 //        }.start();
-
-
-
-
     }
 
     @Override
@@ -421,7 +395,7 @@ public class BS extends Service {
     @Override
     public void onTrimMemory(int level) {
 
-        if (lastTrimmed < System.currentTimeMillis() - 1000 * 60*30) {
+        if (lastTrimmed < System.currentTimeMillis() - 1000 * 60 * 30) {
             lastTrimmed = System.currentTimeMillis();
 
             // if (level == TRIM_MEMORY_COMPLETE || level == TRIM_MEMORY_MODERATE) {
@@ -474,6 +448,24 @@ public class BS extends Service {
             Iterator<Messenger> its;
             System.out.println(chan.getId() + " " + chan.toString() + " " + hm.get(chan));
 
+            //Set shared Pref for FLActivity
+            int id = msg.getChannel().getId();
+            long time = msg.getTimestamp();
+            String from;
+            if (msg.fromMe) {
+                from = "Ich";
+            } else {
+                from = msg.getName();
+            }
+
+            String text = from + " :" + msg.getText();
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+            SharedPreferences.Editor edit = sharedPref.edit();
+            edit.putLong("lastMessageForChannel" + id, time);
+            edit.putString("lastMessageTextForChannel" + id, text);
+            edit.commit();
+            
+            //
             for (Channel a : hm.keySet()) {
                 System.out.println("chans: " + a.getId() + " " + a.toString());
             }
@@ -545,8 +537,6 @@ public class BS extends Service {
 
                     }
                     in.close();
-
-
 
                 } catch (MalformedURLException e) {
                 } catch (IOException e) {

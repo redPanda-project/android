@@ -1,5 +1,7 @@
 package org.redPanda;
 
+import org.redPanda.ChannelList.Preferences;
+import org.redPanda.ChannelList.FlActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

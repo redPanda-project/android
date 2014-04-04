@@ -4,6 +4,7 @@
  */
 package org.redPanda;
 
+import org.redPanda.ChannelList.FlActivity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -71,7 +72,7 @@ public class ChannelViewElement extends Channel {
 
     @Override
     public String toString() {
-        return name + "\n" + getLastMessageText();
+        return name;
     }
     
     

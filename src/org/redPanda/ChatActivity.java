@@ -268,13 +268,15 @@ public class ChatActivity extends ListActivity {
 
             } else {
                 lm = cA.mMessages.get(cA.mMessages.size() - 1);
-                if (tmc.getIdentity() == lm.identity && false) {
+                if (tmc.getIdentity() == lm.identity&&false) {
                     Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text, tmc.fromMe, tmc.message_type);
                     lm.text.add(mes);
+                    cA.mMessages.remove(cA.mMessages.size() - 1);
                 } else {
                     lm = new ListMessage(tmc);
                 }
             }
+            
             cA.mMessages.add(lm);
         }
     }

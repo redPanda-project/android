@@ -2,11 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.redPanda;
+package org.redPanda.ChannelList;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.*;
+import org.redPanda.BS;
+import org.redPanda.ExceptionLogger;
+import org.redPanda.License;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Settings;
 

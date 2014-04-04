@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?> 
     
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
+              android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
 >
     <TextView
-        android:id="@+id/text1"
+        android:id="@+id/Channel"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textSize="24dip"
-        android:padding="8dip"
+        android:paddingTop="8dip"
+    />
+        <TextView
+        android:id="@+id/lastMsg"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18dip"
+        android:paddingBottom="8dip"
+        android:maxLines="2"
     />
 </LinearLayout>

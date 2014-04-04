@@ -22,7 +22,7 @@ import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.core.messages.DeliveredMsg;
 
 /**
- *
+ *<
  * @author Tyrael
  */
 public class inAdapter extends BaseAdapter {
@@ -94,7 +94,8 @@ public class inAdapter extends BaseAdapter {
         }
 
         holder.message.setText(Html.fromHtml("<small>" +time + "</small> " + content + " <br> " + "<small>" + readText + "</small>"));
-
+        
+// holder.message.setPadding(0, 0, 0, 0);
 //        if (mes.fromMe) {
 //            holder.im.setVisibility(View.VISIBLE);
 //            holder.im.getLayoutParams().width = 30;
@@ -105,7 +106,7 @@ public class inAdapter extends BaseAdapter {
 //            holder.im.getLayoutParams().height = 0;
 //        }
 
-
+        //parent.getLayoutParams().height = ChatAdapter.getHeight(mContext, this)+20;
 
         return convertView;
     }
