@@ -376,19 +376,13 @@ public class FlActivity extends Activity {
 //                    adapter.add(d);
 //                    adapter.remove(d);
 //                    adapter.notifyDataSetChanged();
-                   // adapter.notifyDataSetInvalidated();
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            lv.invalidateViews();
-                            
-                            for (ChannelViewElement channel :channels) {
-                                channel.resetPersistentData();
-                            }
-                            
-                        }
-                    });
+                    // adapter.notifyDataSetInvalidated();
 
-                    Toast.makeText(FlActivity.this, "New Msg", Toast.LENGTH_SHORT).show();
+                    for (ChannelViewElement channel : channels) {
+                        channel.resetPersistentData();
+                    }
+                    lv.invalidateViews();
+
                     break;
                 default:
                     super.handleMessage(msg);
