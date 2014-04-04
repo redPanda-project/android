@@ -36,7 +36,7 @@
                   android:label="@string/app_name">
         </activity>
         
-        <activity android:name="ChannelList.Preferences"
+        <activity android:name="org.redPanda.ChannelList.Preferences"
                   android:theme="@style/customtheme"
                   android:label="Settings">
         </activity>
