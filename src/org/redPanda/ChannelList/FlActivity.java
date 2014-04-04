@@ -381,7 +381,7 @@ public class FlActivity extends Activity {
                     for (ChannelViewElement channel : channels) {
                         channel.resetPersistentData();
                     }
-                    lv.invalidateViews();
+                    adapter.notifyDataSetChanged();
 
                     break;
                 default:

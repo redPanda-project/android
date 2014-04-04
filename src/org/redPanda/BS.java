@@ -459,7 +459,7 @@ public class BS extends Service {
                 from = msg.getName();
             }
 
-            String text = from + " :" + msg.getText();
+            String text = from + ": " + msg.getText();
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
             SharedPreferences.Editor edit = sharedPref.edit();
             edit.putLong("lastMessageForChannel" + id, time);
