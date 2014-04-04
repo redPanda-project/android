@@ -65,14 +65,13 @@ public class FlActivity extends Activity {
     private boolean active;
     TextView infotext;
     public static Context context;
+    ListView lv;
 
     public void onCreate(Bundle savedInstanceState) {
         context = this;
         new ExceptionLogger(this);
 
         //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
-
-
         super.onCreate(savedInstanceState);
         adapter = new FLAdapter(this, R.layout.listitem, channels);
         startService(new Intent(this, BS.class));
@@ -87,21 +86,16 @@ public class FlActivity extends Activity {
         newChButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
 
-
-
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
                 builder.setTitle("Erstelle neuen Channel");
 
 //// Set up the input
-
                 final EditText input = new EditText(FlActivity.this);
 //                
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
                 input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
                 input.setHint("Neuer Channel Name");
                 input.setHintTextColor(Color.RED);
-
 
                 builder.setView(input);
 
@@ -132,18 +126,6 @@ public class FlActivity extends Activity {
 
                 builder.show();
 
-
-
-
-
-
-
-
-
-
-
-
-
             }
         });
         Button impButton = (Button) findViewById(R.id.imbutton);
@@ -166,14 +148,12 @@ public class FlActivity extends Activity {
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
 //                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-
                 builder.setView(ll);
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
 
                         Message msg = Message.obtain(null,
                                 BS.ADD_CHANNEL);
@@ -209,7 +189,6 @@ public class FlActivity extends Activity {
             }
         });
 
-
 //        ArrayList<Channel> channelslist = Main.getChannels();
 //        Channel[] toArray = new Channel[channels.size()];
 //        if (channelslist == null) {
@@ -219,13 +198,12 @@ public class FlActivity extends Activity {
 //
 //            //   channels = (ArrayList<Channel>) channelslist.clone();
 //        }
-        ListView lv = (ListView) findViewById(R.id.chanlist);
+        lv = (ListView) findViewById(R.id.chanlist);
 
 //        ArrayAdapter<Channel> adapter;
 //        adapter = new ArrayAdapter<Channel>(this, R.layout.listitem, R.id.text1, channels);
 // Assign adapter to ListView
         lv.setAdapter(adapter);
-
 
         lv.setOnItemClickListener(
                 new OnItemClickListenerImpl(channels));
@@ -268,7 +246,6 @@ public class FlActivity extends Activity {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             startActivity(intent);
-
 
         }
     }
@@ -361,22 +338,17 @@ public class FlActivity extends Activity {
                     //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 
 //                    new ExceptionLogger(FlActivity.this);
-
 //                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
-
                     ArrayList<ChannelViewElement> arrayList = new ArrayList<ChannelViewElement>();
                     ChannelViewElement cve;
                     for (Channel ch : (ArrayList<Channel>) msg.getData().get("CHANNELS")) {
-                        cve = ChannelViewElement.getInstanceFromChannel(ch);                        
+                        cve = ChannelViewElement.getInstanceFromChannel(ch);
                         arrayList.add(cve);
                     }
                     channels = arrayList;
 
-
                     //Collections.sort(channels);
-
 //                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
-
                     if (!channels.isEmpty()) {
                         //ListView lv = (ListView) findViewById(R.id.chanlist);
 
@@ -395,15 +367,24 @@ public class FlActivity extends Activity {
 //                        Toast.makeText(FlActivity.this, "adapterbla", Toast.LENGTH_SHORT).show();
                     }
 
-
-
 // Assign adapter to ListView
 //                    lv.setAdapter(adapter);
 //                    lv.setOnItemClickListener(new OnItemClickListenerImpl(channels));
                     break;
                 case BS.FL_DSC:
-                        adapter.notifyDataSetChanged();
-                        break;
+//                    ChannelViewElement d = new ChannelViewElement();
+//                    adapter.add(d);
+//                    adapter.remove(d);
+//                    adapter.notifyDataSetChanged();
+                   // adapter.notifyDataSetInvalidated();
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            lv.invalidateViews();
+                        }
+                    });
+
+                    Toast.makeText(FlActivity.this, "New Msg", Toast.LENGTH_SHORT).show();
+                    break;
                 default:
                     super.handleMessage(msg);
             }
@@ -430,8 +411,6 @@ public class FlActivity extends Activity {
 
             // We want to monitor the service for as long as we are
             // connected to it.
-
-
             try {
                 Message msg = Message.obtain(null,
                         BS.FL_REG);
@@ -439,9 +418,6 @@ public class FlActivity extends Activity {
                 mService.send(msg);
             } catch (RemoteException e) {
             }
-
-
-
 
             try {
                 Message msg = Message.obtain(null,
@@ -541,7 +517,6 @@ public class FlActivity extends Activity {
         super.onStart();
         active = true;
 
-
         new Thread() {
             @Override
             public void run() {
@@ -561,7 +536,6 @@ public class FlActivity extends Activity {
                                 connectingCons++;
                             }
                         }
-
 
                         final int activeConnections = actCons;
                         final int connectingConnections = connectingCons;
@@ -589,7 +563,6 @@ public class FlActivity extends Activity {
                         infotext.setText("Nodes: -/-/-");
                     }
                 });
-
 
             }
         }.start();

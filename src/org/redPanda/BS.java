@@ -477,6 +477,7 @@ public class BS extends Service {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+           // Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             //
 
             for (Channel a : hm.keySet()) {
