@@ -257,10 +257,10 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.FL:
-                Intent intent = new Intent(this, FlActivity.class);
-                startActivity(intent);
-                return true;
+//            case R.id.FL:
+//                Intent intent = new Intent(this, FlActivity.class);
+//                startActivity(intent);
+//                return true;
             case R.id.prefMenuButton:
                 Intent intent2 = new Intent(this, Preferences.class);
                 startActivity(intent2);

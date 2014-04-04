@@ -4,7 +4,4 @@
     <item android:id="@+id/prefMenuButton"
           android:title="Settings"
           android:showAsAction="ifRoom"/>
-    <item android:id="@+id/FL"
-          android:title="FL"
-          android:showAsAction="ifRoom"/>
 </menu>
