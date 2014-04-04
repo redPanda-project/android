@@ -438,6 +438,7 @@ public class BS extends Service {
 
     class MessageListener implements NewMessageListener {
 
+        @SuppressWarnings("empty-statement")
         public void newMessage(TextMessageContent msg) {
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             Channel chan = msg.getChannel();

@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import java.util.Date;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.core.Test;
@@ -70,21 +71,19 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubble = (ListView) convertView.findViewById(R.id.bubble);
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
-           // holder.bubble.setPadding(0, 0, 0, 0);
+            // holder.bubble.setPadding(0, 0, 0, 0);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
         inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
         holder.bubble.setAdapter(iA);
-        
+
         //System.out.println("1234 "+message.getData().getString("msg"));       
 //        holder.message.setText(genReadableText(b));
         boolean fromMe = b.fromMe;
 
-
         LayoutParams lp = (LayoutParams) holder.bubble.getLayoutParams();
-        
-     
+
 //check if it is a status message then remove background, and change text color.
 //        if (message.isStatusMessage()) {
 //            holder.message.setBackgroundDrawable(null);
@@ -92,7 +91,6 @@ public class ChatAdapter extends BaseAdapter {
 //
 //        } else {
 //Check whether message is mine to show green background and align to right
-
         if (fromMe) {
             holder.bubbleHead.setText("");
             holder.bubble.setBackgroundResource(R.drawable.ich);
@@ -104,7 +102,6 @@ public class ChatAdapter extends BaseAdapter {
 //            holder.im.getLayoutParams().height = 30;
         } //If not mine then it is from sender to show orange background and align to left
         else {
-
 
             holder.bubbleHead.setText(b.name);
             //holder.bubbleHead.setText(Test.localSettings.identity2Name.get(b.identity));
@@ -122,10 +119,8 @@ public class ChatAdapter extends BaseAdapter {
         System.out.println("123456 " + b.text.size());
        // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
 
-
-        holder.bubbleHead.setOnLongClickListener(new BubbleOnClickListener(b));
-
-
+        holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(b));
+        holder.bubble.setOnLongClickListener(new BubbleOnClickListener(b));
 
         return convertView;
     }
@@ -180,7 +175,6 @@ public class ChatAdapter extends BaseAdapter {
 
         return hours + ":" + minutes + ":" + seconds;
 
-
     }
 
     public static int getWidestView(Context context, Adapter adapter) {
@@ -197,6 +191,7 @@ public class ChatAdapter extends BaseAdapter {
         }
         return maxWidth;
     }
+
     public static int getHeight(Context context, Adapter adapter) {
         int height = 0;
         View view = null;
@@ -204,11 +199,12 @@ public class ChatAdapter extends BaseAdapter {
         for (int i = 0, count = adapter.getCount(); i < count; i++) {
             view = adapter.getView(i, view, fakeParent);
             view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-             
-            height+= view.getMeasuredHeight();
+
+            height += view.getMeasuredHeight();
         }
         return height;
     }
+
     class BubbleOnClickListener implements View.OnLongClickListener {
 
         ListMessage b;
@@ -219,18 +215,44 @@ public class ChatAdapter extends BaseAdapter {
 
         public boolean onLongClick(View arg0) {
 
+            int sdk = android.os.Build.VERSION.SDK_INT;
+            if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+                android.text.ClipboardManager clipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                clipboard.setText(b.text.get(0).mes);
+                 
+            } else {
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("text label", b.text.get(0).mes);
+                clipboard.setPrimaryClip(clip);
+            }
+            Toast.makeText(mContext, "Copied message to Clipboard", Toast.LENGTH_SHORT).show();
+            
+            return true;
+
+        }
+
+    }
+
+    class BubbleHeadOnClickListener implements View.OnLongClickListener {
+
+        ListMessage b;
+
+        private BubbleHeadOnClickListener(ListMessage b) {
+            this.b = b;
+        }
+
+        public boolean onLongClick(View arg0) {
+
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle("Name setzen fuer: " + b.identity);
 
 //// Set up the input
-
             final EditText input = new EditText(mContext);
 //                
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
             input.setHint("Name");
             input.setHintTextColor(Color.RED);
-
 
             builder.setView(input);
 
