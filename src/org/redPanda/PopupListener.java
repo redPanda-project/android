@@ -9,11 +9,15 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.TaskStackBuilder;
+import org.redPanda.ChannelList.ChanPref;
+import org.redPanda.ChannelList.FlActivity;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
@@ -34,7 +38,7 @@ public class PopupListener implements NewMessageListener {
         0, // Start immediately
         dot, short_gap, dot, short_gap, dot
     };
-   static long lastVibrated = 0;
+    static long lastVibrated = 0;
 
     public PopupListener(Context context) {
         this.context = context;
@@ -54,6 +58,15 @@ public class PopupListener implements NewMessageListener {
             return;
         }
 
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean silent = sharedPref.getBoolean(ChanPref.CHAN_SILENT + msg.channel.getId(), false);
+
+        if (silent) {
+            return;
+        }
+
+
+
         //System.out.println("Display msg....");
 
         Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -69,7 +82,7 @@ public class PopupListener implements NewMessageListener {
         intent = new Intent(context, ChatActivity.class);
         intent.putExtra("title", msg.getChannel().toString());
         intent.putExtra("Channel", msg.getChannel());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         // Set the info for the views that show in the notification panel.

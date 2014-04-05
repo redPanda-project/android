@@ -17,6 +17,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -58,11 +59,7 @@ public class ChatActivity extends ListActivity {
         Intent in = getIntent();
         this.setTitle(in.getExtras().getString("title"));
         chan = (Channel) in.getExtras().get("Channel");
-        //Outter layout for keyboard show/hide handling.
-        OutLayoutWithKeyboardChangedListener outLayoutWithKeyboardChangedListener = new OutLayoutWithKeyboardChangedListener(this);
-        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.chatlayout, outLayoutWithKeyboardChangedListener);
-        setContentView(outLayoutWithKeyboardChangedListener);
+        setContentView(R.layout.chatlayout);
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -133,6 +130,9 @@ public class ChatActivity extends ListActivity {
 
             }
         });
+
+
+
     }
 
     @Override
@@ -148,6 +148,14 @@ public class ChatActivity extends ListActivity {
      * Flag indicating whether we have called bind on the service.
      */
     boolean mIsBound;
+
+    private void backToFlActivity() {
+        //super.onBackPressed();
+        Intent intent;
+        intent = new Intent(ChatActivity.this, FlActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+    }
 
     /**
      * Handler of incoming messages from service.
@@ -451,52 +459,18 @@ public class ChatActivity extends ListActivity {
      */
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();
-        Intent intent;
-        intent = new Intent(ChatActivity.this, FlActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+        backToFlActivity();
 
     }
 
-    class OutLayoutWithKeyboardChangedListener extends LinearLayout {
-
-        public OutLayoutWithKeyboardChangedListener(Context context) {
-            super(context);
-
-        }
-
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            //Toast.makeText(ChatActivity.this, "onMeasure", Toast.LENGTH_SHORT).show();
-
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            //getListView().scrollBy(0, -1000);
-
-            //getListView().setSe
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                backToFlActivity();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
-//    boolean isOpened = false;
-//    public void setListnerToRootView() {
-//        final View activityRootView = getWindow().getDecorView().findViewById(android.R.id.content);
-//        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//
-//                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
-//                if (heightDiff > 100) { // 99% of the time the height diff will be due to a keyboard.
-//                    Toast.makeText(getApplicationContext(), "Gotcha!!! softKeyboardup", 0).show();
-//
-//                    if (isOpened == false) {
-//                        //Do two things, make the view top visible and the editText smaller
-//                    }
-//                    isOpened = true;
-//                } else if (isOpened == true) {
-//                    Toast.makeText(getApplicationContext(), "softkeyborad Down!!!", 0).show();
-//                    isOpened = false;
-//                }
-//            }
-//        });
-//    }
 }

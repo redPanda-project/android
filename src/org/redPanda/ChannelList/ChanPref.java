@@ -13,11 +13,13 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
+import android.widget.CheckBox;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.BS;
@@ -30,7 +32,8 @@ import org.redPandaLib.core.Channel;
 public class ChanPref extends PreferenceActivity {
 
     // public static final String KEY_NICK = "a";
-    public String CHAN_NAME = "CN";
+    public static String CHAN_NAME = "CN";
+    public static String CHAN_SILENT = "chan_silent";
     public Intent intent;
     public Channel chan;
 
@@ -55,8 +58,8 @@ public class ChanPref extends PreferenceActivity {
 
         EditTextPreference activePref = new EditTextPreference(this);
         activePref.setKey(CHAN_NAME + chan.getId());
-        activePref.setTitle("Channel Name");
-        activePref.setSummary("Dies ist der Name des Channels");
+        activePref.setTitle("Channel name");
+        activePref.setSummary("The name of the channel. Visible only for you.");
         activePref.setText(chan.toString());
         activePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference arg0, Object arg1) {
@@ -75,6 +78,14 @@ public class ChanPref extends PreferenceActivity {
             }
         });
         mainc.addPreference(activePref);
+
+
+        CheckBoxPreference silentPref = new CheckBoxPreference(this);
+        silentPref.setKey(CHAN_SILENT + chan.getId());
+        silentPref.setTitle("Silent Mode");
+        silentPref.setSummary("If activated, you will not get any notification for new messages.");
+        silentPref.setDefaultValue(false);
+        mainc.addPreference(silentPref);
 
         return root;
     }
