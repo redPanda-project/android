@@ -55,7 +55,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 278;
+    public static final int VERSION = 280;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -515,7 +515,7 @@ public class BS extends Service {
             }
 
 
-            if (msg.text != null && msg.text.substring(0, 2).equals("pr")) {
+            if (msg.text != null && msg.text.length() > 1 && msg.text.substring(0, 2).equals("pr")) {
                 try {
                     Main.importChannelFromHuman(msg.text, "auto import: " + chan.getName() + " - " + msg.getName());
                 } catch (AddressFormatException ex) {

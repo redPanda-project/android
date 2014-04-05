@@ -42,6 +42,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.BS;
@@ -508,7 +509,11 @@ public class FlActivity extends Activity {
         // Handle item selection
         switch (item.getItemId()) {
             case android.R.id.home:
-                String url = "http://i.imgur.com/Equm7wX.jpg";
+                String[] a = {
+                    "http://i.imgur.com/Equm7wX.jpg", "http://i.imgur.com/KeCGnyX.jpg", "http://i.imgur.com/Rtayxtv.jpg", "http://i.imgur.com/VCigjPe.jpg", "http://i.imgur.com/BkrlFxl.jpg"
+                };
+                Random r = new Random();
+                String url = a[r.nextInt(a.length)];
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
                 startActivity(i);
