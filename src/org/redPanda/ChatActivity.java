@@ -18,13 +18,18 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ListMessage.Mes;
 
 import org.redPandaLib.Main;
@@ -56,7 +61,15 @@ public class ChatActivity extends ListActivity {
         this.setTitle(in.getExtras().getString("title"));
         chan = (Channel) in.getExtras().get("Channel");
 
-        setContentView(R.layout.chatlayout);
+        //Outter layout for keyboard show/hide handling.
+        OutLayoutWithKeyboardChangedListener outLayoutWithKeyboardChangedListener = new OutLayoutWithKeyboardChangedListener(this);
+        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater.inflate(R.layout.chatlayout, outLayoutWithKeyboardChangedListener);
+        setContentView(outLayoutWithKeyboardChangedListener);
+
+        //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+
         Intent intent = new Intent(this, BS.class);
         startService(intent);
         doBindService();
@@ -95,12 +108,10 @@ public class ChatActivity extends ListActivity {
 
         Button button = (Button) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
-
             public void onClick(View arg0) {
 
                 final String text = editText.getText().toString();
                 Runnable runnable = new Runnable() {
-
                     public void run() {
                         editText.setText("");
                     }
@@ -198,7 +209,6 @@ public class ChatActivity extends ListActivity {
 
                 if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
                     new Thread() {
-
                         @Override
                         public void run() {
                             Main.sendBroadCastMsg("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
@@ -268,7 +278,7 @@ public class ChatActivity extends ListActivity {
 
             } else {
                 lm = cA.mMessages.get(cA.mMessages.size() - 1);
-                if (tmc.getIdentity() == lm.identity&&false) {
+                if (tmc.getIdentity() == lm.identity && false) {
                     Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text, tmc.fromMe, tmc.message_type);
                     lm.text.add(mes);
                     cA.mMessages.remove(cA.mMessages.size() - 1);
@@ -276,7 +286,7 @@ public class ChatActivity extends ListActivity {
                     lm = new ListMessage(tmc);
                 }
             }
-            
+
             cA.mMessages.add(lm);
         }
     }
@@ -288,7 +298,6 @@ public class ChatActivity extends ListActivity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
-
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
             // This is called when the connection with the service has been
@@ -301,7 +310,6 @@ public class ChatActivity extends ListActivity {
             // We want to monitor the service for as long as we are
             // connected to it.
             new Thread() {
-
                 @Override
                 public void run() {
                     Message msg = Message.obtain(null,
@@ -429,13 +437,67 @@ public class ChatActivity extends ListActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
     }
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-//            startActivity(new Intent(this, FlActivity.class).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-//            finish();
-//            return true;
-//        }
-//        return false;
+
+    //    @Override
+    //    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    //        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+    //            startActivity(new Intent(this, FlActivity.class).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+    //            finish();
+    //            return true;
+    //        }
+    //    }
+    //    }
+    /**
+     * Clears all activitys and starts the FlActivity
+     */
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        Intent intent;
+        intent = new Intent(ChatActivity.this, FlActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+
+    }
+
+    class OutLayoutWithKeyboardChangedListener extends LinearLayout {
+
+        public OutLayoutWithKeyboardChangedListener(Context context) {
+            super(context);
+
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            //Toast.makeText(ChatActivity.this, "onMeasure", Toast.LENGTH_SHORT).show();
+
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            //getListView().scrollBy(0, -1000);
+
+            //getListView().setSe
+
+        }
+    }
+//    boolean isOpened = false;
+//    public void setListnerToRootView() {
+//        final View activityRootView = getWindow().getDecorView().findViewById(android.R.id.content);
+//        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//
+//                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
+//                if (heightDiff > 100) { // 99% of the time the height diff will be due to a keyboard.
+//                    Toast.makeText(getApplicationContext(), "Gotcha!!! softKeyboardup", 0).show();
+//
+//                    if (isOpened == false) {
+//                        //Do two things, make the view top visible and the editText smaller
+//                    }
+//                    isOpened = true;
+//                } else if (isOpened == true) {
+//                    Toast.makeText(getApplicationContext(), "softkeyborad Down!!!", 0).show();
+//                    isOpened = false;
+//                }
+//            }
+//        });
 //    }
 }

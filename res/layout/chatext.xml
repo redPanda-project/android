@@ -19,5 +19,6 @@
         android:layout_alignParentTop="true"
         android:autoLink="web"
         android:textSize="17sp"
+        android:textColorHighlight="#FFFFFF"
     />       
 </LinearLayout>
