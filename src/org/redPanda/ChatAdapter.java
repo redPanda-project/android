@@ -26,7 +26,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.Date;
@@ -66,7 +66,7 @@ public class ChatAdapter extends BaseAdapter {
         if (convertView == null) {
             holder = new ViewHolder();
             convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
-            holder.ll = (LinearLayout) convertView.findViewById(R.id.chatrow);
+            holder.ll = (RelativeLayout) convertView.findViewById(R.id.chatrow);
 //            holder.head = (TextView) convertView.findViewById(R.id.head);
             holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
             holder.bubble = (TextView) convertView.findViewById(R.id.bubble);
@@ -123,22 +123,26 @@ public class ChatAdapter extends BaseAdapter {
 //
 //        } else {
 //Check whether message is mine to show green background and align to right
+          RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
         if (fromMe) {
+             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             //  holder.bubble.setGravity(Gravity.RIGHT);
-            lp = (LayoutParams) holder.bubble.getLayoutParams();
+            //lp = (LayoutParams) holder.bubble.getLayoutParams();
             holder.bubbleHead.setText("");
             holder.bubble.setBackgroundResource(R.drawable.ich);
             // System.out.println(" ich");
             holder.ll.setGravity(Gravity.RIGHT);
-
+            
             //lp.gravity = Gravity.RIGHT;
 //            holder.im.setVisibility(View.VISIBLE);
 //            holder.im.getLayoutParams().width = 30;
 //            holder.im.getLayoutParams().height = 30;
         } //If not mine then it is from sender to show orange background and align to left
         else {
+             params.addRule(RelativeLayout.RIGHT_OF, R.id.bubbleHead);
             // holder.bubble.setGravity(Gravity.LEFT);
-            lp = (LayoutParams) holder.bubble.getLayoutParams();
+          //  lp = (LayoutParams) holder.bubble.getLayoutParams();
             holder.bubbleHead.setText(b.name);
             //holder.bubbleHead.setText(Test.localSettings.identity2Name.get(b.identity));
             //            holder.im.setVisibility(View.INVISIBLE);
@@ -151,7 +155,7 @@ public class ChatAdapter extends BaseAdapter {
 
         }
         //Math.min(lp.width, (int) (getWidestView(mContext, iA)*1.05));
-        holder.bubble.setLayoutParams(lp);
+        holder.bubble.setLayoutParams(params);
 //            holder.message.setTextColor(R.color.textColor);
         System.out.println("123456 " + b.text.size());
         // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
@@ -171,7 +175,7 @@ public class ChatAdapter extends BaseAdapter {
         //  ImageView im;
         TextView bubbleHead;
         TextView bubble;
-        LinearLayout ll;
+        RelativeLayout ll;
     }
 
     @Override

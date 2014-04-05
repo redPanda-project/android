@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:orientation="horizontal"
-              android:id="@+id/chatrow" >     
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/chatrow"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" 
+         >     
 
     <TextView
     
@@ -16,8 +17,9 @@
     />
 
     <TextView
+        android:layout_toRightOf="@+id/bubbleHead"
         android:id="@+id/bubble"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="0dip"
         android:layout_margin="0dip"
@@ -33,7 +35,7 @@
     >
     
     </TextView>
-</LinearLayout>
+</RelativeLayout>
     
     
     

@@ -18,8 +18,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -55,12 +53,11 @@ public class ChatActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        
         new ExceptionLogger(this);
         Intent in = getIntent();
         this.setTitle(in.getExtras().getString("title"));
         chan = (Channel) in.getExtras().get("Channel");
-
         //Outter layout for keyboard show/hide handling.
         OutLayoutWithKeyboardChangedListener outLayoutWithKeyboardChangedListener = new OutLayoutWithKeyboardChangedListener(this);
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -82,6 +79,7 @@ public class ChatActivity extends ListActivity {
         messages = new ArrayList<ListMessage>();
         cA = new ChatAdapter(this, messages);
         setListAdapter(cA);
+     
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
 //            public boolean onTouch(View arg0, MotionEvent e) {
 //
@@ -340,6 +338,7 @@ public class ChatActivity extends ListActivity {
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
             doBindService();
+            
         }
     };
 
