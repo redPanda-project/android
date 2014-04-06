@@ -98,7 +98,6 @@ public class ChatAdapter extends BaseAdapter {
                 }
             }
 
-
             if (!readText.equals("")) {
 
                 readText = "<br><small>" + readText + "</small>";
@@ -123,26 +122,26 @@ public class ChatAdapter extends BaseAdapter {
 //
 //        } else {
 //Check whether message is mine to show green background and align to right
-          RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         if (fromMe) {
-             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             //  holder.bubble.setGravity(Gravity.RIGHT);
             //lp = (LayoutParams) holder.bubble.getLayoutParams();
             holder.bubbleHead.setText("");
             holder.bubble.setBackgroundResource(R.drawable.ich);
             // System.out.println(" ich");
             holder.ll.setGravity(Gravity.RIGHT);
-            
+
             //lp.gravity = Gravity.RIGHT;
 //            holder.im.setVisibility(View.VISIBLE);
 //            holder.im.getLayoutParams().width = 30;
 //            holder.im.getLayoutParams().height = 30;
         } //If not mine then it is from sender to show orange background and align to left
         else {
-             params.addRule(RelativeLayout.RIGHT_OF, R.id.bubbleHead);
+            params.addRule(RelativeLayout.RIGHT_OF, R.id.bubbleHead);
             // holder.bubble.setGravity(Gravity.LEFT);
-          //  lp = (LayoutParams) holder.bubble.getLayoutParams();
+            //  lp = (LayoutParams) holder.bubble.getLayoutParams();
             holder.bubbleHead.setText(b.name);
             //holder.bubbleHead.setText(Test.localSettings.identity2Name.get(b.identity));
             //            holder.im.setVisibility(View.INVISIBLE);
