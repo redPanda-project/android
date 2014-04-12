@@ -37,7 +37,7 @@ public class License extends Activity {
         scrollView.addView(layout, params);
 
         TextView text = new TextView(this);
-        text.setText("redPanda is distributed over the GNU GPL License 3.0 with copyleft. If you want to use this software you need to give the world access to your source code of the whole application, except for private use.\n"
+        text.setText(" redPanda version code:  " + BS.VERSION + "\n\n" + "redPanda is distributed over the GNU GPL License 3.0 with copyleft. If you want to use this software you need to give the world access to your source code of the whole application, except for private use.\n"
                 + "\n"
                 + "    \n"
                 + "\n"

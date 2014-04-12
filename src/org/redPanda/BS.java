@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.ChannelList.ChanPref;
+import org.redPanda.ChannelList.Preferences;
 import org.redPandaLib.Main;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.Channel;
@@ -56,7 +57,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 284;
+    public static final int VERSION = 290;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -143,6 +144,7 @@ public class BS extends Service {
 
                     final String msgContent = mesg.getData().getString("msg");
                     new Thread() {
+
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
@@ -155,6 +157,7 @@ public class BS extends Service {
                     final Messenger replyTo = mesg.replyTo;
 
                     new Thread() {
+
                         @Override
                         public void run() {
                             chanlist = Main.getChannels();
@@ -282,6 +285,7 @@ public class BS extends Service {
         new ExceptionLogger(this);
 
         new Thread() {
+
             @Override
             public void run() {
 
@@ -316,6 +320,7 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
+
             @Override
             public void run() {
                 ConnectivityChanged connectivityChanged = new ConnectivityChanged();
@@ -331,6 +336,7 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
+
             @Override
             public void run() {
                 try {
@@ -562,15 +568,19 @@ public class BS extends Service {
         lastUpdateChecked = System.currentTimeMillis();
 
         new Thread() {
+
             @Override
             public void run() {
 //                Properties systemProperties = System.getProperties();
 //                systemProperties.setProperty("sun.net.client.defaultConnectTimeout", "300");
 //                systemProperties.setProperty("sun.net.client.defaultReadTimeout", "300");
 
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+                boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, true);
+
                 try {
                     // Create a URL for the desired page
-                    URL url = new URL("http://xana.hopto.org:80/redPanda/version");
+                    URL url = new URL("http://redpanda.hopto.org/android/version" + (developerUpdates ? "-developer" : ""));
                     // Read all the text returned by the server
                     BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
                     String str;
@@ -580,6 +590,7 @@ public class BS extends Service {
 
                         int v = Integer.parseInt(str);
 
+                        //if (v > VERSION && developerUpdates || !developerUpdates && v - VERSION > 50) {
                         if (v > VERSION) {
                             //System.out.println("MVersion: " + LBS.VERSION + " found: " + v);
                             updateFound();
@@ -601,8 +612,12 @@ public class BS extends Service {
     }
 
     private void updateFound() {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+        boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, true);
+
         // The PendingIntent to launch our activity if the user selects this notification
-        String url2 = "http://xana.hopto.org/redPanda/redPanda.apk";
+        String url2 = "http://redpanda.hopto.org/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url2));
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
