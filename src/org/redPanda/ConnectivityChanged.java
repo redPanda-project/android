@@ -43,8 +43,14 @@ public class ConnectivityChanged extends BroadcastReceiver {
             Settings.MIN_CONNECTIONS = 6;
         } else if (mobile.isConnected()) {
 
+
+            Settings.MIN_CONNECTIONS = 2;
+
+
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
             boolean saveInternet = sharedPref.getBoolean(Preferences.KEY_SAVE_MOBILE_INTERNET, false);
+
+
 
             if (saveInternet) {
 
@@ -64,7 +70,6 @@ public class ConnectivityChanged extends BroadcastReceiver {
 
             } else {
                 Settings.connectToNewClientsTill = Long.MAX_VALUE;
-                Settings.MIN_CONNECTIONS = 2;
             }
         } else {
             Settings.connectToNewClientsTill = Long.MIN_VALUE;
