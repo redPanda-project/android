@@ -10,11 +10,13 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.*;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -34,6 +36,7 @@ import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
+import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 import org.redPandaLib.core.messages.TextMsg;
 import org.redPandaLib.crypt.AddressFormatException;
@@ -57,7 +60,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 291;
+    public static final int VERSION = 294;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -292,8 +295,10 @@ public class BS extends Service {
                 PRNGFixes.apply();
 
                 try {
+                    File albumStorageDir = getAlbumStorageDir("redPanda");
+                    Main.setImageStoreFolder(albumStorageDir.getAbsolutePath() + "/");
 
-//            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
+                    //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
                     //Settings.STD_PORT += 2;
                     Settings.lightClient = true;
@@ -472,6 +477,23 @@ public class BS extends Service {
 
         @SuppressWarnings("empty-statement")
         public void newMessage(TextMessageContent msg) {
+
+            if (msg.message_type == ImageMsg.BYTE) {
+
+                String pathToFile = msg.getText();
+                //Gallery scan file!
+                MediaScannerConnection.scanFile(BS.this,
+                        new String[]{pathToFile}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+
+                            @Override
+                            public void onScanCompleted(String path, Uri uri) {
+                                //....                              
+                            }
+                        });
+
+            }
+
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             Channel chan = msg.getChannel();
             Message ms;
@@ -648,5 +670,15 @@ public class BS extends Service {
             }
         }
 
+    }
+
+    public File getAlbumStorageDir(String albumName) {
+        // Get the directory for the user's public pictures directory.
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), albumName);
+        if (!file.mkdirs()) {
+            System.out.println("filedir not created...");
+        }
+        return file;
     }
 }

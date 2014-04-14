@@ -250,7 +250,7 @@ public class AndroidSaver implements SaverInterface {
             objectOutputStream.close();
             fileOutputStream.close();
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
