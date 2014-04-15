@@ -48,13 +48,13 @@ public class ChatActivity extends ListActivity {
     private EditText editText;
     private Channel chan;
     private long lastTouched = 0;
-    private ArrayList<ListMessage> messages;
+    private ArrayList<ChatMsg> messages;
     private ChatAdapter cA;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         new ExceptionLogger(this);
         Intent in = getIntent();
         this.setTitle(in.getExtras().getString("title"));
@@ -62,8 +62,6 @@ public class ChatActivity extends ListActivity {
         setContentView(R.layout.chatlayout);
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
-
         Intent intent = new Intent(this, BS.class);
         startService(intent);
         doBindService();
@@ -73,10 +71,10 @@ public class ChatActivity extends ListActivity {
         //scrollView = (ScrollView) findViewById(R.id.mainScrollView);
         // listView = (ListView) findViewById(R.id.chatlist);
         editText = (EditText) findViewById(R.id.mainEditText);
-        messages = new ArrayList<ListMessage>();
+        messages = new ArrayList<ChatMsg>();
         cA = new ChatAdapter(this, messages);
         setListAdapter(cA);
-     
+
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
 //            public boolean onTouch(View arg0, MotionEvent e) {
 //
@@ -100,7 +98,6 @@ public class ChatActivity extends ListActivity {
 //                return false;
 //            }
 //        });
-
         Button button = (Button) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
@@ -114,7 +111,6 @@ public class ChatActivity extends ListActivity {
 
                 editText.post(runnable);
 
-
                 try {
                     Message msg = Message.obtain(null,
                             BS.SEND_MSG);
@@ -127,11 +123,8 @@ public class ChatActivity extends ListActivity {
                 } catch (RemoteException e) {
                 }
 
-
             }
         });
-
-
 
     }
 
@@ -174,7 +167,6 @@ public class ChatActivity extends ListActivity {
                     //maltes altes
                     //al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msg");
                     //merge(al.get(0));
-
                     //von robin
                     TextMessageContent t = (TextMessageContent) msg.getData().getSerializable("msg");
                     merge(t);
@@ -186,13 +178,10 @@ public class ChatActivity extends ListActivity {
                         getListView().setSelection(cA.mMessages.size() - 1);
                     }
 
-
                     //  System.out.println( "12345 "+genReadableText(msg));                   
-
-
                     break;
                 case BS.NEW_MSGL:
-                    cA.mMessages = new ArrayList<ListMessage>();
+                    cA.mMessages = new ArrayList<ChatMsg>();
                     al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msgList");
                     Iterator<TextMessageContent> it = al.iterator();
                     while (it.hasNext()) {
@@ -202,7 +191,6 @@ public class ChatActivity extends ListActivity {
                     getListView().setSelection(cA.mMessages.size() - 1);
                     System.out.println("12345 " + cA.mMessages.size());
                     break;
-
 
                 default:
                     super.handleMessage(msg);
@@ -223,7 +211,6 @@ public class ChatActivity extends ListActivity {
                     return;
                 }
 
-
                 ByteBuffer wrap = ByteBuffer.wrap(tmc.decryptedContent);
 
                 //delivered msg points to a message, getting infos from that message
@@ -235,35 +222,30 @@ public class ChatActivity extends ListActivity {
 
                 tmc.identity = identity;
 
-
-
                 boolean found = false;
                 //String hans = "";
-                for (ListMessage listMessage : cA.mMessages) {
+                String deliveredTo = "";
+                for (ChatMsg cM : cA.mMessages) {
 
-                    for (Mes message : listMessage.text) {
+                    //hans += " " + message.ts;
+                    //todo: wird nur timestamp überprüft
+                    if (time == cM.getTimestamp()) {
+                        deliveredTo = cM.getDeliverdTo();
+                        found = true;
 
-                        //hans += " " + message.ts;
-
-                        if (time == message.ts) {
-                            found = true;
-
-                            if (message.deliveredTo == null) {
-                                message.deliveredTo = new ArrayList<String>();
-                            }
-
-                            message.deliveredTo.add(tmc.getName());
-
-
-                            return;
+                        if (deliveredTo.equals("")) {
+                            deliveredTo = tmc.getName();
                         } else {
+                            deliveredTo += " " + tmc.getName();
                         }
+                        cM.setDeliverdTo(deliveredTo);
+                        return;
+                    } else {
                     }
 
                 }
 
                 //final String hhans = hans;
-
 //                if (!found) {
 //                    new Thread() {
 //
@@ -273,27 +255,30 @@ public class ChatActivity extends ListActivity {
 //                        }
 //                    }.start();
 //                }
-
                 return;
             }
 
-            ListMessage lm;
-            if (cA.mMessages == null || cA.mMessages.size() == 0) {
-                cA.mMessages = new ArrayList<ListMessage>();
-                lm = new ListMessage(tmc);
-
+            ChatMsg cM;
+            if (cA.mMessages == null || cA.mMessages.isEmpty()) {
+                cA.mMessages = new ArrayList<ChatMsg>();
             } else {
-                lm = cA.mMessages.get(cA.mMessages.size() - 1);
-                if (tmc.getIdentity() == lm.identity && false) {
-                    Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text, tmc.fromMe, tmc.message_type);
-                    lm.text.add(mes);
-                    cA.mMessages.remove(cA.mMessages.size() - 1);
-                } else {
-                    lm = new ListMessage(tmc);
-                }
-            }
+              //  cM = cA.mMessages.get(cA.mMessages.size() - 1);
 
-            cA.mMessages.add(lm);
+                //nicht angepasst!!!
+//                if (tmc.getIdentity() == cM.getIdentity() && false) {
+//                    Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text, tmc.fromMe, tmc.message_type);
+//                    //lm.text.add(mes);
+//                    cA.mMessages.remove(cA.mMessages.size() - 1);
+//                } else {
+//                    cM = new ListMessage(tmc);
+//                }
+            }
+            Date date = new Date(tmc.getTimestamp());
+            String time = ChatAdapter.formatTime(date);
+
+            cM = new ChatMsg(tmc.getText(), time, tmc.getName(), tmc.identity, tmc.getTimestamp(), tmc.fromMe, (byte) tmc.message_type);
+
+            cA.mMessages.add(cM);
         }
     }
     /**
@@ -337,8 +322,6 @@ public class ChatActivity extends ListActivity {
                 }
             }.start();
 
-
-
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -346,7 +329,7 @@ public class ChatActivity extends ListActivity {
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
             doBindService();
-            
+
         }
     };
 
@@ -394,8 +377,6 @@ public class ChatActivity extends ListActivity {
 
         out += formatTime(date) + ": " + str;
 
-
-
         return out + "\n";
     }
 
@@ -417,7 +398,6 @@ public class ChatActivity extends ListActivity {
 
         return hours + ":" + minutes + ":" + seconds;
 
-
     }
 
     @Override
@@ -425,8 +405,8 @@ public class ChatActivity extends ListActivity {
         super.onResume();
         if (chan != null) {
             BS.currentViewedChannel = chan.getId();
-            NotificationManager mNotificationManager =
-                    (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager mNotificationManager
+                    = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.cancel(chan.getId());
         }
 

@@ -33,6 +33,7 @@ import java.util.Date;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
+import org.redPandaLib.core.messages.TextMsg;
 
 /**
  *
@@ -40,9 +41,9 @@ import org.redPandaLib.core.messages.DeliveredMsg;
 public class ChatAdapter extends BaseAdapter {
 
     private Context mContext;
-    public ArrayList<ListMessage> mMessages;
+    public ArrayList<ChatMsg> mMessages;
 
-    public ChatAdapter(Context context, ArrayList<ListMessage> messages) {
+    public ChatAdapter(Context context, ArrayList<ChatMsg> messages) {
         super();
         this.mContext = context;
         this.mMessages = messages;
@@ -60,7 +61,7 @@ public class ChatAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ListMessage b = (ListMessage) this.getItem(position);
+        ChatMsg cM = (ChatMsg) this.getItem(position);
 
         ViewHolder holder;
         if (convertView == null) {
@@ -79,39 +80,26 @@ public class ChatAdapter extends BaseAdapter {
         //   Toast.makeText(mContext, "blablabla", Toast.LENGTH_SHORT).show();
         // Mes mes = (Mes) b.text.get(0);
         String bub = "";
-        for (Mes mes : b.text) {
-            if (!bub.equals("")) {
-                bub += " <br> " + " <br> ";
-            }
-            long sendTime = mes.ts;
-            Date date = new Date(sendTime);
 
-            String time = formatTime(date);
-            String content = mes.getMes();
-            String readText = "";
+        String time = cM.getTime();
+        String content = cM.getText();
+        String readText = cM.getDeliverdTo();
 
-            if (mes.deliveredTo != null) {
-                //readText += " -";
+        //readText += " -";
+        if (!readText.equals("")) {
 
-                for (String name : mes.deliveredTo) {
-                    readText += " " + name;
-                }
-            }
+            readText = "<br><small>" + readText + "</small>";
 
-            if (!readText.equals("")) {
-
-                readText = "<br><small>" + readText + "</small>";
-
-            }
-
-            //inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
-            bub += "<small>" + time + "</small> " + content + readText;
         }
+
+        //inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
+        bub += "<small>" + time + "</small> " + content + readText;
+
         holder.bubble.setText(Html.fromHtml(bub));
 
         //System.out.println("1234 "+message.getData().getString("msg"));       
 //        holder.message.setText(genReadableText(b));
-        boolean fromMe = b.fromMe;
+        boolean fromMe = cM.isFromMe();
 
         LayoutParams lp;
 
@@ -142,7 +130,12 @@ public class ChatAdapter extends BaseAdapter {
             params.addRule(RelativeLayout.RIGHT_OF, R.id.bubbleHead);
             // holder.bubble.setGravity(Gravity.LEFT);
             //  lp = (LayoutParams) holder.bubble.getLayoutParams();
-            holder.bubbleHead.setText(b.name);
+            holder.bubbleHead.setText(cM.getName());
+//            String strhex = Long.toHexString(cM.getIdentity()).toUpperCase();
+//            strhex = strhex.substring(strhex.length()-6, strhex.length());
+//            holder.bubbleHead.setTextColor(Color.parseColor("#"+strhex));
+
+            holder.bubbleHead.setTextColor(cM.getColor());
             //holder.bubbleHead.setText(Test.localSettings.identity2Name.get(b.identity));
             //            holder.im.setVisibility(View.INVISIBLE);
             //            holder.im.getLayoutParams().width = 0;
@@ -156,15 +149,12 @@ public class ChatAdapter extends BaseAdapter {
         //Math.min(lp.width, (int) (getWidestView(mContext, iA)*1.05));
         holder.bubble.setLayoutParams(params);
 //            holder.message.setTextColor(R.color.textColor);
-        System.out.println("123456 " + b.text.size());
+        // System.out.println("123456 " + b.text.size());
         // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
 
-        holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(b));
-        if (b.text.size() == 1) {
-            holder.bubble.setOnLongClickListener(new BubbleOnClickListener(b));
-        } else {
-            holder.bubble.setOnLongClickListener(null);
-        }
+        holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(cM));
+
+        holder.bubble.setOnLongClickListener(new BubbleOnClickListener(cM));
 
         return convertView;
     }
@@ -251,10 +241,10 @@ public class ChatAdapter extends BaseAdapter {
 
     class BubbleOnClickListener implements View.OnLongClickListener {
 
-        ListMessage b;
+        ChatMsg cM;
 
-        private BubbleOnClickListener(ListMessage b) {
-            this.b = b;
+        private BubbleOnClickListener(ChatMsg cM) {
+            this.cM = cM;
         }
 
         public boolean onLongClick(View arg0) {
@@ -262,11 +252,11 @@ public class ChatAdapter extends BaseAdapter {
             int sdk = android.os.Build.VERSION.SDK_INT;
             if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
                 android.text.ClipboardManager clipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
-                clipboard.setText(b.text.get(0).mes);
+                clipboard.setText(cM.getText());
 
             } else {
                 android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
-                android.content.ClipData clip = android.content.ClipData.newPlainText("text label", b.text.get(0).mes);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("text label", cM.getText());
                 clipboard.setPrimaryClip(clip);
             }
             Toast.makeText(mContext, "Copied message to Clipboard", Toast.LENGTH_SHORT).show();
@@ -278,16 +268,16 @@ public class ChatAdapter extends BaseAdapter {
 
     class BubbleHeadOnClickListener implements View.OnLongClickListener {
 
-        ListMessage b;
+        ChatMsg cM;
 
-        private BubbleHeadOnClickListener(ListMessage b) {
-            this.b = b;
+        private BubbleHeadOnClickListener(ChatMsg cM) {
+            this.cM = cM;
         }
 
         public boolean onLongClick(View arg0) {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Name setzen fuer: " + b.identity);
+            builder.setTitle("Name setzen fuer: " + cM.getIdentity());
 
 //// Set up the input
             final EditText input = new EditText(mContext);
@@ -303,8 +293,8 @@ public class ChatAdapter extends BaseAdapter {
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Test.localSettings.identity2Name.remove(b.identity);
-                    Test.localSettings.identity2Name.put(b.identity, input.getText().toString());
+                    Test.localSettings.identity2Name.remove(cM.getIdentity());
+                    Test.localSettings.identity2Name.put(cM.getIdentity(), input.getText().toString());
                     Test.localSettings.save();
                 }
             });
