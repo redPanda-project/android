@@ -60,7 +60,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 294;
+    public static final int VERSION = 297;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -598,7 +598,7 @@ public class BS extends Service {
 //                systemProperties.setProperty("sun.net.client.defaultReadTimeout", "300");
 
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
-                boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, true);
+                boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, false);
 
                 try {
                     // Create a URL for the desired page
@@ -665,6 +665,8 @@ public class BS extends Service {
                 String cmd = intent.getStringExtra("cmd");
                 if (cmd.equals("fullSync")) {
                     Settings.initFullNetworkSync = true;
+                } else if (cmd.equals("removeOldMessages")) {
+                    Main.removeOldMessages();
                 }
 
             }

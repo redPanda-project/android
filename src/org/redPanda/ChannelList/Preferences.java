@@ -73,7 +73,7 @@ public class Preferences extends PreferenceActivity {
 //                systemProperties.setProperty("sun.net.client.defaultReadTimeout", "300");
 
                         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(Preferences.this);
-                        final boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, true);
+                        final boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, false);
 
                         try {
                             // Create a URL for the desired page
@@ -186,6 +186,20 @@ public class Preferences extends PreferenceActivity {
         mainc.addPreference(fullSyncInit);
 
 
+        Preference removeOldMessages = new Preference(this);
+        removeOldMessages.setTitle("Remove old messages.");
+        removeOldMessages.setSummary("Removes messages older then one week.");
+        removeOldMessages.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+
+            public boolean onPreferenceClick(Preference pref) {
+                Intent i = new Intent(Preferences.this, BS.class);
+                i.setAction("c");
+                i.putExtra("cmd", "removeOldMessages");
+                startService(i);
+                return true;
+            }
+        });
+        mainc.addPreference(removeOldMessages);
 
         CheckBoxPreference saveMobileInternet = new CheckBoxPreference(this);
         saveMobileInternet.setDefaultValue(false);
