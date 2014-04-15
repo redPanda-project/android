@@ -39,30 +39,30 @@ import org.redPandaLib.core.messages.TextMsg;
  *
  */
 public class ChatAdapter extends BaseAdapter {
-
+    
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
-
+    
     public ChatAdapter(Context context, ArrayList<ChatMsg> messages) {
         super();
         this.mContext = context;
         this.mMessages = messages;
     }
-
+    
     @Override
     public int getCount() {
         return mMessages.size();
     }
-
+    
     @Override
     public Object getItem(int position) {
         return mMessages.get(position);
     }
-
+    
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ChatMsg cM = (ChatMsg) this.getItem(position);
-
+        
         ViewHolder holder;
         if (convertView == null) {
             holder = new ViewHolder();
@@ -80,27 +80,27 @@ public class ChatAdapter extends BaseAdapter {
         //   Toast.makeText(mContext, "blablabla", Toast.LENGTH_SHORT).show();
         // Mes mes = (Mes) b.text.get(0);
         String bub = "";
-
+        
         String time = cM.getTime();
         String content = cM.getText();
         String readText = cM.getDeliverdTo();
 
         //readText += " -";
         if (!readText.equals("")) {
-
+            
             readText = "<br><small>" + readText + "</small>";
-
+            
         }
 
         //inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
         bub += "<small>" + time + "</small> " + content + readText;
-
+        
         holder.bubble.setText(Html.fromHtml(bub));
 
         //System.out.println("1234 "+message.getData().getString("msg"));       
 //        holder.message.setText(genReadableText(b));
         boolean fromMe = cM.isFromMe();
-
+        
         LayoutParams lp;
 
 //check if it is a status message then remove background, and change text color.
@@ -111,7 +111,7 @@ public class ChatAdapter extends BaseAdapter {
 //        } else {
 //Check whether message is mine to show green background and align to right
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-
+        
         if (fromMe) {
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             //  holder.bubble.setGravity(Gravity.RIGHT);
@@ -152,13 +152,13 @@ public class ChatAdapter extends BaseAdapter {
         // System.out.println("123456 " + b.text.size());
         // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
 
-        holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(cM));
-
+        holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(cM, this));
+        
         holder.bubble.setOnLongClickListener(new BubbleOnClickListener(cM));
-
+        
         return convertView;
     }
-
+    
     private static class ViewHolder {
 
         //  ImageView im;
@@ -166,37 +166,37 @@ public class ChatAdapter extends BaseAdapter {
         TextView bubble;
         RelativeLayout ll;
     }
-
+    
     @Override
     public long getItemId(int position) {
 //Unimplemented, because we aren't using Sqlite.
         return 0;
     }
-
+    
     public static String genReadableText(Mes msg) {
         long sendTime = msg.ts;
         String str = msg.getMes();
-
+        
         if (msg.message_type == DeliveredMsg.BYTE) {
             //str = "delivered...";
             return "";
         }
-
+        
         Date date = new Date(sendTime);
-
+        
         String out = "";
-
+        
         out += formatTime(date) + ": " + str;
-
+        
         return out;
     }
-
+    
     public static String formatTime(Date date) {
-
+        
         String hours = "" + date.getHours();
         String minutes = "" + date.getMinutes();
         String seconds = "" + date.getSeconds();
-
+        
         if (hours.length() == 1) {
             hours = "0" + hours;
         }
@@ -206,11 +206,11 @@ public class ChatAdapter extends BaseAdapter {
         if (seconds.length() == 1) {
             seconds = "0" + seconds;
         }
-
+        
         return hours + ":" + minutes + ":" + seconds;
-
+        
     }
-
+    
     public static int getWidestView(Context context, Adapter adapter) {
         int maxWidth = 0;
         View view = null;
@@ -225,7 +225,7 @@ public class ChatAdapter extends BaseAdapter {
         }
         return maxWidth;
     }
-
+    
     public static int getHeight(Context context, Adapter adapter) {
         int height = 0;
         View view = null;
@@ -233,49 +233,51 @@ public class ChatAdapter extends BaseAdapter {
         for (int i = 0, count = adapter.getCount(); i < count; i++) {
             view = adapter.getView(i, view, fakeParent);
             view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
+            
             height += view.getMeasuredHeight();
         }
         return height;
     }
-
+    
     class BubbleOnClickListener implements View.OnLongClickListener {
-
+        
         ChatMsg cM;
-
+        
         private BubbleOnClickListener(ChatMsg cM) {
             this.cM = cM;
         }
-
+        
         public boolean onLongClick(View arg0) {
-
+            
             int sdk = android.os.Build.VERSION.SDK_INT;
             if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
                 android.text.ClipboardManager clipboard = (android.text.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
                 clipboard.setText(cM.getText());
-
+                
             } else {
                 android.content.ClipboardManager clipboard = (android.content.ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
                 android.content.ClipData clip = android.content.ClipData.newPlainText("text label", cM.getText());
                 clipboard.setPrimaryClip(clip);
             }
             Toast.makeText(mContext, "Copied message to Clipboard", Toast.LENGTH_SHORT).show();
-
+            
             return true;
-
+            
         }
     }
-
+    
     class BubbleHeadOnClickListener implements View.OnLongClickListener {
-
+        
         ChatMsg cM;
-
-        private BubbleHeadOnClickListener(ChatMsg cM) {
+        ChatAdapter cA;
+        
+        private BubbleHeadOnClickListener(ChatMsg cM, ChatAdapter cA) {
             this.cM = cM;
+            this.cA = cA;
         }
-
+        
         public boolean onLongClick(View arg0) {
-
+            
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle("Name setzen fuer: " + cM.getIdentity());
 
@@ -286,7 +288,7 @@ public class ChatAdapter extends BaseAdapter {
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
             input.setHint("Name");
             input.setHintTextColor(Color.RED);
-
+            
             builder.setView(input);
 
 // Set up the buttons
@@ -296,6 +298,8 @@ public class ChatAdapter extends BaseAdapter {
                     Test.localSettings.identity2Name.remove(cM.getIdentity());
                     Test.localSettings.identity2Name.put(cM.getIdentity(), input.getText().toString());
                     Test.localSettings.save();
+                    cM.setName(input.getText().toString());
+                    cA.notifyDataSetChanged();
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -304,8 +308,9 @@ public class ChatAdapter extends BaseAdapter {
                     dialog.cancel();
                 }
             });
-
+            
             builder.show();
+            
             return true;
         }
     }
