@@ -496,23 +496,13 @@ public class ChatActivity extends ListActivity {
             @Override
             public void run() {
 
-                runOnUiThread(new Runnable() {
 
-                    public void run() {
-                        Toast.makeText(ChatActivity.this, "onActivityResult", Toast.LENGTH_SHORT).show();
-                    }
-                });
 
                 switch (requestCode) {
                     case SELECT_PHOTO:
                         if (resultCode == RESULT_OK) {
 
-                            runOnUiThread(new Runnable() {
 
-                                public void run() {
-                                    Toast.makeText(ChatActivity.this, "image bums", Toast.LENGTH_SHORT).show();
-                                }
-                            });
 
                             Uri selectedImage = imageReturnedIntent.getData();
                             String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -525,12 +515,7 @@ public class ChatActivity extends ListActivity {
                             final String filePath = cursor.getString(columnIndex);
                             cursor.close();
 
-                            runOnUiThread(new Runnable() {
 
-                                public void run() {
-                                    Toast.makeText(ChatActivity.this, "img path: " + filePath, Toast.LENGTH_SHORT).show();
-                                }
-                            });
 
                             Main.sendImageToChannel(chan, filePath);
 
