@@ -217,7 +217,7 @@ public class ChatAdapter extends BaseAdapter {
         BitmapFactory.decodeFile(str, o);
 
         //The new size we want to scale to
-        final int REQUIRED_SIZE = 400;
+        final int REQUIRED_SIZE = 200;
 
         //Find the correct scale value. It should be the power of 2.
         int scale = 1;
