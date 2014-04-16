@@ -20,6 +20,7 @@ import org.redPanda.ChannelList.ChanPref;
 import org.redPanda.ChannelList.FlActivity;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.messages.DeliveredMsg;
+import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
@@ -97,7 +98,14 @@ public class PopupListener implements NewMessageListener {
         BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
 
 
-        bigTextStyle.bigText(msg.getName() + ": " + msg.getText());
+        if (msg.message_type == ImageMsg.BYTE) {
+            bigTextStyle.bigText(msg.getName() + ": bild...");
+        } else {
+            bigTextStyle.bigText(msg.getName() + ": " + msg.getText());
+        }
+
+
+
         bigTextStyle.setBigContentTitle(msg.getChannel().toString());
         bigTextStyle.setSummaryText("message from redPanda");
         mBuilder.setStyle(bigTextStyle);

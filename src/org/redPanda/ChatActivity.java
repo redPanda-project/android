@@ -4,19 +4,25 @@
  */
 package org.redPanda;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -50,6 +56,9 @@ public class ChatActivity extends ListActivity {
     private long lastTouched = 0;
     private ArrayList<ChatMsg> messages;
     private ChatAdapter cA;
+    public static final int MENU_IMAGE = Menu.FIRST;
+    private static final int SELECT_PHOTO = 100;
+    final int REQ_CODE_PICK_IMAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,10 +109,12 @@ public class ChatActivity extends ListActivity {
 //        });
         Button button = (Button) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
 
                 final String text = editText.getText().toString();
                 Runnable runnable = new Runnable() {
+
                     public void run() {
                         editText.setText("");
                     }
@@ -203,6 +214,7 @@ public class ChatActivity extends ListActivity {
 
                 if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
                     new Thread() {
+
                         @Override
                         public void run() {
                             Main.sendBroadCastMsg("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
@@ -262,8 +274,7 @@ public class ChatActivity extends ListActivity {
             if (cA.mMessages == null || cA.mMessages.isEmpty()) {
                 cA.mMessages = new ArrayList<ChatMsg>();
             } else {
-              //  cM = cA.mMessages.get(cA.mMessages.size() - 1);
-
+                //  cM = cA.mMessages.get(cA.mMessages.size() - 1);
                 //nicht angepasst!!!
 //                if (tmc.getIdentity() == cM.getIdentity() && false) {
 //                    Mes mes = new Mes(tmc.database_id, tmc.timestamp, tmc.text, tmc.fromMe, tmc.message_type);
@@ -289,6 +300,7 @@ public class ChatActivity extends ListActivity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
+
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
             // This is called when the connection with the service has been
@@ -301,6 +313,7 @@ public class ChatActivity extends ListActivity {
             // We want to monitor the service for as long as we are
             // connected to it.
             new Thread() {
+
                 @Override
                 public void run() {
                     Message msg = Message.obtain(null,
@@ -405,8 +418,7 @@ public class ChatActivity extends ListActivity {
         super.onResume();
         if (chan != null) {
             BS.currentViewedChannel = chan.getId();
-            NotificationManager mNotificationManager
-                    = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.cancel(chan.getId());
         }
 
@@ -449,8 +461,55 @@ public class ChatActivity extends ListActivity {
             case android.R.id.home:
                 backToFlActivity();
                 return true;
+            case R.id.imageSendButtonFromChat:
+                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+//
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        super.onCreateOptionsMenu(menu);
+//
+//        menu.add(Menu.NONE, MENU_IMAGE, Menu.NONE, "Image");
+//
+//        return true;
+//    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.chat_menu, menu);
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+            Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch (requestCode) {
+            case REQ_CODE_PICK_IMAGE:
+                if (resultCode == RESULT_OK) {
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                    Cursor cursor = getContentResolver().query(
+                            selectedImage, filePathColumn, null, null, null);
+                    cursor.moveToFirst();
+
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    String filePath = cursor.getString(columnIndex);
+                    cursor.close();
+
+                    Main.sendImageToChannel(chan, filePath);
+
+                    //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+                }
         }
     }
 }

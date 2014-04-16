@@ -501,7 +501,6 @@ public class FlActivity extends Activity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
         return true;
-
     }
 
     @Override
