@@ -58,7 +58,6 @@ public class ChatActivity extends ListActivity {
     private ChatAdapter cA;
     public static final int MENU_IMAGE = Menu.FIRST;
     private static final int SELECT_PHOTO = 100;
-    final int REQ_CODE_PICK_IMAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -488,28 +487,65 @@ public class ChatActivity extends ListActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode,
-            Intent imageReturnedIntent) {
+    protected void onActivityResult(final int requestCode, final int resultCode,
+            final Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        switch (requestCode) {
-            case REQ_CODE_PICK_IMAGE:
-                if (resultCode == RESULT_OK) {
-                    Uri selectedImage = imageReturnedIntent.getData();
-                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        new Thread() {
 
-                    Cursor cursor = getContentResolver().query(
-                            selectedImage, filePathColumn, null, null, null);
-                    cursor.moveToFirst();
+            @Override
+            public void run() {
 
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String filePath = cursor.getString(columnIndex);
-                    cursor.close();
+                runOnUiThread(new Runnable() {
 
-                    Main.sendImageToChannel(chan, filePath);
+                    public void run() {
+                        Toast.makeText(ChatActivity.this, "onActivityResult", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-                    //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+                switch (requestCode) {
+                    case SELECT_PHOTO:
+                        if (resultCode == RESULT_OK) {
+
+                            runOnUiThread(new Runnable() {
+
+                                public void run() {
+                                    Toast.makeText(ChatActivity.this, "image bums", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            Uri selectedImage = imageReturnedIntent.getData();
+                            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                            Cursor cursor = getContentResolver().query(
+                                    selectedImage, filePathColumn, null, null, null);
+                            cursor.moveToFirst();
+
+                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                            final String filePath = cursor.getString(columnIndex);
+                            cursor.close();
+
+                            runOnUiThread(new Runnable() {
+
+                                public void run() {
+                                    Toast.makeText(ChatActivity.this, "img path: " + filePath, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            Main.sendImageToChannel(chan, filePath);
+
+                            runOnUiThread(new Runnable() {
+
+                                public void run() {
+                                    Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+                        }
                 }
-        }
+
+            }
+        }.start();
     }
 }
