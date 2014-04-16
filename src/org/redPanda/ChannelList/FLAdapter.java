@@ -23,17 +23,16 @@ import org.redPanda.R;
  * @author Pizza
  */
 public class FLAdapter extends ArrayAdapter<ChannelViewElement> {
+
     Context context;
     List<ChannelViewElement> objects;
 
     public FLAdapter(Context context, int resource, List<ChannelViewElement> objects) {
         super(context, resource, objects);
         this.context = context;
-        this.objects=objects;
-        
-    }
-    
+        this.objects = objects;
 
+    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -54,7 +53,7 @@ public class FLAdapter extends ArrayAdapter<ChannelViewElement> {
         }
         ChannelViewElement ch = objects.get(position);
         holder.CN.setText(ch.getName());
-        holder.msg.setText(Html.fromHtml("<small>" + ch.getLastMessageText() + "</small>"));
+        holder.msg.setText(ch.getLastMessageText());
 
         return row;
     }

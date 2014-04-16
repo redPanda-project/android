@@ -366,7 +366,6 @@ public class BS extends Service {
             }
         }.start();
 
-
 //        Intent intent = new Intent(this, FlActivity.class);
 //        final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 //        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.icon).setContentTitle("redPanda").setContentText("service working..").setContentIntent(contentIntent);
@@ -494,7 +493,6 @@ public class BS extends Service {
 //                        });
 //
 //            }
-
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             Channel chan = msg.getChannel();
             Message ms;
@@ -503,18 +501,22 @@ public class BS extends Service {
             Iterator<Messenger> its;
             System.out.println(chan.getId() + " " + chan.toString() + " " + hm.get(chan));
 
-            if (msg.message_type == TextMsg.BYTE) {
+            if (msg.message_type == TextMsg.BYTE || msg.message_type == ImageMsg.BYTE) {
                 //Set shared Pref for FLActivity
                 int id = msg.getChannel().getId();
                 long time = msg.getTimestamp();
                 String from;
                 if (msg.fromMe) {
-                    from = "Ich";
+                    from = "Me";
                 } else {
                     from = msg.getName();
                 }
-
-                String text = from + ": " + msg.getText();
+                String text="";
+                if (msg.message_type == TextMsg.BYTE) {
+                    text = from + ": " + msg.getText();
+                }else if (msg.message_type == ImageMsg.BYTE) {
+                text = from + ": " + "Picture";
+                }
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
                 SharedPreferences.Editor edit = sharedPref.edit();
                 edit.putLong("lastMessageForChannel" + id, time);
@@ -535,8 +537,6 @@ public class BS extends Service {
                 // Toast.makeText(BS.this, text+" ", Toast.LENGTH_SHORT).show();
                 //
             }
-
-
 
             for (Channel a : hm.keySet()) {
                 System.out.println("chans: " + a.getId() + " " + a.toString());
@@ -568,7 +568,6 @@ public class BS extends Service {
             } else {
                 System.out.println("hm null");
             }
-
 
             if (msg.text != null && msg.text.length() > 1 && msg.text.substring(0, 2).equals("pr")) {
                 try {
