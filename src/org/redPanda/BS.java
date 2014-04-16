@@ -60,7 +60,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 297;
+    public static final int VERSION = 298;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -303,6 +303,7 @@ public class BS extends Service {
                     //Settings.STD_PORT += 2;
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
+                    Settings.REMOVE_OLD_MESSAGES = true;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
                     //HsqlConnection.db_file = getFilesDir() + "/data/";
@@ -478,21 +479,21 @@ public class BS extends Service {
         @SuppressWarnings("empty-statement")
         public void newMessage(TextMessageContent msg) {
 
-            if (msg.message_type == ImageMsg.BYTE) {
-
-                String pathToFile = msg.getText();
-                //Gallery scan file!
-                MediaScannerConnection.scanFile(BS.this,
-                        new String[]{pathToFile}, null,
-                        new MediaScannerConnection.OnScanCompletedListener() {
-
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                //....                              
-                            }
-                        });
-
-            }
+//            if (msg.message_type == ImageMsg.BYTE) {
+//
+//                String pathToFile = msg.getText();
+//                //Gallery scan file!
+//                MediaScannerConnection.scanFile(BS.this,
+//                        new String[]{pathToFile}, null,
+//                        new MediaScannerConnection.OnScanCompletedListener() {
+//
+//                            @Override
+//                            public void onScanCompleted(String path, Uri uri) {
+//                                //....                              
+//                            }
+//                        });
+//
+//            }
 
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             Channel chan = msg.getChannel();
