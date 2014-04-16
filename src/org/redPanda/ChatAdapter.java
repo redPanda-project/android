@@ -32,6 +32,7 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.io.File;
 import java.util.Date;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.core.Test;
@@ -78,7 +79,7 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleText = (TextView) convertView.findViewById(R.id.bubbleText);
             holder.bubbleTime = (TextView) convertView.findViewById(R.id.bubbleTime);
             holder.bubbleDeliverd = (TextView) convertView.findViewById(R.id.bubbleDeliverd);
-
+            holder.bubbleImage = null;
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
             // holder.bubble.setPadding(0, 0, 0, 0);
@@ -106,14 +107,16 @@ public class ChatAdapter extends BaseAdapter {
         if (cM.getMsgType() == TextMsg.BYTE) {
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText(content);
-            holder.bubbleImage.setVisibility(View.GONE);
-            holder.bubbleImage = null;
+            if (holder.bubbleImage != null) {
+                holder.bubbleImage.setVisibility(View.GONE);
+                holder.bubbleImage = null;
+            }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
             if (holder.bubbleImage == null) {
                 holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
             }
             holder.bubbleImage.setVisibility(View.VISIBLE);
-            holder.bubbleImage.setImageBitmap(BitmapFactory.decodeFile(content));
+            holder.bubbleImage.setImageBitmap(decodeFile(content));
             holder.bubbleText.setVisibility(View.GONE);
         }
 
@@ -204,6 +207,29 @@ public class ChatAdapter extends BaseAdapter {
     public long getItemId(int position) {
 //Unimplemented, because we aren't using Sqlite.
         return 0;
+    }
+
+    private Bitmap decodeFile(String str) {
+
+        //Decode image size
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(str, o);
+
+        //The new size we want to scale to
+        final int REQUIRED_SIZE = 400;
+
+        //Find the correct scale value. It should be the power of 2.
+        int scale = 1;
+        while (o.outWidth / scale / 2 >= REQUIRED_SIZE && o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+            scale *= 2;
+        }
+
+        //Decode with inSampleSize
+        BitmapFactory.Options o2 = new BitmapFactory.Options();
+        o2.inSampleSize = scale;
+        return BitmapFactory.decodeFile(str, o2);
+
     }
 
     public static String genReadableText(Mes msg) {
