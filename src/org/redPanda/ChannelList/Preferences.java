@@ -4,14 +4,9 @@
  */
 package org.redPanda.ChannelList;
 
-import android.R;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.preference.*;
 import android.widget.Toast;
@@ -60,12 +55,10 @@ public class Preferences extends PreferenceActivity {
         updateButton.setSummary("Current version " + BS.VERSION + ".");
 
         updateButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
             @Override
             public boolean onPreferenceClick(Preference arg0) {
 
                 new Thread() {
-
                     @Override
                     public void run() {
 //                Properties systemProperties = System.getProperties();
@@ -94,7 +87,6 @@ public class Preferences extends PreferenceActivity {
 
 
                                     runOnUiThread(new Runnable() {
-
                                         public void run() {
                                             Toast.makeText(Preferences.this, "Update found.", Toast.LENGTH_SHORT).show();
 
@@ -129,7 +121,6 @@ public class Preferences extends PreferenceActivity {
 
 
                                     runOnUiThread(new Runnable() {
-
                                         public void run() {
                                             Toast.makeText(Preferences.this, "Latest version installed.", Toast.LENGTH_SHORT).show();
                                         }
@@ -174,7 +165,6 @@ public class Preferences extends PreferenceActivity {
         fullSyncInit.setTitle("Init new network discovery.");
         fullSyncInit.setSummary("Initializes a full network discovery, may cause huge traffic.");
         fullSyncInit.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
             public boolean onPreferenceClick(Preference pref) {
                 Intent i = new Intent(Preferences.this, BS.class);
                 i.setAction("c");
@@ -190,7 +180,6 @@ public class Preferences extends PreferenceActivity {
         removeOldMessages.setTitle("Remove old messages.");
         removeOldMessages.setSummary("Removes messages older then one week.");
         removeOldMessages.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
             public boolean onPreferenceClick(Preference pref) {
                 Intent i = new Intent(Preferences.this, BS.class);
                 i.setAction("c");
@@ -229,7 +218,6 @@ public class Preferences extends PreferenceActivity {
         button.setSummary("Adds the Main Channel to your channel list.");
 
         button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
             @Override
             public boolean onPreferenceClick(Preference arg0) {
                 Main.addMainChannel();
@@ -243,7 +231,6 @@ public class Preferences extends PreferenceActivity {
         licenseButton.setSummary("redPanda is distributed over GPL 3.0 license.");
 
         licenseButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
             @Override
             public boolean onPreferenceClick(Preference arg0) {
 
@@ -253,6 +240,20 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(licenseButton);
+
+        Preference shutdownButton = new Preference(this);
+        shutdownButton.setTitle("Shutdown.");
+        shutdownButton.setSummary("Kills the background service.");
+
+        shutdownButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                stopService(new Intent(Preferences.this, BS.class));
+                finish();
+                return true;
+            }
+        });
+        mainc.addPreference(shutdownButton);
 
         return root;
     }
