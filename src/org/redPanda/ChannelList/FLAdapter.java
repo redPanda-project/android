@@ -20,7 +20,7 @@ import org.redPanda.R;
 
 /**
  *
- * @author Pizza
+ * @author mflohr
  */
 public class FLAdapter extends ArrayAdapter<ChannelViewElement> {
 

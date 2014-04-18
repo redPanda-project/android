@@ -13,7 +13,7 @@ import org.redPandaLib.core.Channel;
 
 /**
  *
- * @author Tyrael
+ * @author mflohr
  */
 public class ContactSync {
 

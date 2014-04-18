@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 /**
  *
- * @author Tyrael
+ * @author rflohr
  */
 public class License extends Activity {
 

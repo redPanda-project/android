@@ -65,6 +65,7 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/bubbleTime"
             android:adjustViewBounds="true"
+            android:paddingBottom="10px"
             
         >
 
