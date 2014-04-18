@@ -35,7 +35,7 @@
             android:textColor="#000000"
             android:text="Medium Text"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
+            android:layout_alignParentLeft="true"
             android:textSize="12sp"
         >  
         </TextView>
@@ -65,7 +65,7 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/bubbleTime"
             android:adjustViewBounds="true"
-            android:paddingBottom="10px"
+            android:paddingBottom="10dip"
             
         >
 
