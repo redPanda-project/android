@@ -184,9 +184,9 @@ public class ChatActivity extends ListActivity {
 
                     cA.notifyDataSetChanged();
 
-                    if (t.message_type != DeliveredMsg.BYTE) {
-                        getListView().setSelection(cA.mMessages.size() - 1);
-                    }
+//                    if (t.message_type != DeliveredMsg.BYTE) {
+//                        getListView().setSelection(cA.mMessages.size() - 1);
+//                    }
 
                     //  System.out.println( "12345 "+genReadableText(msg));                   
                     break;
