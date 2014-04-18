@@ -47,7 +47,7 @@ import org.redPandaLib.core.messages.TextMsg;
  *
  */
 public class ChatAdapter extends BaseAdapter {
-
+    final static int imageMaxSize= 400;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
     private Bitmap placeholderBitmap;
@@ -124,7 +124,7 @@ public class ChatAdapter extends BaseAdapter {
             }
 
             // holder.bubbleImage.get().setImageBitmap(decodeFile(content, 200));
-            loadBitmap(content, holder.bubbleImage.get(), 200);
+            loadBitmap(content, holder.bubbleImage.get(), imageMaxSize);
             holder.bubbleImage.get().setVisibility(View.VISIBLE);
             holder.bubbleText.setVisibility(View.GONE);
         } else {
@@ -138,9 +138,15 @@ public class ChatAdapter extends BaseAdapter {
 
         if (!readText.equals("")) {
             holder.bubbleDeliverd.setText(readText);
+            holder.bubbleDeliverd.setVisibility(View.VISIBLE);
+            if (holder.bubbleImage != null) {
+                holder.bubbleImage.get().setPadding(0, 0, 0, 40);
+            }
         } else {
-            holder.bubbleDeliverd.setHeight(0);
-            holder.bubbleDeliverd.setWidth(0);
+            holder.bubbleDeliverd.setVisibility(View.GONE);
+            if (holder.bubbleImage != null) {
+                holder.bubbleImage.get().setPadding(0, 0, 0, 0);
+            }
         }
         holder.bubbleTime.setText(time);
         //System.out.println("1234 "+message.getData().getString("msg"));       
@@ -250,18 +256,16 @@ public class ChatAdapter extends BaseAdapter {
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Integer... params) {
-           
+
             return decodeFile(path, reqSize);
         }
 
         // Once complete, see if ImageView is still around and set bitmap.
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-           
 
             if (isCancelled()) {
                 bitmap = null;
-               
 
             }
 
@@ -280,7 +284,7 @@ public class ChatAdapter extends BaseAdapter {
 
     public static boolean cancelPotentialWork(String path, ImageView imageView) {
         final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
-       
+
         if (bitmapWorkerTask != null) {
             final String bitmapPath = bitmapWorkerTask.path;
             // If bitmapData is not yet set or it differs from the new data
