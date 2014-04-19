@@ -13,12 +13,14 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.InputType;
 import android.view.Gravity;
@@ -47,7 +49,8 @@ import org.redPandaLib.core.messages.TextMsg;
  *
  */
 public class ChatAdapter extends BaseAdapter {
-    final static int imageMaxSize= 400;
+
+    final static int imageMaxSize = 400;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
     private Bitmap placeholderBitmap;
@@ -97,7 +100,7 @@ public class ChatAdapter extends BaseAdapter {
         String bub = "";
 
         String time = cM.getTime();
-        String content = cM.getText();
+        final String content = cM.getText();
         String readText = cM.getDeliverdTo();
 
         //readText += " -";
@@ -127,6 +130,17 @@ public class ChatAdapter extends BaseAdapter {
             loadBitmap(content, holder.bubbleImage.get(), imageMaxSize);
             holder.bubbleImage.get().setVisibility(View.VISIBLE);
             holder.bubbleText.setVisibility(View.GONE);
+
+            holder.bubbleImage.get().setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.parse("file://" + content), "image/*");
+                    mContext.startActivity(intent);
+
+                }
+            });
+
         } else {
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText("MsgType not implemented");
@@ -233,8 +247,7 @@ public class ChatAdapter extends BaseAdapter {
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
         if (cancelPotentialWork(path, imageView)) {
             final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path, reqSize);
-            final AsyncDrawable asyncDrawable
-                    = new AsyncDrawable(mContext.getResources(), placeholderBitmap, task);
+            final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), placeholderBitmap, task);
             imageView.setImageDrawable(asyncDrawable);
             task.execute();
         }
@@ -271,15 +284,13 @@ public class ChatAdapter extends BaseAdapter {
 
             if (imageViewReference != null && bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
-                final BitmapWorkerTask bitmapWorkerTask
-                        = getBitmapWorkerTask(imageView);
+                final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
                     imageView.setImageBitmap(bitmap);
 
                 }
             }
         }
-
     }
 
     public static boolean cancelPotentialWork(String path, ImageView imageView) {
@@ -319,8 +330,7 @@ public class ChatAdapter extends BaseAdapter {
                 BitmapWorkerTask bitmapWorkerTask) {
 
             super(res, bitmap);
-            bitmapWorkerTaskReference
-                    = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
+            bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
         }
 
         public BitmapWorkerTask getBitmapWorkerTask() {
