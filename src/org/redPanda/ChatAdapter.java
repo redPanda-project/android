@@ -40,6 +40,7 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import org.redPanda.ListMessage.Mes;
+import org.redPandaLib.Main;
 import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.ImageMsg;
@@ -50,7 +51,7 @@ import org.redPandaLib.core.messages.TextMsg;
  */
 public class ChatAdapter extends BaseAdapter {
 
-    final static int imageMaxSize = 400;
+    final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
     private Bitmap placeholderBitmap;
@@ -153,12 +154,12 @@ public class ChatAdapter extends BaseAdapter {
         if (!readText.equals("")) {
             holder.bubbleDeliverd.setText(readText);
             holder.bubbleDeliverd.setVisibility(View.VISIBLE);
-            if (holder.bubbleImage != null) {
+            if (holder.bubbleImage != null && holder.bubbleImage.get().getPaddingBottom() == 0) {
                 holder.bubbleImage.get().setPadding(0, 0, 0, 40);
             }
         } else {
             holder.bubbleDeliverd.setVisibility(View.GONE);
-            if (holder.bubbleImage != null) {
+            if (holder.bubbleImage != null && holder.bubbleImage.get().getPaddingBottom() != 0) {
                 holder.bubbleImage.get().setPadding(0, 0, 0, 0);
             }
         }
@@ -246,10 +247,22 @@ public class ChatAdapter extends BaseAdapter {
 
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
         if (cancelPotentialWork(path, imageView)) {
-            final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path, reqSize);
-            final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), placeholderBitmap, task);
-            imageView.setImageDrawable(asyncDrawable);
-            task.execute();
+            //TODO set picture size for the imageView
+
+            String[] tmp = path.split("\n");
+            if (tmp.length == 3) {
+                int width = Integer.parseInt(tmp[1]);
+                int height = Integer.parseInt(tmp[2]);
+
+                imageView.getLayoutParams().height = height;
+                imageView.getLayoutParams().width = width;
+                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path.split("\n")[0], reqSize);
+                final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), null, task);
+                imageView.setImageDrawable(asyncDrawable);
+                task.execute();
+            }else{
+            imageView.setBackgroundColor(Color.BLACK);
+            }
         }
     }
 
@@ -328,7 +341,6 @@ public class ChatAdapter extends BaseAdapter {
 
         public AsyncDrawable(Resources res, Bitmap bitmap,
                 BitmapWorkerTask bitmapWorkerTask) {
-
             super(res, bitmap);
             bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
         }
@@ -348,15 +360,42 @@ public class ChatAdapter extends BaseAdapter {
         //The new size we want to scale to
         //Find the correct scale value. It should be the power of 2.
         int scale = 1;
-        while (o.outWidth / scale / 2 >= REQUIRED_SIZE && o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+        while (o.outWidth / scale / 2 >= REQUIRED_SIZE) {//&& o.outHeight / scale / 2 >= REQUIRED_SIZE
             scale *= 2;
         }
+        int maxwidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        int width = o.outWidth;
+        int height = o.outHeight;
+        if (maxwidth <= 0) {
+            maxwidth = 400;
+        }
+        // Main.sendBroadCastMsg("before" + width + " + " + height + " + " + maxwidth + "\n" + str);
+        if (width > maxwidth) {
+            double tmp = maxwidth * height;
+            tmp = tmp / width;
+            height = (int) tmp;
+            width = maxwidth;
+        }
 
+        //Main.sendBroadCastMsg("after" + width + " + " + height + " + " + maxwidth + "\n" + str);
+        int factor = 1;
+//        while (width / factor  >= maxwidth) {
+//            factor *= 2;
+//        }
         //Decode with inSampleSize
         BitmapFactory.Options o2 = new BitmapFactory.Options();
         o2.inSampleSize = scale;
-        return BitmapFactory.decodeFile(str, o2);
-
+        Bitmap bm = null;
+        try {
+            bm = BitmapFactory.decodeFile(str, o2);
+        } catch (Throwable e) {
+            Main.sendBroadCastMsg("Version: " + BS.VERSION + "\n Error while loading Image:\n" + str);
+        }
+//        if (bm != null) {
+//            Bitmap b2 = Bitmap.createScaledBitmap(bm, width, height, false);
+//            return b2;
+//        }
+        return bm;
     }
 
     public static String genReadableText(Mes msg) {
