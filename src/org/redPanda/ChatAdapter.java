@@ -248,7 +248,7 @@ public class ChatAdapter extends BaseAdapter {
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
         if (cancelPotentialWork(path, imageView)) {
             //TODO set picture size for the imageView
-            Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
+           // Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
 
             String[] tmp = path.split("\n");
             if (tmp.length == 3) {
