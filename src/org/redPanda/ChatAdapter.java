@@ -60,7 +60,7 @@ public class ChatAdapter extends BaseAdapter {
         super();
         this.mContext = context;
         this.mMessages = messages;
-        placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.loading_top);
+        placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
     }
 
     @Override
@@ -248,20 +248,22 @@ public class ChatAdapter extends BaseAdapter {
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
         if (cancelPotentialWork(path, imageView)) {
             //TODO set picture size for the imageView
-            Toast.makeText(mContext, "Image content"+path, Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
 
             String[] tmp = path.split("\n");
             if (tmp.length == 3) {
                 int width = Integer.parseInt(tmp[1]);
                 int height = Integer.parseInt(tmp[2]);
-                int scale=1;
+                int scale = 1;
                 while (width / 2 > reqSize) {
                     width = width / 2;
                     height = height / 2;
-                    scale*=2;
+                    scale *= 2;
                 }
-                imageView.getLayoutParams().height = height;
-                imageView.getLayoutParams().width = width;
+                Bitmap bm = Bitmap.createScaledBitmap(placeholderBitmap, width, height, false);
+//                imageView.getLayoutParams().height = height;
+//                imageView.getLayoutParams().width = width;
+                imageView.setImageBitmap(bm);
                 final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path.split("\n")[0], scale);
                 final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), null, task);
                 imageView.setImageDrawable(asyncDrawable);
@@ -359,8 +361,6 @@ public class ChatAdapter extends BaseAdapter {
     private Bitmap decodeFile(String str, int scale) {
 
         //Decode image size
-
-
         //The new size we want to scale to
         //Find the correct scale value. It should be the power of 2.
 //        int scale = 1;
@@ -380,7 +380,6 @@ public class ChatAdapter extends BaseAdapter {
 //            height = (int) tmp;
 //            width = maxwidth;
 //        }
-
         //Main.sendBroadCastMsg("after" + width + " + " + height + " + " + maxwidth + "\n" + str);
         int factor = 1;
 //        while (width / factor  >= maxwidth) {
