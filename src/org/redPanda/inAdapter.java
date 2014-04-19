@@ -23,7 +23,7 @@ import org.redPandaLib.core.messages.DeliveredMsg;
 
 /**
  *<
- * @author Tyrael
+ * @author mflohr
  */
 public class inAdapter extends BaseAdapter {
 

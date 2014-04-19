@@ -6,17 +6,22 @@ package org.redPanda;
 
 /**
  *
- * @author Tyrael
+ * @author mflohr
  */
 import android.app.AlertDialog;
 import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.text.Html;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -32,7 +37,7 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.Date;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.core.Test;
@@ -45,13 +50,16 @@ import org.redPandaLib.core.messages.TextMsg;
  */
 public class ChatAdapter extends BaseAdapter {
 
+    final static int imageMaxSize = 400;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
+    private Bitmap placeholderBitmap;
 
     public ChatAdapter(Context context, ArrayList<ChatMsg> messages) {
         super();
         this.mContext = context;
         this.mMessages = messages;
+        placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.loading_top);
     }
 
     @Override
@@ -92,7 +100,7 @@ public class ChatAdapter extends BaseAdapter {
         String bub = "";
 
         String time = cM.getTime();
-        String content = cM.getText();
+        final String content = cM.getText();
         String readText = cM.getDeliverdTo();
 
         //readText += " -";
@@ -108,23 +116,51 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText(content);
             if (holder.bubbleImage != null) {
-                holder.bubbleImage.setVisibility(View.GONE);
+                holder.bubbleImage.get().setVisibility(View.GONE);
                 holder.bubbleImage = null;
             }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
+            holder.bubbleImage = null;
             if (holder.bubbleImage == null) {
-                holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
+                holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
+
             }
-            holder.bubbleImage.setVisibility(View.VISIBLE);
-            holder.bubbleImage.setImageBitmap(decodeFile(content));
+
+            // holder.bubbleImage.get().setImageBitmap(decodeFile(content, 200));
+            loadBitmap(content, holder.bubbleImage.get(), imageMaxSize);
+            holder.bubbleImage.get().setVisibility(View.VISIBLE);
             holder.bubbleText.setVisibility(View.GONE);
+
+            holder.bubbleImage.get().setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.parse("file://" + content), "image/*");
+                    mContext.startActivity(intent);
+
+                }
+            });
+
+        } else {
+            holder.bubbleText.setVisibility(View.VISIBLE);
+            holder.bubbleText.setText("MsgType not implemented");
+            if (holder.bubbleImage != null) {
+                holder.bubbleImage.get().setVisibility(View.GONE);
+                holder.bubbleImage = null;
+            }
         }
 
         if (!readText.equals("")) {
             holder.bubbleDeliverd.setText(readText);
+            holder.bubbleDeliverd.setVisibility(View.VISIBLE);
+            if (holder.bubbleImage != null) {
+                holder.bubbleImage.get().setPadding(0, 0, 0, 40);
+            }
         } else {
-            holder.bubbleDeliverd.setHeight(0);
-            holder.bubbleDeliverd.setWidth(0);
+            holder.bubbleDeliverd.setVisibility(View.GONE);
+            if (holder.bubbleImage != null) {
+                holder.bubbleImage.get().setPadding(0, 0, 0, 0);
+            }
         }
         holder.bubbleTime.setText(time);
         //System.out.println("1234 "+message.getData().getString("msg"));       
@@ -190,13 +226,12 @@ public class ChatAdapter extends BaseAdapter {
         holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(cM, this));
 
         holder.bubbleText.setOnLongClickListener(new BubbleOnClickListener(cM));
-
         return convertView;
     }
 
     private static class ViewHolder {
 
-        ImageView bubbleImage;
+        WeakReference< ImageView> bubbleImage;
         TextView bubbleHead;
         TextView bubbleText, bubbleTime, bubbleDeliverd;
         RelativeLayout bubbleLayout;
@@ -209,7 +244,101 @@ public class ChatAdapter extends BaseAdapter {
         return 0;
     }
 
-    private Bitmap decodeFile(String str) {
+    public void loadBitmap(String path, ImageView imageView, int reqSize) {
+        if (cancelPotentialWork(path, imageView)) {
+            final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path, reqSize);
+            final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), placeholderBitmap, task);
+            imageView.setImageDrawable(asyncDrawable);
+            task.execute();
+        }
+    }
+
+    class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
+
+        private final WeakReference<ImageView> imageViewReference;
+        private int reqSize = 0;
+        private String path;
+
+        public BitmapWorkerTask(ImageView imageView, String path, int reqSize) {
+            // Use a WeakReference to ensure the ImageView can be garbage collected
+            imageViewReference = new WeakReference<ImageView>(imageView);
+            this.path = path;
+            this.reqSize = reqSize;
+        }
+
+        // Decode image in background.
+        @Override
+        protected Bitmap doInBackground(Integer... params) {
+
+            return decodeFile(path, reqSize);
+        }
+
+        // Once complete, see if ImageView is still around and set bitmap.
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+
+            if (isCancelled()) {
+                bitmap = null;
+
+            }
+
+            if (imageViewReference != null && bitmap != null) {
+                final ImageView imageView = imageViewReference.get();
+                final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+                if (this == bitmapWorkerTask && imageView != null) {
+                    imageView.setImageBitmap(bitmap);
+
+                }
+            }
+        }
+    }
+
+    public static boolean cancelPotentialWork(String path, ImageView imageView) {
+        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+
+        if (bitmapWorkerTask != null) {
+            final String bitmapPath = bitmapWorkerTask.path;
+            // If bitmapData is not yet set or it differs from the new data
+            if (bitmapPath.equals("") || !bitmapPath.equals(path)) {
+                // Cancel previous task
+                bitmapWorkerTask.cancel(true);
+            } else {
+                // The same work is already in progress
+                return false;
+            }
+        }
+        // No task associated with the ImageView, or an existing task was cancelled
+        return true;
+    }
+
+    private static BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
+        if (imageView != null) {
+            final Drawable drawable = imageView.getDrawable();
+            if (drawable instanceof AsyncDrawable) {
+                final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
+                return asyncDrawable.getBitmapWorkerTask();
+            }
+        }
+        return null;
+    }
+
+    static class AsyncDrawable extends BitmapDrawable {
+
+        private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
+
+        public AsyncDrawable(Resources res, Bitmap bitmap,
+                BitmapWorkerTask bitmapWorkerTask) {
+
+            super(res, bitmap);
+            bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
+        }
+
+        public BitmapWorkerTask getBitmapWorkerTask() {
+            return bitmapWorkerTaskReference.get();
+        }
+    }
+
+    private Bitmap decodeFile(String str, int REQUIRED_SIZE) {
 
         //Decode image size
         BitmapFactory.Options o = new BitmapFactory.Options();
@@ -217,8 +346,6 @@ public class ChatAdapter extends BaseAdapter {
         BitmapFactory.decodeFile(str, o);
 
         //The new size we want to scale to
-        final int REQUIRED_SIZE = 200;
-
         //Find the correct scale value. It should be the power of 2.
         int scale = 1;
         while (o.outWidth / scale / 2 >= REQUIRED_SIZE && o.outHeight / scale / 2 >= REQUIRED_SIZE) {

@@ -11,7 +11,7 @@ import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
  *
- * @author Tyrael
+ * @author mflohr
  */
 public class ListMessage {
 

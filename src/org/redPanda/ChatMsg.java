@@ -11,7 +11,7 @@ import android.graphics.Color;
 
 /**
  *
- * @author Pizza
+ * @author mflohr
  */
 public class ChatMsg {
 
