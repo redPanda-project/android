@@ -115,12 +115,14 @@ public class ChatAdapter extends BaseAdapter {
         //holder.bubbleText.setText(Html.fromHtml(bub));
         if (cM.getMsgType() == TextMsg.BYTE) {
           //  holder.bubbleTime.setPadding(0, 0, 0, 0);
+            holder.bubbleDeliverd.setTextColor(Color.BLACK);
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText(content);
             if (holder.bubbleImage != null) {
                 holder.bubbleImage.get().setVisibility(View.GONE);
             }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
+            holder.bubbleDeliverd.setTextColor(Color.WHITE);
            // holder.bubbleTime.setPadding(0, 0, 0, 40);
             if (holder.bubbleImage == null) {
                 holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
