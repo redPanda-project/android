@@ -294,7 +294,7 @@ public class BS extends Service {
                 try {
                     File albumStorageDir = getAlbumStorageDir("redPanda");
                     Main.setImageStoreFolder(albumStorageDir.getAbsolutePath() + "/");
-
+                   Main.setImageInfos(new ImageInfosAndroid());
 
                     //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);

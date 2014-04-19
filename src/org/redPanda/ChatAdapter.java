@@ -248,20 +248,26 @@ public class ChatAdapter extends BaseAdapter {
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
         if (cancelPotentialWork(path, imageView)) {
             //TODO set picture size for the imageView
+            Toast.makeText(mContext, "Image content"+path, Toast.LENGTH_LONG).show();
 
             String[] tmp = path.split("\n");
             if (tmp.length == 3) {
                 int width = Integer.parseInt(tmp[1]);
                 int height = Integer.parseInt(tmp[2]);
-
+                int scale=1;
+                while (width / 2 > reqSize) {
+                    width = width / 2;
+                    height = height / 2;
+                    scale*=2;
+                }
                 imageView.getLayoutParams().height = height;
                 imageView.getLayoutParams().width = width;
-                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path.split("\n")[0], reqSize);
+                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path.split("\n")[0], scale);
                 final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), null, task);
                 imageView.setImageDrawable(asyncDrawable);
                 task.execute();
-            }else{
-            imageView.setBackgroundColor(Color.BLACK);
+            } else {
+                imageView.setImageBitmap(placeholderBitmap);
             }
         }
     }
@@ -269,21 +275,21 @@ public class ChatAdapter extends BaseAdapter {
     class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
 
         private final WeakReference<ImageView> imageViewReference;
-        private int reqSize = 0;
+        private int scale = 0;
         private String path;
 
-        public BitmapWorkerTask(ImageView imageView, String path, int reqSize) {
+        public BitmapWorkerTask(ImageView imageView, String path, int scale) {
             // Use a WeakReference to ensure the ImageView can be garbage collected
             imageViewReference = new WeakReference<ImageView>(imageView);
             this.path = path;
-            this.reqSize = reqSize;
+            this.scale = scale;
         }
 
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Integer... params) {
 
-            return decodeFile(path, reqSize);
+            return decodeFile(path, scale);
         }
 
         // Once complete, see if ImageView is still around and set bitmap.
@@ -350,32 +356,30 @@ public class ChatAdapter extends BaseAdapter {
         }
     }
 
-    private Bitmap decodeFile(String str, int REQUIRED_SIZE) {
+    private Bitmap decodeFile(String str, int scale) {
 
         //Decode image size
-        BitmapFactory.Options o = new BitmapFactory.Options();
-        o.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(str, o);
+
 
         //The new size we want to scale to
         //Find the correct scale value. It should be the power of 2.
-        int scale = 1;
-        while (o.outWidth / scale / 2 >= REQUIRED_SIZE) {//&& o.outHeight / scale / 2 >= REQUIRED_SIZE
-            scale *= 2;
-        }
-        int maxwidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        int width = o.outWidth;
-        int height = o.outHeight;
-        if (maxwidth <= 0) {
-            maxwidth = 400;
-        }
+//        int scale = 1;
+//        while (o.outWidth / scale / 2 >= REQUIRED_SIZE) {//&& o.outHeight / scale / 2 >= REQUIRED_SIZE
+//            scale *= 2;
+//        }
+//        int maxwidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+//        int width = o.outWidth;
+//        int height = o.outHeight;
+//        if (maxwidth <= 0) {
+//            maxwidth = 400;
+//        }
         // Main.sendBroadCastMsg("before" + width + " + " + height + " + " + maxwidth + "\n" + str);
-        if (width > maxwidth) {
-            double tmp = maxwidth * height;
-            tmp = tmp / width;
-            height = (int) tmp;
-            width = maxwidth;
-        }
+//        if (width > maxwidth) {
+//            double tmp = maxwidth * height;
+//            tmp = tmp / width;
+//            height = (int) tmp;
+//            width = maxwidth;
+//        }
 
         //Main.sendBroadCastMsg("after" + width + " + " + height + " + " + maxwidth + "\n" + str);
         int factor = 1;
