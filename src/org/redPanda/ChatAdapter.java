@@ -144,6 +144,7 @@ public class ChatAdapter extends BaseAdapter {
             });
 
         } else {
+            holder.bubbleDeliverd.setTextColor(Color.BLACK);
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText("MsgType not implemented");
             if (holder.bubbleImage != null) {
