@@ -60,7 +60,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 335;
+    public static final int VERSION = 338;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -77,6 +77,7 @@ public class BS extends Service {
     private static long lastUpdateChecked = 0;
     public static int currentViewedChannel = -100;
     private long lastTrimmed = 0;
+    public static BS bs;
     /**
      * Handler of incoming messages from clients.
      */
@@ -260,6 +261,7 @@ public class BS extends Service {
      */
     @Override
     public void onCreate() {
+        bs = this;
         //Toast.makeText(this, "Sevice onCreate", Toast.LENGTH_SHORT).show();
 
 //        super.onCreate();
@@ -294,7 +296,7 @@ public class BS extends Service {
                 try {
                     File albumStorageDir = getAlbumStorageDir("redPanda");
                     Main.setImageStoreFolder(albumStorageDir.getAbsolutePath() + "/");
-                   Main.setImageInfos(new ImageInfosAndroid());
+                    Main.setImageInfos(new ImageInfosAndroid());
 
                     //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
@@ -481,12 +483,11 @@ public class BS extends Service {
                 MediaScannerConnection.scanFile(BS.this,
                         new String[]{pathToFile}, null,
                         new MediaScannerConnection.OnScanCompletedListener() {
-
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                //....                              
-                            }
-                        });
+                    @Override
+                    public void onScanCompleted(String path, Uri uri) {
+                        //....                              
+                    }
+                });
 
             }
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();

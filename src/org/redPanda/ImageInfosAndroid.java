@@ -20,9 +20,8 @@ public class ImageInfosAndroid implements ImageInfos {
         BitmapFactory.Options o = new BitmapFactory.Options();
         o.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(string, o);
-        in.heigth=o.outHeight;
-        in.width =o.outWidth;
+        in.heigth = o.outHeight;
+        in.width = o.outWidth;
         return in;
     }
-
 }
