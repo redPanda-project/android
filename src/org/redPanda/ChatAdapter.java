@@ -87,8 +87,9 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
             holder.bubbleText = (TextView) convertView.findViewById(R.id.bubbleText);
             holder.bubbleTime = (TextView) convertView.findViewById(R.id.bubbleTime);
-            holder.bubbleDeliverd = (TextView) convertView.findViewById(R.id.bubbleDeliverd);
+
             holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
+            holder.bubbleDeliverd = (TextView) convertView.findViewById(R.id.bubbleDeliverd);
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
             // holder.bubble.setPadding(0, 0, 0, 0);
@@ -114,7 +115,7 @@ public class ChatAdapter extends BaseAdapter {
         // bub += "<small>" + time + "</small> " + content + readText;
         //holder.bubbleText.setText(Html.fromHtml(bub));
         if (cM.getMsgType() == TextMsg.BYTE) {
-          //  holder.bubbleTime.setPadding(0, 0, 0, 0);
+            //  holder.bubbleTime.setPadding(0, 0, 0, 0);
             holder.bubbleDeliverd.setTextColor(Color.BLACK);
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText(content);
@@ -123,7 +124,7 @@ public class ChatAdapter extends BaseAdapter {
             }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
             holder.bubbleDeliverd.setTextColor(Color.WHITE);
-           // holder.bubbleTime.setPadding(0, 0, 0, 40);
+            // holder.bubbleTime.setPadding(0, 0, 0, 40);
             if (holder.bubbleImage == null) {
                 holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
             }
@@ -156,13 +157,13 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleDeliverd.setText(readText);
             holder.bubbleDeliverd.setVisibility(View.VISIBLE);
             if (holder.bubbleImage != null && holder.bubbleImage.get().getPaddingBottom() == 0) {
-               // holder.bubbleImage.get().setPadding(0, 0, 0, 40);
+                // holder.bubbleImage.get().setPadding(0, 0, 0, 40);
 
             }
         } else {
             holder.bubbleDeliverd.setVisibility(View.GONE);
             if (holder.bubbleImage != null && holder.bubbleImage.get().getPaddingBottom() != 0) {
-              //  holder.bubbleImage.get().setPadding(0, 0, 0, 0);
+                //  holder.bubbleImage.get().setPadding(0, 0, 0, 0);
             }
         }
         holder.bubbleTime.setText(time);
@@ -279,7 +280,7 @@ public class ChatAdapter extends BaseAdapter {
                 imageView.getLayoutParams().width = (int) width;
                 imageView.getLayoutParams().height = (int) height;
 
-               // Toast.makeText(mContext, "ImageView: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
+                // Toast.makeText(mContext, "ImageView: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
                 //imageView.setImageBitmap(bm);
                 final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path.split("\n")[0], scale, (int) width, (int) height);
                 final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), null, task);
@@ -309,8 +310,14 @@ public class ChatAdapter extends BaseAdapter {
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Integer... params) {
+            Bitmap bm = null;
+            try {
+                bm = Bitmap.createScaledBitmap(decodeFile(path, scale), width, height, false);
+            } catch (Throwable e) {
+                Main.sendBroadCastMsg("Null while scaling" + width + " " + height + "\n" + path);
+            }
 
-            return Bitmap.createScaledBitmap(decodeFile(path, scale), width, height, false);
+            return bm;
         }
 
         // Once complete, see if ImageView is still around and set bitmap.
@@ -321,13 +328,13 @@ public class ChatAdapter extends BaseAdapter {
                 bitmap = null;
 
             }
-         //   Toast.makeText(mContext, "Bitmap: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
+            //   Toast.makeText(mContext, "Bitmap: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
             if (imageViewReference != null && bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
                 final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
-                    imageView.getLayoutParams().width=LayoutParams.WRAP_CONTENT;
-                    imageView.getLayoutParams().height=LayoutParams.WRAP_CONTENT;
+                    imageView.getLayoutParams().width = LayoutParams.WRAP_CONTENT;
+                    imageView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
                     imageView.setImageBitmap(bitmap);
 
                 }
