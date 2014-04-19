@@ -60,7 +60,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 326;
+    public static final int VERSION = 332;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -295,6 +295,7 @@ public class BS extends Service {
                     File albumStorageDir = getAlbumStorageDir("redPanda");
                     Main.setImageStoreFolder(albumStorageDir.getAbsolutePath() + "/");
 
+
                     //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
                     //Settings.STD_PORT += 2;
@@ -473,21 +474,21 @@ public class BS extends Service {
         @SuppressWarnings("empty-statement")
         public void newMessage(TextMessageContent msg) {
 
-//            if (msg.message_type == ImageMsg.BYTE) {
-//
-//                String pathToFile = msg.getText();
-//                //Gallery scan file!
-//                MediaScannerConnection.scanFile(BS.this,
-//                        new String[]{pathToFile}, null,
-//                        new MediaScannerConnection.OnScanCompletedListener() {
-//
-//                            @Override
-//                            public void onScanCompleted(String path, Uri uri) {
-//                                //....                              
-//                            }
-//                        });
-//
-//            }
+            if (msg.message_type == ImageMsg.BYTE) {
+
+                String pathToFile = msg.getText();
+                //Gallery scan file!
+                MediaScannerConnection.scanFile(BS.this,
+                        new String[]{pathToFile}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+
+                            @Override
+                            public void onScanCompleted(String path, Uri uri) {
+                                //....                              
+                            }
+                        });
+
+            }
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             Channel chan = msg.getChannel();
             Message ms;
@@ -674,6 +675,16 @@ public class BS extends Service {
         // Get the directory for the user's public pictures directory.
         File file = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), albumName);
+        if (!file.mkdirs()) {
+            System.out.println("filedir not created...");
+        }
+        return file;
+    }
+
+    public File getXmlStorageDir(String xmlDirName) {
+        // Get the directory for the user's public pictures directory.
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                "Documents"), xmlDirName);
         if (!file.mkdirs()) {
             System.out.println("filedir not created...");
         }
