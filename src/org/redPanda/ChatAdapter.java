@@ -131,7 +131,7 @@ public class ChatAdapter extends BaseAdapter {
 
             // holder.bubbleImage.get().setImageBitmap(decodeFile(content, 200));
             loadBitmap(content, holder.bubbleImage.get(), imageMaxSize);
-            holder.bubbleImage.get().setVisibility(View.VISIBLE);
+            //holder.bubbleImage.get().setVisibility(View.VISIBLE);
             holder.bubbleText.setVisibility(View.GONE);
 
             holder.bubbleImage.get().setOnClickListener(new View.OnClickListener() {
@@ -249,45 +249,31 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
-        if (cancelPotentialWork(path, imageView)) {
+        String[] tmp = path.split("\n");
+        imageView.setVisibility(View.GONE);
+        if (cancelPotentialWork(tmp[0], imageView)) {
             //TODO set picture size for the imageView
             // Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
 
-            String[] tmp = path.split("\n");
-            if (tmp.length == 3) {
-                double width = Integer.parseInt(tmp[1]);
-                double height = Integer.parseInt(tmp[2]);
-                int scale = 1;
-                while (width / 2 > reqSize) {
-                    width = width / 2;
-                    height = height / 2;
-                    scale *= 2;
-                }
-                //     Bitmap bm = Bitmap.createScaledBitmap(placeholderBitmap, width, height, false);
-
-//                imageView.getLayoutParams().height = height;
-//                imageView.getLayoutParams().width = width;
-                double widthpercent = 0.6;
-
-                if (width > widthpercent * reqSize) {
-                    height *= widthpercent * reqSize;
-                    height = height / width;
-                    width = (widthpercent * reqSize);
-
-                }
-                //RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams((int) width, (int) height);
-
-                imageView.getLayoutParams().width = (int) width;
-                imageView.getLayoutParams().height = (int) height;
-
+            if (tmp.length == 4) {
+                int width = Integer.parseInt(tmp[1]);
+                int height = Integer.parseInt(tmp[2]);
+                int scale = Integer.parseInt(tmp[3]);
+                ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+                lp.width = width;
+                lp.height = height;
+                imageView.setLayoutParams(lp);
+                imageView.setVisibility(View.VISIBLE);
                 // Toast.makeText(mContext, "ImageView: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
                 //imageView.setImageBitmap(bm);
-                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path.split("\n")[0], scale, (int) width, (int) height);
+                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, tmp[0], scale, width, height);
                 final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), null, task);
                 imageView.setImageDrawable(asyncDrawable);
                 task.execute();
             } else {
-                imageView.setVisibility(View.GONE);
+                //imageView.setImageResource(R.drawable.placeholder); 
+                Toast.makeText(mContext, "ImageMsg content wrong length: " + tmp.length, Toast.LENGTH_SHORT).show();
+
             }
         }
     }
@@ -310,14 +296,24 @@ public class ChatAdapter extends BaseAdapter {
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Integer... params) {
-            Bitmap bm = null;
-            try {
-                bm = Bitmap.createScaledBitmap(decodeFile(path, scale), width, height, false);
-            } catch (Throwable e) {
-                Main.sendBroadCastMsg("Null while scaling" + width + " " + height + "\n" + path);
-            }
+            WeakReference<Bitmap> bm = null;
 
-            return bm;
+            try {
+                bm = new WeakReference<Bitmap>(decodeFile(path, scale));
+                if (height != 0 && width != 0 && bm.get() != null) {
+                    bm = new WeakReference<Bitmap>(Bitmap.createScaledBitmap(bm.get(), width, height, false));
+                } else {
+                    Main.sendBroadCastMsg("Bm: " + bm.get() + " after decoding!\n" + path);
+                }
+            } catch (Throwable e) {
+                Main.sendBroadCastMsg("Error while scaling" + width + " " + height + "\n" + path
+                        + "\n" + ExceptionLogger.stacktrace2String(e));
+            }
+            if (bm != null) {
+                return bm.get();
+            } else {
+                return null;
+            }
         }
 
         // Once complete, see if ImageView is still around and set bitmap.
@@ -333,8 +329,10 @@ public class ChatAdapter extends BaseAdapter {
                 final ImageView imageView = imageViewReference.get();
                 final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
-                    imageView.getLayoutParams().width = LayoutParams.WRAP_CONTENT;
-                    imageView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
+                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+                    lp.width = LayoutParams.WRAP_CONTENT;
+                    lp.height = LayoutParams.WRAP_CONTENT;
+                    imageView.setLayoutParams(lp);
                     imageView.setImageBitmap(bitmap);
 
                 }
@@ -416,11 +414,14 @@ public class ChatAdapter extends BaseAdapter {
         //Decode with inSampleSize
         BitmapFactory.Options o2 = new BitmapFactory.Options();
         o2.inSampleSize = scale;
+        o2.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
         Bitmap bm = null;
         try {
             bm = BitmapFactory.decodeFile(str, o2);
         } catch (Throwable e) {
-            Main.sendBroadCastMsg("Version: " + BS.VERSION + "\n Error while loading Image:\n" + str);
+            Main.sendBroadCastMsg("Version: " + BS.VERSION + "\n Error while loading Image:\n" + str
+                    + "\n" + scale + "\n" + ExceptionLogger.stacktrace2String(e));
         }
 //        if (bm != null) {
 //            Bitmap b2 = Bitmap.createScaledBitmap(bm, width, height, false);

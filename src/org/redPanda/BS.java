@@ -112,7 +112,31 @@ public class BS extends Service {
                     }
 
                     ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
+                    for (TextMessageContent tmc : ml) {
+                        if (tmc.message_type == ImageMsg.BYTE) {
 
+                            String[] tmp = tmc.text.split("\n");
+                            if (tmp.length == 3) {
+                                double width = Integer.parseInt(tmp[1]);
+                                double height = Integer.parseInt(tmp[2]);
+                                int scale = 1;
+                                while (width / 2 > ChatAdapter.imageMaxSize) {
+                                    width = width / 2;
+                                    height = height / 2;
+                                    scale *= 2;
+                                }
+
+                                double widthpercent = 0.6;
+                                if (width > widthpercent * ChatAdapter.imageMaxSize) {
+                                    height *= widthpercent * ChatAdapter.imageMaxSize;
+                                    height = height / width;
+                                    width = (widthpercent * ChatAdapter.imageMaxSize);
+                                }
+                                tmc.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
+                            }
+
+                        }
+                    }
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
                     Bundle b2 = new Bundle();
@@ -130,6 +154,7 @@ public class BS extends Service {
 
                     }
                     break;
+
                 case MSG_UNREGISTER_CLIENT:
 
                     int unchanid = mesg.getData().getInt("chanid");
@@ -483,11 +508,11 @@ public class BS extends Service {
                 MediaScannerConnection.scanFile(BS.this,
                         new String[]{pathToFile}, null,
                         new MediaScannerConnection.OnScanCompletedListener() {
-                    @Override
-                    public void onScanCompleted(String path, Uri uri) {
-                        //....                              
-                    }
-                });
+                            @Override
+                            public void onScanCompleted(String path, Uri uri) {
+                                //....                              
+                            }
+                        });
 
             }
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
@@ -497,6 +522,30 @@ public class BS extends Service {
             Messenger m;
             Iterator<Messenger> its;
             System.out.println(chan.getId() + " " + chan.toString() + " " + hm.get(chan));
+
+            if (msg.message_type == ImageMsg.BYTE) {
+
+                String[] tmp = msg.text.split("\n");
+                if (tmp.length == 3) {
+                    double width = Integer.parseInt(tmp[1]);
+                    double height = Integer.parseInt(tmp[2]);
+                    int scale = 1;
+                    while (width / 2 > ChatAdapter.imageMaxSize) {
+                        width = width / 2;
+                        height = height / 2;
+                        scale *= 2;
+                    }
+
+                    double widthpercent = 0.6;
+                    if (width > widthpercent * ChatAdapter.imageMaxSize) {
+                        height *= widthpercent * ChatAdapter.imageMaxSize;
+                        height = height / width;
+                        width = (widthpercent * ChatAdapter.imageMaxSize);
+                    }
+                    msg.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
+                }
+
+            }
 
             if (msg.message_type == TextMsg.BYTE || msg.message_type == ImageMsg.BYTE) {
                 //Set shared Pref for FLActivity
