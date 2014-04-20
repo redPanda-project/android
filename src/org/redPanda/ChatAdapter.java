@@ -55,12 +55,14 @@ public class ChatAdapter extends BaseAdapter {
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
     private Bitmap placeholderBitmap;
+    private Resources mResources;
 
     public ChatAdapter(Context context, ArrayList<ChatMsg> messages) {
         super();
         this.mContext = context;
         this.mMessages = messages;
-        placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
+        mResources = mContext.getResources();
+        //  placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
     }
 
     @Override
@@ -87,8 +89,8 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
             holder.bubbleText = (TextView) convertView.findViewById(R.id.bubbleText);
             holder.bubbleTime = (TextView) convertView.findViewById(R.id.bubbleTime);
-
-            holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
+//holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
+            holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
             holder.bubbleDeliverd = (TextView) convertView.findViewById(R.id.bubbleDeliverd);
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
@@ -120,21 +122,24 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText(content);
             if (holder.bubbleImage != null) {
-                holder.bubbleImage.get().setVisibility(View.GONE);
+                //holder.bubbleImage.get().setVisibility(View.GONE);
+                holder.bubbleImage.setVisibility(View.GONE);
             }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
             holder.bubbleDeliverd.setTextColor(Color.WHITE);
             // holder.bubbleTime.setPadding(0, 0, 0, 40);
-            if (holder.bubbleImage == null) {
-                holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
-            }
+//            if (holder.bubbleImage == null) {
+//                //holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
+//                holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
+//            }
 
             // holder.bubbleImage.get().setImageBitmap(decodeFile(content, 200));
-            loadBitmap(content, holder.bubbleImage.get(), imageMaxSize);
+            loadBitmap(content, holder.bubbleImage, imageMaxSize);
+
             //holder.bubbleImage.get().setVisibility(View.VISIBLE);
             holder.bubbleText.setVisibility(View.GONE);
 
-            holder.bubbleImage.get().setOnClickListener(new View.OnClickListener() {
+            holder.bubbleImage.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View view) {
 
                     Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -149,22 +154,22 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText("MsgType not implemented");
             if (holder.bubbleImage != null) {
-                holder.bubbleImage.get().setVisibility(View.GONE);
+                holder.bubbleImage.setVisibility(View.GONE);
             }
         }
 
         if (!readText.equals("")) {
             holder.bubbleDeliverd.setText(readText);
             holder.bubbleDeliverd.setVisibility(View.VISIBLE);
-            if (holder.bubbleImage != null && holder.bubbleImage.get().getPaddingBottom() == 0) {
-                // holder.bubbleImage.get().setPadding(0, 0, 0, 40);
-
-            }
+//            if (holder.bubbleImage != null && holder.bubbleImage.getPaddingBottom() == 0) {
+//                // holder.bubbleImage.get().setPadding(0, 0, 0, 40);
+//
+//            }
         } else {
             holder.bubbleDeliverd.setVisibility(View.GONE);
-            if (holder.bubbleImage != null && holder.bubbleImage.get().getPaddingBottom() != 0) {
-                //  holder.bubbleImage.get().setPadding(0, 0, 0, 0);
-            }
+//            if (holder.bubbleImage != null && holder.bubbleImage.getPaddingBottom() != 0) {
+//                //  holder.bubbleImage.get().setPadding(0, 0, 0, 0);
+//            }
         }
         holder.bubbleTime.setText(time);
         //System.out.println("1234 "+message.getData().getString("msg"));       
@@ -235,7 +240,8 @@ public class ChatAdapter extends BaseAdapter {
 
     private static class ViewHolder {
 
-        WeakReference< ImageView> bubbleImage;
+        //WeakReference< ImageView> bubbleImage;
+        ImageView bubbleImage;
         TextView bubbleHead;
         TextView bubbleText, bubbleTime, bubbleDeliverd;
         RelativeLayout bubbleLayout;
@@ -250,7 +256,7 @@ public class ChatAdapter extends BaseAdapter {
 
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
         String[] tmp = path.split("\n");
-        imageView.setVisibility(View.GONE);
+
         if (cancelPotentialWork(tmp[0], imageView)) {
             //TODO set picture size for the imageView
             // Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
@@ -267,12 +273,13 @@ public class ChatAdapter extends BaseAdapter {
                 // Toast.makeText(mContext, "ImageView: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
                 //imageView.setImageBitmap(bm);
                 final BitmapWorkerTask task = new BitmapWorkerTask(imageView, tmp[0], scale, width, height);
-                final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), null, task);
+                final AsyncDrawable asyncDrawable = new AsyncDrawable(mResources, null, task);
                 imageView.setImageDrawable(asyncDrawable);
                 task.execute();
             } else {
+                imageView.setVisibility(View.GONE);
                 //imageView.setImageResource(R.drawable.placeholder); 
-                Toast.makeText(mContext, "ImageMsg content wrong length: " + tmp.length, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(mContext, "ImageMsg content wrong length: " + tmp.length, Toast.LENGTH_SHORT).show();
 
             }
         }
