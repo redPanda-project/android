@@ -60,7 +60,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 338;
+    public static final int VERSION = 342;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -503,7 +503,7 @@ public class BS extends Service {
 
             if (msg.message_type == ImageMsg.BYTE) {
 
-                String pathToFile = msg.getText();
+                String pathToFile = msg.getText().split("\n")[0];
                 //Gallery scan file!
                 MediaScannerConnection.scanFile(BS.this,
                         new String[]{pathToFile}, null,
