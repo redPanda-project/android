@@ -125,6 +125,9 @@ public class ChatAdapter extends BaseAdapter {
                 //holder.bubbleImage.get().setVisibility(View.GONE);
                 holder.bubbleImage.setVisibility(View.GONE);
                 holder.bubbleImage.setImageDrawable(null);
+                if (holder.bitmap != null) {
+                    holder.bitmap.get().recycle();
+                }
             }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
             holder.bubbleDeliverd.setTextColor(Color.WHITE);
@@ -247,6 +250,7 @@ public class ChatAdapter extends BaseAdapter {
         TextView bubbleText, bubbleTime, bubbleDeliverd;
         RelativeLayout bubbleLayout;
         LinearLayout big;
+        WeakReference<Bitmap> bitmap;
     }
 
     @Override
