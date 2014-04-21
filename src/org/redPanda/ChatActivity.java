@@ -108,12 +108,10 @@ public class ChatActivity extends ListActivity {
 //        });
         Button button = (Button) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
-
             public void onClick(View arg0) {
 
                 final String text = editText.getText().toString();
                 Runnable runnable = new Runnable() {
-
                     public void run() {
                         editText.setText("");
                     }
@@ -213,7 +211,6 @@ public class ChatActivity extends ListActivity {
 
                 if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
                     new Thread() {
-
                         @Override
                         public void run() {
                             Main.sendBroadCastMsg("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
@@ -299,7 +296,6 @@ public class ChatActivity extends ListActivity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
-
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
             // This is called when the connection with the service has been
@@ -312,7 +308,6 @@ public class ChatActivity extends ListActivity {
             // We want to monitor the service for as long as we are
             // connected to it.
             new Thread() {
-
                 @Override
                 public void run() {
                     Message msg = Message.obtain(null,
@@ -451,7 +446,7 @@ public class ChatActivity extends ListActivity {
     @Override
     public void onBackPressed() {
         backToFlActivity();
-
+        finish();
     }
 
     @Override
@@ -492,7 +487,6 @@ public class ChatActivity extends ListActivity {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
         new Thread() {
-
             @Override
             public void run() {
 
@@ -520,7 +514,6 @@ public class ChatActivity extends ListActivity {
                             Main.sendImageToChannel(chan, filePath);
 
                             runOnUiThread(new Runnable() {
-
                                 public void run() {
                                     Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
                                 }

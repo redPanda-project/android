@@ -124,6 +124,7 @@ public class ChatAdapter extends BaseAdapter {
             if (holder.bubbleImage != null) {
                 //holder.bubbleImage.get().setVisibility(View.GONE);
                 holder.bubbleImage.setVisibility(View.GONE);
+                holder.bubbleImage.setImageDrawable(null);
             }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
             holder.bubbleDeliverd.setTextColor(Color.WHITE);
@@ -275,7 +276,7 @@ public class ChatAdapter extends BaseAdapter {
                 final BitmapWorkerTask task = new BitmapWorkerTask(imageView, tmp[0], scale, width, height);
                 final AsyncDrawable asyncDrawable = new AsyncDrawable(mResources, null, task);
                 imageView.setImageDrawable(asyncDrawable);
-                task.execute();
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
                 imageView.setVisibility(View.GONE);
                 //imageView.setImageResource(R.drawable.placeholder); 
@@ -420,15 +421,26 @@ public class ChatAdapter extends BaseAdapter {
 //        }
         //Decode with inSampleSize
         BitmapFactory.Options o2 = new BitmapFactory.Options();
+        o2.inTempStorage = new byte[16 * 1024];
+        o2.inPurgeable = true;
         o2.inSampleSize = scale;
         o2.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+
 
         Bitmap bm = null;
         try {
             bm = BitmapFactory.decodeFile(str, o2);
         } catch (Throwable e) {
+            System.gc();
             Main.sendBroadCastMsg("Version: " + BS.VERSION + "\n Error while loading Image:\n" + str
                     + "\n" + scale + "\n" + ExceptionLogger.stacktrace2String(e));
+            try {
+                bm = BitmapFactory.decodeFile(str, o2);
+            } catch (Throwable e2) {
+                Main.sendBroadCastMsg("Version: " + BS.VERSION + "\n Error while loading Image AGAIN:\n" + str
+                        + "\n" + scale + "\n" + ExceptionLogger.stacktrace2String(e2));
+            }
         }
 //        if (bm != null) {
 //            Bitmap b2 = Bitmap.createScaledBitmap(bm, width, height, false);
