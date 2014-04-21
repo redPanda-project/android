@@ -60,7 +60,9 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 350;
+
+    public static final int VERSION = 1000;
+
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -120,17 +122,20 @@ public class BS extends Service {
                                 double width = Integer.parseInt(tmp[1]);
                                 double height = Integer.parseInt(tmp[2]);
                                 int scale = 1;
-                                while (width / 2 > ChatAdapter.imageMaxSize) {
-                                    width = width / 2;
-                                    height = height / 2;
-                                    scale *= 2;
-                                }
+//                                while (width / 2 > ChatAdapter.imageMaxSize) {
+//                                    width = width / 2;
+//                                    height = height / 2;
+//                                    scale *= 2;
+//                                }
+                                double tmpdouble = ChatAdapter.imageMaxSize * 0.6;
+                                int reqWidth = (int) tmpdouble;
 
-                                double widthpercent = 0.6;
-                                if (width > widthpercent * ChatAdapter.imageMaxSize) {
-                                    height *= widthpercent * ChatAdapter.imageMaxSize;
-                                    height = height / width;
-                                    width = (widthpercent * ChatAdapter.imageMaxSize);
+                                if (width > reqWidth) {
+                                    final double ratio = width / reqWidth;
+
+                                    height = height * 1 / ratio;
+                                    width = tmpdouble;
+                                    scale = (int) Math.round(ratio);
                                 }
                                 tmc.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
                             }
@@ -530,17 +535,20 @@ public class BS extends Service {
                     double width = Integer.parseInt(tmp[1]);
                     double height = Integer.parseInt(tmp[2]);
                     int scale = 1;
-                    while (width / 2 > ChatAdapter.imageMaxSize) {
-                        width = width / 2;
-                        height = height / 2;
-                        scale *= 2;
-                    }
+//                                while (width / 2 > ChatAdapter.imageMaxSize) {
+//                                    width = width / 2;
+//                                    height = height / 2;
+//                                    scale *= 2;
+//                                }
+                    double tmpdouble = ChatAdapter.imageMaxSize * 0.6;
+                    int reqWidth = (int) tmpdouble;
 
-                    double widthpercent = 0.6;
-                    if (width > widthpercent * ChatAdapter.imageMaxSize) {
-                        height *= widthpercent * ChatAdapter.imageMaxSize;
-                        height = height / width;
-                        width = (widthpercent * ChatAdapter.imageMaxSize);
+                    if (width > reqWidth) {
+                        final double ratio = width / reqWidth;
+
+                        height = height * 1 / ratio;
+                        width = tmpdouble;
+                        scale = (int) Math.round(ratio);
                     }
                     msg.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
                 }

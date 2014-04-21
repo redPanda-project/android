@@ -337,10 +337,10 @@ public class ChatAdapter extends BaseAdapter {
                 final ImageView imageView = imageViewReference.get();
                 final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
-                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
-                    lp.width = LayoutParams.WRAP_CONTENT;
-                    lp.height = LayoutParams.WRAP_CONTENT;
-                    imageView.setLayoutParams(lp);
+//                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+//                    lp.width = LayoutParams.WRAP_CONTENT;
+//                    lp.height = LayoutParams.WRAP_CONTENT;
+//                    imageView.setLayoutParams(lp);
                     imageView.setImageBitmap(bitmap);
 
                 }
@@ -421,8 +421,9 @@ public class ChatAdapter extends BaseAdapter {
 //        }
         //Decode with inSampleSize
         BitmapFactory.Options o2 = new BitmapFactory.Options();
-        o2.inTempStorage = new byte[16 * 1024];
-        o2.inPurgeable = true;
+     //   o2.inTempStorage = new byte[16 * 1024];
+      //  o2.inPurgeable = true;
+       
         o2.inSampleSize = scale;
         o2.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
