@@ -241,19 +241,19 @@ public class Preferences extends PreferenceActivity {
         });
         mainc.addPreference(licenseButton);
 
-        Preference shutdownButton = new Preference(this);
-        shutdownButton.setTitle("Shutdown.");
-        shutdownButton.setSummary("Kills the background service.");
-
-        shutdownButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference arg0) {
-                stopService(new Intent(Preferences.this, BS.class));
-                finish();
-                return true;
-            }
-        });
-        mainc.addPreference(shutdownButton);
+//        Preference shutdownButton = new Preference(this);
+//        shutdownButton.setTitle("Shutdown.");
+//        shutdownButton.setSummary("Kills the background service.");
+//
+//        shutdownButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//            @Override
+//            public boolean onPreferenceClick(Preference arg0) {
+//                stopService(new Intent(Preferences.this, BS.class));
+//                finish();
+//                return true;
+//            }
+//        });
+//        mainc.addPreference(shutdownButton);
 
         return root;
     }

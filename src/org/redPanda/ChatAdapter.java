@@ -124,10 +124,13 @@ public class ChatAdapter extends BaseAdapter {
             if (holder.bubbleImage != null) {
                 //holder.bubbleImage.get().setVisibility(View.GONE);
                 holder.bubbleImage.setVisibility(View.GONE);
-                holder.bubbleImage.setImageDrawable(null);
-                if (holder.bitmap != null) {
-                    holder.bitmap.get().recycle();
+                if (holder.bubbleImage.getDrawable() != null) {
+                    Bitmap bitmap = ((BitmapDrawable) holder.bubbleImage.getDrawable()).getBitmap();
+                    if (bitmap != null) {
+                        bitmap.recycle();
+                    }
                 }
+                holder.bubbleImage.setImageDrawable(null);
             }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
             holder.bubbleDeliverd.setTextColor(Color.WHITE);
@@ -250,7 +253,7 @@ public class ChatAdapter extends BaseAdapter {
         TextView bubbleText, bubbleTime, bubbleDeliverd;
         RelativeLayout bubbleLayout;
         LinearLayout big;
-        WeakReference<Bitmap> bitmap;
+        //WeakReference<Bitmap> bitmap;
     }
 
     @Override
@@ -425,9 +428,9 @@ public class ChatAdapter extends BaseAdapter {
 //        }
         //Decode with inSampleSize
         BitmapFactory.Options o2 = new BitmapFactory.Options();
-     //   o2.inTempStorage = new byte[16 * 1024];
-      //  o2.inPurgeable = true;
-       
+        //   o2.inTempStorage = new byte[16 * 1024];
+        //  o2.inPurgeable = true;
+
         o2.inSampleSize = scale;
         o2.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
