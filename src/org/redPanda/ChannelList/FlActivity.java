@@ -6,14 +6,12 @@ package org.redPanda.ChannelList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
-import android.app.PendingIntent.CanceledException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +22,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.ClipboardManager;
 import android.text.InputType;
+import android.util.LruCache;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -32,7 +31,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -68,9 +66,26 @@ public class FlActivity extends Activity {
     TextView infotext;
     public static Context context;
     ListView lv;
+    public static LruCache<String, Bitmap> mMemoryCache;
 
+    @Override
     public void onCreate(Bundle savedInstanceState) {
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 8;
+
+        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+
         context = this;
+
         new ExceptionLogger(this);
 
         //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
@@ -406,7 +421,6 @@ public class FlActivity extends Activity {
                     });
                     adapter.notifyDataSetInvalidated();
 
-
                     break;
                 default:
                     super.handleMessage(msg);
@@ -463,6 +477,19 @@ public class FlActivity extends Activity {
             doBindService();
         }
     };
+
+    public static void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null && mMemoryCache != null) {
+            mMemoryCache.put(key, bitmap);
+        }
+    }
+
+    public static Bitmap getBitmapFromMemCache(String key) {
+        if (mMemoryCache != null) {
+            return mMemoryCache.get(key);
+        }
+        return null;
+    }
 
     void doBindService() {
         // Establish a connection with the service.  We use an explicit

@@ -23,6 +23,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.InputType;
+import android.util.LruCache;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.util.Date;
+import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Test;
@@ -62,6 +64,7 @@ public class ChatAdapter extends BaseAdapter {
         this.mContext = context;
         this.mMessages = messages;
         mResources = mContext.getResources();
+        // Toast.makeText(mContext, "" + (Runtime.getRuntime().maxMemory() / 1024 / 1024), Toast.LENGTH_SHORT).show();
         //  placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
     }
 
@@ -76,6 +79,23 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     @Override
+    public int getViewTypeCount() {
+        return 2; //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static int getImageMaxSize() {
+        return imageMaxSize;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mMessages.get(position).getMsgType() == ImageMsg.BYTE) {
+            return 0;
+        } //To change body of generated methods, choose Tools | Templates.
+        return 1;
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ChatMsg cM = (ChatMsg) this.getItem(position);
 
@@ -87,10 +107,14 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleLayout = (RelativeLayout) convertView.findViewById(R.id.bubble);
 //            holder.head = (TextView) convertView.findViewById(R.id.head);
             holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
-            holder.bubbleText = (TextView) convertView.findViewById(R.id.bubbleText);
+
             holder.bubbleTime = (TextView) convertView.findViewById(R.id.bubbleTime);
 //holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
-            holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
+            if (cM.getMsgType() == ImageMsg.BYTE) {
+                holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
+            } else {
+                holder.bubbleText = (TextView) convertView.findViewById(R.id.bubbleText);
+            }
             holder.bubbleDeliverd = (TextView) convertView.findViewById(R.id.bubbleDeliverd);
             //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
             convertView.setTag(holder);
@@ -119,19 +143,20 @@ public class ChatAdapter extends BaseAdapter {
         if (cM.getMsgType() == TextMsg.BYTE) {
             //  holder.bubbleTime.setPadding(0, 0, 0, 0);
             holder.bubbleDeliverd.setTextColor(Color.BLACK);
-            holder.bubbleText.setVisibility(View.VISIBLE);
+            //   holder.bubbleText.setVisibility(View.VISIBLE);
             holder.bubbleText.setText(content);
-            if (holder.bubbleImage != null) {
-                //holder.bubbleImage.get().setVisibility(View.GONE);
-                holder.bubbleImage.setVisibility(View.GONE);
-                if (holder.bubbleImage.getDrawable() != null) {
-                    Bitmap bitmap = ((BitmapDrawable) holder.bubbleImage.getDrawable()).getBitmap();
-                    if (bitmap != null) {
-                        bitmap.recycle();
-                    }
-                }
-                holder.bubbleImage.setImageDrawable(null);
-            }
+            holder.bubbleText.setOnLongClickListener(new BubbleOnClickListener(cM));
+//            if (holder.bubbleImage != null) {
+//                //holder.bubbleImage.get().setVisibility(View.GONE);
+//                holder.bubbleImage.setVisibility(View.GONE);
+//                if (holder.bubbleImage.getDrawable() != null) {
+//                    Bitmap bitmap = ((BitmapDrawable) holder.bubbleImage.getDrawable()).getBitmap();
+//                    if (bitmap != null) {
+//                        bitmap.recycle();
+//                    }
+//                }
+//                holder.bubbleImage.setImageDrawable(null);
+//            }
         } else if (cM.getMsgType() == ImageMsg.BYTE) {
             holder.bubbleDeliverd.setTextColor(Color.WHITE);
             // holder.bubbleTime.setPadding(0, 0, 0, 40);
@@ -144,8 +169,7 @@ public class ChatAdapter extends BaseAdapter {
             loadBitmap(content, holder.bubbleImage, imageMaxSize);
 
             //holder.bubbleImage.get().setVisibility(View.VISIBLE);
-            holder.bubbleText.setVisibility(View.GONE);
-
+            //       holder.bubbleText.setVisibility(View.GONE);
             holder.bubbleImage.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View view) {
 
@@ -158,8 +182,11 @@ public class ChatAdapter extends BaseAdapter {
 
         } else {
             holder.bubbleDeliverd.setTextColor(Color.BLACK);
-            holder.bubbleText.setVisibility(View.VISIBLE);
-            holder.bubbleText.setText("MsgType not implemented");
+            if (holder.bubbleText != null) {
+                holder.bubbleText.setVisibility(View.VISIBLE);
+                holder.bubbleText.setText("MsgType not implemented");
+            }
+
             if (holder.bubbleImage != null) {
                 holder.bubbleImage.setVisibility(View.GONE);
             }
@@ -241,7 +268,6 @@ public class ChatAdapter extends BaseAdapter {
 
         holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(cM, this));
 
-        holder.bubbleText.setOnLongClickListener(new BubbleOnClickListener(cM));
         return convertView;
     }
 
@@ -264,31 +290,40 @@ public class ChatAdapter extends BaseAdapter {
 
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
         String[] tmp = path.split("\n");
-
-        if (cancelPotentialWork(tmp[0], imageView)) {
-            //TODO set picture size for the imageView
-            // Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
-
+        final Bitmap bitmap = FlActivity.getBitmapFromMemCache(tmp[0]);
+        if (bitmap != null) {
             if (tmp.length == 4) {
-                int width = Integer.parseInt(tmp[1]);
-                int height = Integer.parseInt(tmp[2]);
-                int scale = Integer.parseInt(tmp[3]);
-                ViewGroup.LayoutParams lp = imageView.getLayoutParams();
-                lp.width = width;
-                lp.height = height;
-                imageView.setLayoutParams(lp);
-                imageView.setVisibility(View.VISIBLE);
-                // Toast.makeText(mContext, "ImageView: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
-                //imageView.setImageBitmap(bm);
-                final BitmapWorkerTask task = new BitmapWorkerTask(imageView, tmp[0], scale, width, height);
-                final AsyncDrawable asyncDrawable = new AsyncDrawable(mResources, null, task);
-                imageView.setImageDrawable(asyncDrawable);
-                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                imageView.setImageBitmap(bitmap);
             } else {
                 imageView.setVisibility(View.GONE);
-                //imageView.setImageResource(R.drawable.placeholder); 
-                //Toast.makeText(mContext, "ImageMsg content wrong length: " + tmp.length, Toast.LENGTH_SHORT).show();
+            }
+        } else {
 
+            if (cancelPotentialWork(tmp[0], imageView)) {
+                //TODO set picture size for the imageView
+                // Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
+
+                if (tmp.length == 4) {
+                    int width = Integer.parseInt(tmp[1]);
+                    int height = Integer.parseInt(tmp[2]);
+                    int scale = Integer.parseInt(tmp[3]);
+                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+                    lp.width = width;
+                    lp.height = height;
+                    imageView.setLayoutParams(lp);
+                    imageView.setVisibility(View.VISIBLE);
+                    // Toast.makeText(mContext, "ImageView: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
+                    //imageView.setImageBitmap(bm);
+                    final BitmapWorkerTask task = new BitmapWorkerTask(imageView, tmp[0], scale, width, height);
+                    final AsyncDrawable asyncDrawable = new AsyncDrawable(mResources, null, task);
+                    imageView.setImageDrawable(asyncDrawable);
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } else {
+                    imageView.setVisibility(View.GONE);
+                    //imageView.setImageResource(R.drawable.placeholder); 
+                    //Toast.makeText(mContext, "ImageMsg content wrong length: " + tmp.length, Toast.LENGTH_SHORT).show();
+
+                }
             }
         }
     }
@@ -318,13 +353,14 @@ public class ChatAdapter extends BaseAdapter {
                 if (height != 0 && width != 0 && bm.get() != null) {
                     bm = new WeakReference<Bitmap>(Bitmap.createScaledBitmap(bm.get(), width, height, false));
                 } else {
-                    Main.sendBroadCastMsg("Bm: " + bm.get() + " after decoding!\n" + path);
+                    //  Main.sendBroadCastMsg("Bm: " + bm.get() + " after decoding!\n" + path);
                 }
             } catch (Throwable e) {
                 Main.sendBroadCastMsg("Error while scaling" + width + " " + height + "\n" + path
                         + "\n" + ExceptionLogger.stacktrace2String(e));
             }
             if (bm != null) {
+                FlActivity.addBitmapToMemoryCache(path, bm.get());
                 return bm.get();
             } else {
                 return null;
@@ -344,10 +380,10 @@ public class ChatAdapter extends BaseAdapter {
                 final ImageView imageView = imageViewReference.get();
                 final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
-//                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
-//                    lp.width = LayoutParams.WRAP_CONTENT;
-//                    lp.height = LayoutParams.WRAP_CONTENT;
-//                    imageView.setLayoutParams(lp);
+                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+                    lp.width = LayoutParams.WRAP_CONTENT;
+                    lp.height = LayoutParams.WRAP_CONTENT;
+                    imageView.setLayoutParams(lp);
                     imageView.setImageBitmap(bitmap);
 
                 }
@@ -433,8 +469,6 @@ public class ChatAdapter extends BaseAdapter {
 
         o2.inSampleSize = scale;
         o2.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-
 
         Bitmap bm = null;
         try {
