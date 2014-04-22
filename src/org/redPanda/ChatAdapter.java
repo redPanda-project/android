@@ -294,6 +294,7 @@ public class ChatAdapter extends BaseAdapter {
         if (bitmap != null) {
             if (tmp.length == 4) {
                 imageView.setImageBitmap(bitmap);
+                imageView.setVisibility(View.VISIBLE);
             } else {
                 imageView.setVisibility(View.GONE);
             }
