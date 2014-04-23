@@ -218,8 +218,8 @@ public class ChatActivity extends ListActivity {
                         merge(it.next());
                     }
                     cA.notifyDataSetChanged();
-                    getListView().setSelection(cA.mMessages.size() - 1);
-                    System.out.println("12345 " + cA.mMessages.size());
+                    //getListView().setSelection(cA.mMessages.size() - 1);
+                    //System.out.println("12345 " + cA.mMessages.size());
                     break;
 
                 default:
@@ -228,7 +228,7 @@ public class ChatActivity extends ListActivity {
         }
 
         public void merge(final TextMessageContent tmc) {
-
+//TODO do the merge in Background
             if (tmc.message_type == DeliveredMsg.BYTE) {
 
                 if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
@@ -339,7 +339,7 @@ public class ChatActivity extends ListActivity {
                 TextMessageContent tmptmc = new TextMessageContent();
                 tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
                 tmptmc.message_type = ChatAdapter.daydevider;
-                cA.mMessages.add(new ChatMsg(tmc));
+                cA.mMessages.add(new ChatMsg(tmptmc));
 
             } else {
                 oCM = cA.mMessages.get(cA.mMessages.size() - 1);
