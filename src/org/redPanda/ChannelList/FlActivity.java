@@ -22,7 +22,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.ClipboardManager;
 import android.text.InputType;
-import android.util.LruCache;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -53,6 +52,7 @@ import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Peer;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
+import android.support.v4.util.LruCache;
 
 /**
  *
