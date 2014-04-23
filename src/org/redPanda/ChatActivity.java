@@ -12,7 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,11 +27,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +46,7 @@ import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.messages.DeliveredMsg;
+import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
@@ -158,6 +164,23 @@ public class ChatActivity extends ListActivity {
         startActivity(intent);
     }
 
+    class MergeTask extends AsyncTask<Integer, Void, ArrayList<ChatMsg>> {
+
+        public MergeTask(ImageView imageView, String path, int scale, int width, int height) {
+
+        }
+
+        @Override
+        protected ArrayList<ChatMsg> doInBackground(Integer... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<ChatMsg> al) {
+
+        }
+    }
+
     /**
      * Handler of incoming messages from service.
      */
@@ -185,7 +208,6 @@ public class ChatActivity extends ListActivity {
 //                    if (t.message_type != DeliveredMsg.BYTE) {
 //                        getListView().setSelection(cA.mMessages.size() - 1);
 //                    }
-
                     //  System.out.println( "12345 "+genReadableText(msg));                   
                     break;
                 case BS.NEW_MSGL:
@@ -232,26 +254,26 @@ public class ChatActivity extends ListActivity {
 
                 boolean found = false;
                 //String hans = "";
-                String deliveredTo = "";
-                for (ChatMsg cM : cA.mMessages) {
-
-                    //hans += " " + message.ts;
-                    //todo: wird nur timestamp überprüft
-                    if (time == cM.getTimestamp()) {
-                        deliveredTo = cM.getDeliverdTo();
-                        found = true;
-
-                        if (deliveredTo.equals("")) {
-                            deliveredTo = tmc.getName();
-                        } else {
-                            deliveredTo += " " + tmc.getName();
-                        }
-                        cM.setDeliverdTo(deliveredTo);
-                        return;
-                    } else {
-                    }
-
-                }
+                String deliveredTo = tmc.getName();
+//                for (ChatMsg cM : cA.mMessages) {
+//
+//                    //hans += " " + message.ts;
+//                    //todo: wird nur timestamp überprüft
+//                    if (time == cM.getTimestamp()) {
+//                        deliveredTo = cM.getDeliverdTo();
+//                        found = true;
+//
+//                        if (deliveredTo.equals("")) {
+//                            deliveredTo = tmc.getName();
+//                        } else {
+//                            deliveredTo += " " + tmc.getName();
+//                        }
+//                        cM.setDeliverdTo(deliveredTo);
+//                        return;
+//                    } else {
+//                    }
+//
+//                }
 
                 //final String hhans = hans;
 //                if (!found) {
@@ -280,12 +302,59 @@ public class ChatActivity extends ListActivity {
 //                    cM = new ListMessage(tmc);
 //                }
             }
+
+            if (tmc.message_type == ImageMsg.BYTE) {
+
+                String[] tmp = tmc.text.split("\n");
+                if (tmp.length == 3) {
+                    double width = Integer.parseInt(tmp[1]);
+                    double height = Integer.parseInt(tmp[2]);
+                    int scale = 1;
+//                                while (width / 2 > ChatAdapter.imageMaxSize) {
+//                                    width = width / 2;
+//                                    height = height / 2;
+//                                    scale *= 2;
+//                                }
+                    double tmpdouble = ChatAdapter.imageMaxSize * 0.6;
+                    int reqWidth = (int) tmpdouble;
+
+                    if (width > reqWidth) {
+                        final double ratio = width / reqWidth;
+
+                        height = height * 1 / ratio;
+                        width = tmpdouble;
+                        scale = (int) Math.round(ratio);
+                    }
+                    tmc.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
+                }
+
+            }
+
             Date date = new Date(tmc.getTimestamp());
-            String time = ChatAdapter.formatTime(date);
+            String time = ChatAdapter.formatTime(date, false);
 
-            cM = new ChatMsg(tmc.getText(), time, tmc.getName(), tmc.identity, tmc.getTimestamp(), tmc.fromMe, (byte) tmc.message_type);
+            cM = new ChatMsg(tmc.getText(), time, tmc.getName(), tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type);
+            ChatMsg oCM;
+            if (cA.mMessages.isEmpty()) {
+                TextMessageContent tmptmc = new TextMessageContent();
+                tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
+                tmptmc.message_type = ChatAdapter.daydevider;
+                cA.mMessages.add(new ChatMsg(tmc));
 
+            } else {
+                oCM = cA.mMessages.get(cA.mMessages.size() - 1);
+                String d, oD;
+                d = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
+                oD = ChatAdapter.formatTime(new Date(oCM.getTimestamp()), true);
+                if (!d.equals(oD)) {
+                    TextMessageContent tmptmc = new TextMessageContent();
+                    tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
+                    tmptmc.message_type = ChatAdapter.daydevider;
+                    cA.mMessages.add(new ChatMsg(tmptmc));
+                }
+            }
             cA.mMessages.add(cM);
+
         }
     }
     /**
@@ -490,13 +559,9 @@ public class ChatActivity extends ListActivity {
             @Override
             public void run() {
 
-
-
                 switch (requestCode) {
                     case SELECT_PHOTO:
                         if (resultCode == RESULT_OK) {
-
-
 
                             Uri selectedImage = imageReturnedIntent.getData();
                             String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -508,8 +573,6 @@ public class ChatActivity extends ListActivity {
                             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                             final String filePath = cursor.getString(columnIndex);
                             cursor.close();
-
-
 
                             Main.sendImageToChannel(chan, filePath);
 

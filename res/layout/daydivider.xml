@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:id="@+id/ddText"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:shadowDx="1"
+    android:shadowDy="1"
+    android:textColor="#ffffff"
+    android:text="Medium Text"
+    android:layout_centerHorizontal="true"
+    android:textSize="15sp"
+    android:textStyle="bold"
+>  
+</TextView>
+
+
+    
+    
+
+
+  

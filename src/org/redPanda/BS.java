@@ -24,6 +24,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -112,34 +113,7 @@ public class BS extends Service {
                     }
 
                     ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
-                    for (TextMessageContent tmc : ml) {
-                        if (tmc.message_type == ImageMsg.BYTE) {
-
-                            String[] tmp = tmc.text.split("\n");
-                            if (tmp.length == 3) {
-                                double width = Integer.parseInt(tmp[1]);
-                                double height = Integer.parseInt(tmp[2]);
-                                int scale = 1;
-//                                while (width / 2 > ChatAdapter.imageMaxSize) {
-//                                    width = width / 2;
-//                                    height = height / 2;
-//                                    scale *= 2;
-//                                }
-                                double tmpdouble = ChatAdapter.imageMaxSize * 0.6;
-                                int reqWidth = (int) tmpdouble;
-
-                                if (width > reqWidth) {
-                                    final double ratio = width / reqWidth;
-
-                                    height = height * 1 / ratio;
-                                    width = tmpdouble;
-                                    scale = (int) Math.round(ratio);
-                                }
-                                tmc.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
-                            }
-
-                        }
-                    }
+                   
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
                     Bundle b2 = new Bundle();
