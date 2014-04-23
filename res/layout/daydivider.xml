@@ -11,6 +11,8 @@
     android:layout_centerHorizontal="true"
     android:textSize="15sp"
     android:textStyle="bold"
+    android:paddingBottom="5dp"
+    android:paddingTop="5dp"
 >  
 </TextView>
 

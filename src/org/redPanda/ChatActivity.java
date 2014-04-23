@@ -247,7 +247,7 @@ public class ChatActivity extends ListActivity {
                 wrap.get();//skip message_type
                 long identity = wrap.getLong();
                 byte public_type = wrap.get();
-                long time = wrap.getLong();
+                long timestamp = wrap.getLong();
                 int nonce = wrap.getInt();
 
                 tmc.identity = identity;
@@ -255,24 +255,24 @@ public class ChatActivity extends ListActivity {
                 boolean found = false;
                 //String hans = "";
                 String deliveredTo = tmc.getName();
-//                for (ChatMsg cM : cA.mMessages) {
-//
-//                    //hans += " " + message.ts;
-//                    //todo: wird nur timestamp überprüft
-//                    if (time == cM.getTimestamp()) {
-//                        deliveredTo = cM.getDeliverdTo();
-//                        found = true;
-//
-//                        if (deliveredTo.equals("")) {
-//                            deliveredTo = tmc.getName();
-//                        } else {
-//                            deliveredTo += " " + tmc.getName();
-//                        }
-//                        cM.setDeliverdTo(deliveredTo);
-//                        return;
-//                    } else {
-//                    }
-//
+                for (ChatMsg cM : cA.mMessages) {
+
+                    //hans += " " + message.ts;
+                    //todo: wird nur timestamp überprüft
+                    if (timestamp == cM.getTimestamp()) {
+                        deliveredTo = cM.getDeliverdTo();
+                        found = true;
+
+                        if (deliveredTo.equals("")) {
+                            deliveredTo = tmc.getName();
+                        } else {
+                            deliveredTo += " " + tmc.getName();
+                        }
+                        cM.setDeliverdTo(deliveredTo);
+                        return;
+                    } else {
+                    }
+                }
 //                }
 
                 //final String hhans = hans;
@@ -357,6 +357,7 @@ public class ChatActivity extends ListActivity {
 
         }
     }
+
     /**
      * Target we publish for clients to send messages to IncomingHandler.
      */
@@ -367,14 +368,14 @@ public class ChatActivity extends ListActivity {
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
-            // This is called when the connection with the service has been
+                // This is called when the connection with the service has been
             // established, giving us the service object we can use to
             // interact with the service.  We are communicating with our
             // service through an IDL interface, so get a client-side
             // representation of that from the raw service object.
             mService = new Messenger(service);
 
-            // We want to monitor the service for as long as we are
+                // We want to monitor the service for as long as we are
             // connected to it.
             new Thread() {
                 @Override
@@ -389,7 +390,7 @@ public class ChatActivity extends ListActivity {
                         mService.send(msg);
 
                     } catch (RemoteException e) {
-                        // In this case the service has crashed before we could even
+                            // In this case the service has crashed before we could even
                         // do anything with it; we can count on soon being
                         // disconnected (and then reconnected if it can be restarted)
                         // so there is no need to do anything here.
@@ -401,7 +402,7 @@ public class ChatActivity extends ListActivity {
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
+                // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
             doBindService();
@@ -410,7 +411,7 @@ public class ChatActivity extends ListActivity {
     };
 
     void doBindService() {
-        // Establish a connection with the service.  We use an explicit
+            // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
         mIsBound = bindService(new Intent(ChatActivity.this,
@@ -420,7 +421,7 @@ public class ChatActivity extends ListActivity {
 
     void doUnbindService() {
         if (mIsBound) {
-            // If we have received the service, and hence registered with
+                // If we have received the service, and hence registered with
             // it, then now is the time to unregister.
             if (mService != null) {
                 try {
@@ -432,7 +433,7 @@ public class ChatActivity extends ListActivity {
                     msg.replyTo = mMessenger;
                     mService.send(msg);
                 } catch (RemoteException e) {
-                    // There is nothing special we need to do if the service
+                        // There is nothing special we need to do if the service
                     // has crashed.
                 }
             }
@@ -444,7 +445,8 @@ public class ChatActivity extends ListActivity {
         }
     }
 
-    public static String genReadableText(Message msg) {
+
+public static String genReadableText(Message msg) {
         long sendTime = msg.getData().getLong("sendtime");
         String str = msg.getData().getString("msg");
         Date date = new Date(sendTime);
@@ -477,7 +479,7 @@ public class ChatActivity extends ListActivity {
     }
 
     @Override
-    protected void onResume() {
+        protected void onResume() {
         super.onResume();
         if (chan != null) {
             BS.currentViewedChannel = chan.getId();
@@ -490,13 +492,13 @@ public class ChatActivity extends ListActivity {
     }
 
     @Override
-    protected void onPause() {
+        protected void onPause() {
         super.onPause();
         BS.currentViewedChannel = -100;
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+        protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
     }
 
@@ -513,13 +515,13 @@ public class ChatActivity extends ListActivity {
      * Clears all activitys and starts the FlActivity
      */
     @Override
-    public void onBackPressed() {
+        public void onBackPressed() {
         backToFlActivity();
         finish();
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+        public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 backToFlActivity();
@@ -544,20 +546,20 @@ public class ChatActivity extends ListActivity {
 //    }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+        public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.chat_menu, menu);
         return true;
     }
 
     @Override
-    protected void onActivityResult(final int requestCode, final int resultCode,
+        protected void onActivityResult(final int requestCode, final int resultCode,
             final Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
         new Thread() {
             @Override
-            public void run() {
+        public void run() {
 
                 switch (requestCode) {
                     case SELECT_PHOTO:
