@@ -22,6 +22,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -344,7 +345,12 @@ public class ChatAdapter extends BaseAdapter {
                     final BitmapWorkerTask task = new BitmapWorkerTask(imageView, tmp[0], scale, width, height);
                     final AsyncDrawable asyncDrawable = new AsyncDrawable(mResources, null, task);
                     imageView.setImageDrawable(asyncDrawable);
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        task.execute();
+                    }
                 } else {
                     imageView.setVisibility(View.GONE);
                     //imageView.setImageResource(R.drawable.placeholder); 
