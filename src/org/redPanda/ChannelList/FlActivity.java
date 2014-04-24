@@ -14,6 +14,7 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -80,7 +81,13 @@ public class FlActivity extends Activity {
             protected int sizeOf(String key, Bitmap bitmap) {
                 // The cache size will be measured in kilobytes rather than
                 // number of items.
-                return bitmap.getByteCount() / 1024;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    return bitmap.getByteCount() / 1024;
+                } else {
+                    return bitmap.getRowBytes() * bitmap.getHeight();
+                }
+
             }
         };
 
