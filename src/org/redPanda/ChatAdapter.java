@@ -393,7 +393,6 @@ public class ChatAdapter extends BaseAdapter {
                         + "\n" + ExceptionLogger.stacktrace2String(e));
             }
             if (bm != null) {
-                FlActivity.addBitmapToMemoryCache(path, bm.get());
                 return bm.get();
             } else {
                 return null;
@@ -403,7 +402,9 @@ public class ChatAdapter extends BaseAdapter {
         // Once complete, see if ImageView is still around and set bitmap.
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-
+            if (bitmap != null) {
+                FlActivity.addBitmapToMemoryCache(path, bitmap);
+            }
             if (isCancelled()) {
                 bitmap = null;
 
@@ -411,6 +412,7 @@ public class ChatAdapter extends BaseAdapter {
             //   Toast.makeText(mContext, "Bitmap: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
             if (imageViewReference != null && bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
+
                 final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
                     ViewGroup.LayoutParams lp = imageView.getLayoutParams();
