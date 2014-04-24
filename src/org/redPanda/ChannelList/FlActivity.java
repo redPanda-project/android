@@ -85,7 +85,7 @@ public class FlActivity extends Activity {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     return bitmap.getByteCount() / 1024;
                 } else {
-                    return bitmap.getRowBytes() * bitmap.getHeight();
+                    return bitmap.getRowBytes() * bitmap.getHeight()/1024;
                 }
 
             }
