@@ -40,7 +40,7 @@ public class ConnectivityChanged extends BroadcastReceiver {
 
         if (wifi.isConnected()) {
             Settings.connectToNewClientsTill = Long.MAX_VALUE;
-            Settings.MIN_CONNECTIONS = 6;
+            Settings.MIN_CONNECTIONS = 3;
         } else if (mobile.isConnected()) {
 
 
