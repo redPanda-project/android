@@ -9,6 +9,7 @@ package org.redPanda;
  * @author mflohr
  */
 import android.app.AlertDialog;
+import android.app.Notification.Action;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -42,6 +43,7 @@ import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import org.hsqldb.lib.tar.RB;
 import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.Main;
@@ -49,6 +51,7 @@ import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMsg;
+import org.teleal.cling.controlpoint.ActionCallback;
 
 /**
  *
@@ -659,8 +662,21 @@ public class ChatAdapter extends BaseAdapter {
                     Test.localSettings.identity2Name.remove(cM.getIdentity());
                     Test.localSettings.identity2Name.put(cM.getIdentity(), input.getText().toString());
                     Test.localSettings.save();
-                    cM.setName(input.getText().toString());
                     cA.notifyDataSetChanged();
+                    final FlActivity fl = (FlActivity) FlActivity.context;
+                    fl.lv.invalidateViews();
+                    ChannelViewElement cve = fl.channels.get(fl.channels.size() - 1);
+                    fl.channels.remove(fl.channels.size() - 1);
+                    fl.adapter.notifyDataSetChanged();
+                    fl.channels.add(cve);
+                    
+                    fl.runOnUiThread(new Runnable() {
+
+                        public void run() {
+                            fl.adapter.notifyDataSetChanged();
+                        }
+                    });                   
+
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

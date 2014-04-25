@@ -66,7 +66,7 @@ public class FlActivity extends Activity {
     private boolean active;
     TextView infotext;
     public static Context context;
-    ListView lv;
+    public ListView lv;
     public static LruCache<String, Bitmap> mMemoryCache;
 
     @Override
@@ -85,7 +85,7 @@ public class FlActivity extends Activity {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     return bitmap.getByteCount() / 1024;
                 } else {
-                    return bitmap.getRowBytes() * bitmap.getHeight()/1024;
+                    return bitmap.getRowBytes() * bitmap.getHeight() / 1024;
                 }
 
             }
@@ -109,7 +109,6 @@ public class FlActivity extends Activity {
         infotext.setTextColor(Color.BLUE);
         newChButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
                 builder.setTitle("Erstelle neuen Channel");
 
@@ -273,7 +272,6 @@ public class FlActivity extends Activity {
             intent.putExtra("Channel", clickedChannel);
             //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
             startActivity(intent);
 
         }
@@ -570,7 +568,8 @@ public class FlActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
-        adapter.notifyDataSetChanged();
+        adapter.notifyDataSetInvalidated();
+        active = true;
     }
 
     @Override

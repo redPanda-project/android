@@ -7,6 +7,7 @@ package org.redPanda;
 
 import android.graphics.Color;
 import java.util.Date;
+import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
@@ -15,16 +16,15 @@ import org.redPandaLib.core.messages.TextMessageContent;
  */
 public class ChatMsg {
 
-    private String text, time, deliverdTo = "", name;
+    private String text, time, deliverdTo = "";
     private long identity, timestamp;
     private boolean fromMe;
     private int MsgType;
     private int color;
 
-    public ChatMsg(String text, String time, String name, long identity, long timestamp, boolean fromMe, int MsgType) {
+    public ChatMsg(String text, String time, long identity, long timestamp, boolean fromMe, int MsgType) {
         this.text = text;
         this.time = time;
-        this.name = name;
         this.identity = identity;
         this.timestamp = timestamp;
         this.fromMe = fromMe;
@@ -35,7 +35,6 @@ public class ChatMsg {
     public ChatMsg(TextMessageContent tmc) {
         this.text = tmc.text;
         this.time = ChatAdapter.formatTime(new Date(tmc.timestamp), false);
-        this.name = tmc.getName();
         this.identity = tmc.identity;
         this.timestamp = tmc.timestamp;
         this.fromMe = tmc.fromMe;
@@ -60,9 +59,6 @@ public class ChatMsg {
         return color;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public long getTimestamp() {
         return timestamp;
@@ -73,7 +69,7 @@ public class ChatMsg {
     }
 
     public String getName() {
-        return name;
+        return Test.localSettings.identity2Name.get(identity);
     }
 
     public boolean isFromMe() {

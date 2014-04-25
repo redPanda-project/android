@@ -160,7 +160,9 @@ public class ChatActivity extends ListActivity {
         //super.onBackPressed();
         Intent intent;
         intent = new Intent(ChatActivity.this, FlActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        //TODO look at flags
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        
         startActivity(intent);
     }
 
@@ -333,7 +335,7 @@ public class ChatActivity extends ListActivity {
             Date date = new Date(tmc.getTimestamp());
             String time = ChatAdapter.formatTime(date, false);
 
-            cM = new ChatMsg(tmc.getText(), time, tmc.getName(), tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type);
+            cM = new ChatMsg(tmc.getText(), time, tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type);
             ChatMsg oCM;
             if (cA.mMessages.isEmpty()) {
                 TextMessageContent tmptmc = new TextMessageContent();

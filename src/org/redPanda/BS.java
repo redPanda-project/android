@@ -539,14 +539,17 @@ public class BS extends Service {
                 }
                 String text = "";
                 if (msg.message_type == TextMsg.BYTE) {
-                    text = from + ": " + msg.getText();
+                    //text = from + ": " + msg.getText();
+                    text = msg.getText();
                 } else if (msg.message_type == ImageMsg.BYTE) {
-                    text = from + ": " + "Picture";
+                   // text = from + ": " + "Picture";
+                    text="Picture";
                 }
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
                 SharedPreferences.Editor edit = sharedPref.edit();
                 edit.putLong("lastMessageForChannel" + id, time);
                 edit.putString("lastMessageTextForChannel" + id, text);
+                edit.putString("lastMessageTextForChannelid" + id, ""+msg.getIdentity());
                 edit.commit();
 
                 //
