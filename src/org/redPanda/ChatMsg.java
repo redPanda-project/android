@@ -59,7 +59,6 @@ public class ChatMsg {
         return color;
     }
 
-
     public long getTimestamp() {
         return timestamp;
     }
@@ -69,7 +68,10 @@ public class ChatMsg {
     }
 
     public String getName() {
-        return Test.localSettings.identity2Name.get(identity);
+        if (Test.localSettings.identity2Name.containsKey(identity)) {
+            return Test.localSettings.identity2Name.get(identity);
+        }
+        return "unknown";
     }
 
     public boolean isFromMe() {

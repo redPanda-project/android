@@ -78,9 +78,13 @@ public class ChannelViewElement extends Channel {
                 if (Test.localSettings.identity == identity) {
                     lastMessageText = "Me: " + sharedPref.getString("lastMessageTextForChannel" + id, "-");
                 } else {
-                    lastMessageText = Test.localSettings.identity2Name.get(identity) + ": " + sharedPref.getString("lastMessageTextForChannel" + id, "-");
+                    String from = "unknown";
+                    if (Test.localSettings.identity2Name.containsKey(identity)) {
+                        from = Test.localSettings.identity2Name.get(identity);
+                    }
+                    lastMessageText = from + ": " + sharedPref.getString("lastMessageTextForChannel" + id, "-");
                 }
-               // Toast.makeText(FlActivity.context, Test.localSettings.identity2Name.get(identity) + "", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(FlActivity.context, Test.localSettings.identity2Name.get(identity) + "", Toast.LENGTH_SHORT).show();
             }
         }
 
