@@ -9,7 +9,6 @@ package org.redPanda;
  * @author mflohr
  */
 import android.app.AlertDialog;
-import android.app.Notification.Action;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -41,9 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import org.hsqldb.lib.tar.RB;
 import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.Main;
@@ -51,7 +48,6 @@ import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMsg;
-import org.teleal.cling.controlpoint.ActionCallback;
 
 /**
  *

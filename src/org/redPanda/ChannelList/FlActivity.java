@@ -54,6 +54,7 @@ import org.redPandaLib.core.Peer;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import android.support.v4.util.LruCache;
+import org.redPandaLib.core.PeerTrustData;
 
 /**
  *
@@ -233,6 +234,30 @@ public class FlActivity extends Activity {
 
         doBindService();
         this.registerForContextMenu(lv);
+
+
+
+        // Get intent, action and MIME type
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                //handleSendText(intent); // Handle text being sent
+            } else if (type.startsWith("image/")) {
+                handleSendImage(intent); // Handle single image being sent
+            }
+        } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null) {
+            if (type.startsWith("image/")) {
+                handleSendMultipleImages(intent); // Handle multiple images being sent
+            }
+        } else {
+            // Handle other intents, such as being started from the home screen
+        }
+
+
+
     }
 
     private class OnItemClickListenerImpl implements OnItemClickListener {
@@ -603,12 +628,21 @@ public class FlActivity extends Activity {
                             }
                         }
 
+
+                        int trustedIps = 0;
+                        final ArrayList<PeerTrustData> clonedTrusts = (ArrayList<PeerTrustData>) Test.peerTrusts.clone();
+
+                        for (PeerTrustData ptd : clonedTrusts) {
+                            trustedIps += ptd.ips.size();
+                        }
+
+                        final int trustedIpsFinal = trustedIps;
                         final int activeConnections = actCons;
                         final int connectingConnections = connectingCons;
 
                         infotext.post(new Runnable() {
                             public void run() {
-                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size());
+                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal);
                             }
                         });
                     } else {
@@ -653,5 +687,19 @@ public class FlActivity extends Activity {
         startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(startMain);
         finish();
+    }
+
+    void handleSendImage(Intent intent) {
+        Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (imageUri != null) {
+            // Update UI to reflect image being shared
+        }
+    }
+
+    void handleSendMultipleImages(Intent intent) {
+        ArrayList<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        if (imageUris != null) {
+            // Update UI to reflect multiple images being shared
+        }
     }
 }
