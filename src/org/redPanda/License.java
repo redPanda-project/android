@@ -74,6 +74,8 @@ public class License extends Activity {
                 + "\n"
                 + "    bitcoinj (http://code.google.com/p/bitcoinj/)\n"
                 + "    android support libriaries\n"
+                + "    android-quick-response-code (https://code.google.com/p/android-quick-response-code/)\n"
+                + "    ZXing (https://github.com/zxing/zxing)\n"
                 + "\n"
                 + "    guava-libraries (http://code.google.com/p/guava-libraries/)\n"
                 + "\n"
