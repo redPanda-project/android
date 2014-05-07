@@ -54,6 +54,7 @@ import org.redPandaLib.core.Peer;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import android.support.v4.util.LruCache;
+import com.jwetherell.quick_response_code.CaptureActivity;
 import org.redPandaLib.core.PeerTrustData;
 
 /**
@@ -69,9 +70,11 @@ public class FlActivity extends Activity {
     public static Context context;
     public ListView lv;
     public static LruCache<String, Bitmap> mMemoryCache;
+    public String qrtext = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        importChannelfromIntent();
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
 
         // Use 1/8th of the available memory for this memory cache.
@@ -106,6 +109,7 @@ public class FlActivity extends Activity {
         setContentView(R.layout.fl);
 
         Button newChButton = (Button) findViewById(R.id.NKButton);
+
         infotext = (TextView) findViewById(R.id.infotext);
         infotext.setTextColor(Color.BLUE);
         newChButton.setOnClickListener(new View.OnClickListener() {
@@ -152,6 +156,16 @@ public class FlActivity extends Activity {
 
             }
         });
+        Button newChByQRButton = (Button) findViewById(R.id.NKByQRButton);
+
+        newChByQRButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View arg0) {
+                Intent is;
+                is = new Intent(FlActivity.this, QRCaptureActivity.class);
+                startActivity(is);
+            }
+        });
+
         Button impButton = (Button) findViewById(R.id.imbutton);
         impButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
@@ -235,8 +249,6 @@ public class FlActivity extends Activity {
         doBindService();
         this.registerForContextMenu(lv);
 
-
-
         // Get intent, action and MIME type
         Intent intent = getIntent();
         String action = intent.getAction();
@@ -255,8 +267,6 @@ public class FlActivity extends Activity {
         } else {
             // Handle other intents, such as being started from the home screen
         }
-
-
 
     }
 
@@ -308,7 +318,7 @@ public class FlActivity extends Activity {
         if (v.getId() == R.id.chanlist) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             menu.setHeaderTitle(channels.get(info.position).toString());
-            String[] menuItems = {"Open", "Share", "Edit", "Delete"};
+            String[] menuItems = {"Open", "Share", "Share by QR", "Edit", "Delete"};
             for (int i = 0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
             }
@@ -331,7 +341,7 @@ public class FlActivity extends Activity {
                 intent.putExtra("Channel", channels.get(pos));
                 startActivity(intent);
                 break;
-            case 2:
+            case 3:
                 Intent intent2 = new Intent(this, ChanPref.class);
                 Bundle b = new Bundle();
                 b.putSerializable("Channel", channels.get(pos));
@@ -355,7 +365,7 @@ public class FlActivity extends Activity {
                 Toast.makeText(FlActivity.this, "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
 
                 break;
-            case 3:
+            case 4:
                 Main.removeChannel(channels.get(pos));
 
                 Message msg = Message.obtain(null,
@@ -366,6 +376,13 @@ public class FlActivity extends Activity {
                 } catch (RemoteException ex) {
                     Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                break;
+            case 2:
+                Intent inte;
+                inte = new Intent(FlActivity.this, QRCodeActivity.class);
+                inte.putExtra("title", channels.get(pos).toString());
+                inte.putExtra("Key", channels.get(pos).exportForHumans());
+                startActivity(inte);
                 break;
             default:
                 break;
@@ -592,6 +609,7 @@ public class FlActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        importChannelfromIntent();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
         adapter.notifyDataSetInvalidated();
         active = true;
@@ -606,6 +624,7 @@ public class FlActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+        importChannelfromIntent();
         active = true;
 
         new Thread() {
@@ -627,7 +646,6 @@ public class FlActivity extends Activity {
                                 connectingCons++;
                             }
                         }
-
 
                         int trustedIps = 0;
                         final ArrayList<PeerTrustData> clonedTrusts = (ArrayList<PeerTrustData>) Test.peerTrusts.clone();
@@ -701,5 +719,37 @@ public class FlActivity extends Activity {
         if (imageUris != null) {
             // Update UI to reflect multiple images being shared
         }
+    }
+
+    public void importChannelfromIntent() {
+        Intent intent1 = getIntent();
+        if (intent1 != null) {
+            if (intent1.getExtras() != null) {
+                if (intent1.getExtras().getBoolean("newChannel") == true) {
+                    Message msg = Message.obtain(null,
+                            BS.ADD_CHANNEL);
+                    Bundle b = new Bundle();
+                    b.putString("name", intent1.getExtras().getString("ChannelName"));
+                    b.putString("key", intent1.getExtras().getString("ChannelKey"));
+                    msg.setData(b);
+                    msg.replyTo = mMessenger;
+                    try {
+                        mService.send(msg);
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    msg = Message.obtain(null,
+                            BS.GET_CHANNELS);
+                    msg.replyTo = mMessenger;
+                    try {
+                        mService.send(msg);
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                }
+            }
+        }
+
     }
 }

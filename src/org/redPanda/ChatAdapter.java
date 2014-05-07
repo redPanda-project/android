@@ -55,7 +55,7 @@ import org.redPandaLib.core.messages.TextMsg;
 public class ChatAdapter extends BaseAdapter {
 
     final static int daydevider = 5;
-    final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
+  public  final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
     private Bitmap placeholderBitmap;
@@ -264,7 +264,11 @@ public class ChatAdapter extends BaseAdapter {
             //  params.addRule(RelativeLayout.RIGHT_OF, R.id.bubbleHead);
             // holder.bubble.setGravity(Gravity.LEFT);
             //  lp = (LayoutParams) holder.bubble.getLayoutParams();
-            holder.bubbleHead.setText(cM.getName());
+            if (cM.getName().equals("")) {
+                holder.bubbleHead.setText("    ");
+            } else {
+                holder.bubbleHead.setText(cM.getName());
+            }
             //params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
             //            String strhex = Long.toHexString(cM.getIdentity()).toUpperCase();
             //            strhex = strhex.substring(strhex.length()-6, strhex.length());
@@ -665,13 +669,13 @@ public class ChatAdapter extends BaseAdapter {
                     fl.channels.remove(fl.channels.size() - 1);
                     fl.adapter.notifyDataSetChanged();
                     fl.channels.add(cve);
-                    
+
                     fl.runOnUiThread(new Runnable() {
 
                         public void run() {
                             fl.adapter.notifyDataSetChanged();
                         }
-                    });                   
+                    });
 
                 }
             });
