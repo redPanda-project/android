@@ -74,7 +74,6 @@ public class FlActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        importChannelfromIntent();
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
 
         // Use 1/8th of the available memory for this memory cache.
@@ -514,7 +513,7 @@ public class FlActivity extends Activity {
                 // disconnected (and then reconnected if it can be restarted)
                 // so there is no need to do anything here.
             }
-
+            importChannelfromIntent();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -609,7 +608,6 @@ public class FlActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        importChannelfromIntent();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
         adapter.notifyDataSetInvalidated();
         active = true;
@@ -624,7 +622,6 @@ public class FlActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        importChannelfromIntent();
         active = true;
 
         new Thread() {
