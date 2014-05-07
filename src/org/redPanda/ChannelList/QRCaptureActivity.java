@@ -111,8 +111,8 @@ public class QRCaptureActivity extends DecoderActivity {
                 //TODO look at flags
                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 intent.putExtra("newChannel", true);
-                intent.putExtra("ChannelName", name.getText());
-                intent.putExtra("ChannelKey", key.getText());
+                intent.putExtra("ChannelName", name.getText().toString());
+                intent.putExtra("ChannelKey", key.getText().toString());
                 startActivity(intent);
 
             }
