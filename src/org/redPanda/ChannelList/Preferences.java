@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
@@ -310,10 +311,17 @@ public class Preferences extends PreferenceActivity {
                 File file = Environment.getExternalStorageDirectory();
                 final String path = file.getAbsolutePath() + "/redpanda/";
                 file = new File(path);
+                TextView tv = new TextView(con);
                 ListView lv = new ListView(con);
                 final String[] asd = file.list();
-                ListAdapter ad = new ArrayAdapter(con, R.id.message_text, asd);
+                ListAdapter ad = new ArrayAdapter(con, tv.getId(), asd);
                 lv.setAdapter(ad);
+                lv.setFocusableInTouchMode(true);
+                if (asd.length != 0) {
+                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath() + "\n" + asd[0], Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                }
                 lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -332,7 +340,6 @@ public class Preferences extends PreferenceActivity {
                         key.setHint("Password");
                         key.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                         name.setVisibility(View.GONE);
-                        String pw = "";
 //                final EditText input = new EditText(FlActivity.this);
 //                
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
@@ -344,9 +351,9 @@ public class Preferences extends PreferenceActivity {
                         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                boolean asd =Main.restoreBackup(path, key.getText().toString());
+                                boolean asd = Main.restoreBackup(path, key.getText().toString());
                                 if (asd) {
-                                    Toast.makeText(Preferences.this, "Imported "+path+" successful", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Preferences.this, "Imported " + path + " successful", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(Preferences.this, "Import failed.", Toast.LENGTH_SHORT).show();
 
