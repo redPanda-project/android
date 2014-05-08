@@ -61,7 +61,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 372;
+    public static final int VERSION = 381;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -85,7 +85,7 @@ public class BS extends Service {
     private ArrayList<Channel> chanlist;
     private final HashMap<Channel, ArrayList<Messenger>> hm = new HashMap<Channel, ArrayList<Messenger>>();
     private Messenger flm;
-    private SqLiteConnection sqLiteConnection;
+    public static SqLiteConnection sqLiteConnection;
 
     class IncomingHandler extends Handler {
 
@@ -113,7 +113,7 @@ public class BS extends Service {
                     }
 
                     ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
-                   
+
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
                     Bundle b2 = new Bundle();
@@ -150,6 +150,7 @@ public class BS extends Service {
 
                     final String msgContent = mesg.getData().getString("msg");
                     new Thread() {
+
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
@@ -162,6 +163,7 @@ public class BS extends Service {
                     final Messenger replyTo = mesg.replyTo;
 
                     new Thread() {
+
                         @Override
                         public void run() {
                             chanlist = Main.getChannels();
@@ -290,6 +292,7 @@ public class BS extends Service {
         new ExceptionLogger(this);
 
         new Thread() {
+
             @Override
             public void run() {
 
@@ -328,6 +331,7 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
+
             @Override
             public void run() {
                 ConnectivityChanged connectivityChanged = new ConnectivityChanged();
@@ -343,6 +347,7 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
+
             @Override
             public void run() {
                 try {
@@ -485,6 +490,7 @@ public class BS extends Service {
                 MediaScannerConnection.scanFile(BS.this,
                         new String[]{pathToFile}, null,
                         new MediaScannerConnection.OnScanCompletedListener() {
+
                             @Override
                             public void onScanCompleted(String path, Uri uri) {
                                 //....                              
@@ -542,14 +548,14 @@ public class BS extends Service {
                     //text = from + ": " + msg.getText();
                     text = msg.getText();
                 } else if (msg.message_type == ImageMsg.BYTE) {
-                   // text = from + ": " + "Picture";
-                    text="Picture";
+                    // text = from + ": " + "Picture";
+                    text = "Picture";
                 }
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
                 SharedPreferences.Editor edit = sharedPref.edit();
                 edit.putLong("lastMessageForChannel" + id, time);
                 edit.putString("lastMessageTextForChannel" + id, text);
-                edit.putString("lastMessageTextForChannelid" + id, ""+msg.getIdentity());
+                edit.putString("lastMessageTextForChannelid" + id, "" + msg.getIdentity());
                 edit.commit();
 
                 //
@@ -619,6 +625,7 @@ public class BS extends Service {
         lastUpdateChecked = System.currentTimeMillis();
 
         new Thread() {
+
             @Override
             public void run() {
 //                Properties systemProperties = System.getProperties();
@@ -696,7 +703,6 @@ public class BS extends Service {
                 } else if (cmd.equals("removeOldMessages")) {
                     Main.removeOldMessagesDecryptedContent();
                     Main.removeOldMessages();
-
                 }
 
             }

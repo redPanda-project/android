@@ -80,6 +80,7 @@ public class FlActivity extends Activity {
         final int cacheSize = maxMemory / 8;
 
         mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+
             @Override
             protected int sizeOf(String key, Bitmap bitmap) {
                 // The cache size will be measured in kilobytes rather than
@@ -112,6 +113,7 @@ public class FlActivity extends Activity {
         infotext = (TextView) findViewById(R.id.infotext);
         infotext.setTextColor(Color.BLUE);
         newChButton.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
                 builder.setTitle("Erstelle neuen Channel");
@@ -128,6 +130,7 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -145,6 +148,7 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -158,6 +162,7 @@ public class FlActivity extends Activity {
         Button newChByQRButton = (Button) findViewById(R.id.NKByQRButton);
 
         newChByQRButton.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
                 Intent is;
                 is = new Intent(FlActivity.this, QRCaptureActivity.class);
@@ -167,6 +172,7 @@ public class FlActivity extends Activity {
 
         Button impButton = (Button) findViewById(R.id.imbutton);
         impButton.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
@@ -189,6 +195,7 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -215,6 +222,7 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -287,11 +295,13 @@ public class FlActivity extends Activity {
             if (clickedChannel != null) {
 //                clickedChannel.setLastMessageTime(System.currentTimeMillis());
                 adapter.sort(new Comparator<ChannelViewElement>() {
+
                     public int compare(ChannelViewElement t, ChannelViewElement t1) {
                         return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                     }
                 });
                 Collections.sort(channels, new Comparator<ChannelViewElement>() {
+
                     public int compare(ChannelViewElement t, ChannelViewElement t1) {
                         return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                     }
@@ -427,11 +437,13 @@ public class FlActivity extends Activity {
 //                            Toast.makeText(FlActivity.this, "name: " + chan.toString(), Toast.LENGTH_SHORT).show();
                         }
                         adapter.sort(new Comparator<ChannelViewElement>() {
+
                             public int compare(ChannelViewElement t, ChannelViewElement t1) {
                                 return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                             }
                         });
                         Collections.sort(channels, new Comparator<ChannelViewElement>() {
+
                             public int compare(ChannelViewElement t, ChannelViewElement t1) {
                                 return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                             }
@@ -456,11 +468,13 @@ public class FlActivity extends Activity {
                     }
 
                     adapter.sort(new Comparator<ChannelViewElement>() {
+
                         public int compare(ChannelViewElement t, ChannelViewElement t1) {
                             return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                         }
                     });
                     Collections.sort(channels, new Comparator<ChannelViewElement>() {
+
                         public int compare(ChannelViewElement t, ChannelViewElement t1) {
                             return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                         }
@@ -481,6 +495,7 @@ public class FlActivity extends Activity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
+
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
 //            Toast.makeText(FlActivity.this, "Serviceconnected", Toast.LENGTH_SHORT).show();
@@ -625,6 +640,7 @@ public class FlActivity extends Activity {
         active = true;
 
         new Thread() {
+
             @Override
             public void run() {
                 while (active) {
@@ -656,14 +672,20 @@ public class FlActivity extends Activity {
                         final int connectingConnections = connectingCons;
 
                         infotext.post(new Runnable() {
+
                             public void run() {
                                 infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal);
                             }
                         });
                     } else {
                         infotext.post(new Runnable() {
+
                             public void run() {
-                                infotext.setText("loading...");
+                                if (BS.sqLiteConnection == null) {
+                                    infotext.setText("loading database...");
+                                } else {
+                                    infotext.setText("loading...");
+                                }
                             }
                         });
                     }
@@ -674,6 +696,7 @@ public class FlActivity extends Activity {
                 }
 
                 infotext.post(new Runnable() {
+
                     public void run() {
                         infotext.setText("Nodes: -/-/-");
                     }

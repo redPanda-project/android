@@ -50,8 +50,8 @@ public class ConnectivityChanged extends BroadcastReceiver {
 
             float batteryPct = level / (float) scale;
 
-            if (batteryPct > 98) {
-                Settings.MIN_CONNECTIONS = 10;
+            if (batteryPct > 90) {
+                Settings.MIN_CONNECTIONS = 20;
             } else {
                 Settings.MIN_CONNECTIONS = 3;
             }

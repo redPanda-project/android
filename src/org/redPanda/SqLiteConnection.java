@@ -73,7 +73,7 @@ public class SqLiteConnection {
 //pubkey_id INTEGER
 //private_key BINARY(32)
 //name LONGVARBINARY
-        stmt.executeUpdate("create table if not exists channel (channel_id integer PRIMARY KEY IDENTITY, pubkey_id INTEGER UNIQUE, private_key BINARY(32) UNIQUE, name LONGVARBINARY)");
+        stmt.executeUpdate("create CACHED table if not exists channel (channel_id integer PRIMARY KEY IDENTITY, pubkey_id INTEGER UNIQUE, private_key BINARY(32) UNIQUE, name LONGVARBINARY)");
 
 
 
@@ -89,9 +89,9 @@ public class SqLiteConnection {
 //readable boolean
 //decrypted_content LONGVARBINARY
         //stmt.executeUpdate("drop table if exists message");
-        stmt.executeUpdate("create table if not exists message (message_id INTEGER PRIMARY KEY IDENTITY, pubkey_id INTEGER, public_type TINYINT, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
+        stmt.executeUpdate("create CACHED table if not exists message (message_id INTEGER PRIMARY KEY IDENTITY, pubkey_id INTEGER, public_type TINYINT, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
 
-        stmt.executeUpdate("create table if not exists channelmessage (pubkey_id INTEGER, message_id INTEGER, message_type INTEGER, decryptedContent LONGVARBINARY, identity BIGINT, fromMe BOOLEAN, FOREIGN KEY (pubkey_id) REFERENCES pubkey(pubkey_id))");
+        stmt.executeUpdate("create CACHED table if not exists channelmessage (pubkey_id INTEGER, message_id INTEGER, message_type INTEGER, decryptedContent LONGVARBINARY, identity BIGINT, fromMe BOOLEAN, FOREIGN KEY (pubkey_id) REFERENCES pubkey(pubkey_id))");
 //        ResultSet executeQuery = stmt.executeQuery("SELECT * FROM information_schema.statistics");
 //
 //
@@ -111,6 +111,19 @@ public class SqLiteConnection {
         } catch (SQLSyntaxErrorException e) {
         }
 
+        String[] keys = {"pubkey_id", "message_type", "message_id"};
+        String tableName = "channelmessage";
+        for (String key : keys) {
+            try {
+                stmt.executeUpdate("CREATE INDEX " + tableName + key + "Index ON " + tableName + "(" + key + ")");
+            } catch (SQLSyntaxErrorException e) {
+            }
+        }
+
+        try {
+            stmt.executeUpdate("CREATE INDEX syncHashchannel_idIndex ON syncHash(channel_id)");
+        } catch (SQLSyntaxErrorException e) {
+        }
 
         //stmt.executeUpdate("create CACHED table if not exists stick (stick_id INTEGER PRIMARY KEY IDENTITY, pubkey_id INTEGER, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
 
