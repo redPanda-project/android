@@ -313,7 +313,7 @@ public class Preferences extends PreferenceActivity {
                 file = new File(path);
                 ListView lv = new ListView(con);
                 final String[] asd = file.list();
-                ArrayAdapter<String> ad = new ArrayAdapter<String>(con,R.layout.chatext, R.id.message_text, asd);
+                ArrayAdapter<String> ad = new ArrayAdapter<String>(con, android.R.layout.simple_list_item_1, android.R.id.text1, asd);
                 lv.setAdapter(ad);
                 lv.setFocusableInTouchMode(true);
                 if (asd.length != 0) {
