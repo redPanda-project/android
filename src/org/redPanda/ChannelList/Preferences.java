@@ -5,6 +5,7 @@
 package org.redPanda.ChannelList;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,8 +19,12 @@ import android.os.RemoteException;
 import android.preference.*;
 import android.text.InputType;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
@@ -233,7 +238,7 @@ public class Preferences extends PreferenceActivity {
 
         Preference expbutton = new Preference(this);
         expbutton.setTitle("Export");
-        expbutton.setSummary("Exports channels and IDs to SD-card.");
+        expbutton.setSummary("Export channels and IDs to SD-card.");
 
         expbutton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -268,15 +273,15 @@ public class Preferences extends PreferenceActivity {
                         String path = file.getAbsolutePath() + "/redpanda/" + formatter.format(new Date(System.currentTimeMillis())) + ".exp";
                         file = new File(file.getAbsolutePath() + "/redpanda/");
                         file.mkdir();
-                       
+
                         if (Main.backup(path, key.getText().toString())) {
-                             Toast.makeText(Preferences.this, "Saved to "+path+"."+file.list().length, Toast.LENGTH_LONG).show();
-                        }else{
-                         Toast.makeText(Preferences.this, "Export failed.", Toast.LENGTH_SHORT).show();
-                        
+                            Toast.makeText(Preferences.this, "Saved to " + path + "." + file.list().length, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(Preferences.this, "Export failed.", Toast.LENGTH_SHORT).show();
+
                         }
-                        if ( file.list().length!=0){
-                        Toast.makeText(Preferences.this, file.list()[0], Toast.LENGTH_LONG).show();
+                        if (file.list().length != 0) {
+                            Toast.makeText(Preferences.this, file.list()[0], Toast.LENGTH_LONG).show();
                         }
                     }
                 });
@@ -292,6 +297,78 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(expbutton);
+        final Context con = this;
+        Preference impbutton = new Preference(this);
+        impbutton.setTitle("Import");
+        impbutton.setSummary("Import channels and IDs from SD-card.");
+
+        impbutton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(Preferences.this);
+                builder1.setTitle("Path");
+                File file = Environment.getExternalStorageDirectory();
+                final String path = file.getAbsolutePath() + "/redpanda/";
+                file = new File(path);
+                ListView lv = new ListView(con);
+                final String[] asd = file.list();
+                ListAdapter ad = new ArrayAdapter(con, R.id.message_text, asd);
+                lv.setAdapter(ad);
+                lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        final String p = path + asd[position];
+                        AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
+                        builder.setTitle("Password");
+
+//// Set up the input
+                        final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
+
+                        final EditText name = (EditText) ll.findViewById(R.id.channame);
+                        final EditText key = (EditText) ll.findViewById(R.id.chankey);
+                        name.setHintTextColor(Color.RED);
+                        key.setHintTextColor(Color.CYAN);
+                        key.setText("");
+                        key.setHint("Password");
+                        key.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        name.setVisibility(View.GONE);
+                        String pw = "";
+//                final EditText input = new EditText(FlActivity.this);
+//                
+//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+                        builder.setView(ll);
+
+// Set up the buttons
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                boolean asd =Main.restoreBackup(path, key.getText().toString());
+                                if (asd) {
+                                    Toast.makeText(Preferences.this, "Imported "+path+" successful", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(Preferences.this, "Import failed.", Toast.LENGTH_SHORT).show();
+
+                                }
+
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+
+                        builder.show();
+                    }
+                });
+                builder1.show();
+                return true;
+            }
+        });
+        mainc.addPreference(impbutton);
 
         Preference licenseButton = new Preference(this);
         licenseButton.setTitle("Show license.");
