@@ -4,20 +4,36 @@
  */
 package org.redPanda.ChannelList;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Message;
+import android.os.RemoteException;
 import android.preference.*;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.redPanda.BS;
 import org.redPanda.ExceptionLogger;
 import org.redPanda.License;
+import org.redPanda.R;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Settings;
 
@@ -43,8 +59,6 @@ public class Preferences extends PreferenceActivity {
 
     private PreferenceScreen createPreferenceHierarchy() {
         PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
-
-
 
         PreferenceCategory mainc = new PreferenceCategory(this);
         mainc.setTitle("General");
@@ -84,8 +98,6 @@ public class Preferences extends PreferenceActivity {
                                 if (v > BS.VERSION) {
                                     //System.out.println("MVersion: " + LBS.VERSION + " found: " + v);
 
-
-
                                     runOnUiThread(new Runnable() {
                                         public void run() {
                                             Toast.makeText(Preferences.this, "Update found.", Toast.LENGTH_SHORT).show();
@@ -96,8 +108,6 @@ public class Preferences extends PreferenceActivity {
                                             startActivity(i);
                                         }
                                     });
-
-
 
 //                                    String url2 = "http://xana.hopto.org/redPanda/redPanda.apk";
 //                                    // The PendingIntent to launch our activity if the user selects this notification
@@ -115,10 +125,8 @@ public class Preferences extends PreferenceActivity {
 //                                    // Send the notification.
 //                                    // We use a string id because it is a unique number.  We use it later to cancel.
 //                                    ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(-10, notification);
-
                                     break;
                                 } else {
-
 
                                     runOnUiThread(new Runnable() {
                                         public void run() {
@@ -145,7 +153,6 @@ public class Preferences extends PreferenceActivity {
         });
         mainc.addPreference(updateButton);
 
-
 //        EditTextPreference activePref = new EditTextPreference(this);
 //        activePref.setKey(KEY_NICK);
 //        activePref.setTitle("Master Key");
@@ -160,7 +167,6 @@ public class Preferences extends PreferenceActivity {
 //            }
 //        });
 //        mainc.addPreference(activePref);
-
         Preference fullSyncInit = new Preference(this);
         fullSyncInit.setTitle("Init new network discovery.");
         fullSyncInit.setSummary("Initializes a full network discovery, may cause huge traffic.");
@@ -174,7 +180,6 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(fullSyncInit);
-
 
         Preference removeOldMessages = new Preference(this);
         removeOldMessages.setTitle("Remove old messages.");
@@ -197,7 +202,6 @@ public class Preferences extends PreferenceActivity {
         saveMobileInternet.setSummary("Doesn't stay connected over mobile internet. Messages may be delayed,"
                 + " but saves your mobile traffic.");
         mainc.addPreference(saveMobileInternet);
-
 
         CheckBoxPreference startAfterBoot = new CheckBoxPreference(this);
         startAfterBoot.setDefaultValue(true);
@@ -225,6 +229,57 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(button);
+
+        Preference expbutton = new Preference(this);
+        expbutton.setTitle("Export");
+        expbutton.setSummary("Exports channels and IDs to SD-card.");
+
+        expbutton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
+                builder.setTitle("Password");
+
+//// Set up the input
+                final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
+
+                final EditText name = (EditText) ll.findViewById(R.id.channame);
+                final EditText key = (EditText) ll.findViewById(R.id.chankey);
+                name.setHintTextColor(Color.RED);
+                key.setHintTextColor(Color.CYAN);
+                key.setText("");
+                key.setHint("Password");
+                name.setVisibility(View.GONE);
+//                final EditText input = new EditText(FlActivity.this);
+//                
+//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+                builder.setView(ll);
+
+// Set up the buttons
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy-hh:mm:ss");
+                        File file = Environment.getExternalStorageDirectory();
+                        String path = file.getAbsolutePath() + "/redpanda/export " + formatter.format(new Date(System.currentTimeMillis())) + ".exp";
+                        Main.backup(path, key.getText().toString());
+
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
+                return true;
+            }
+        });
+        mainc.addPreference(expbutton);
 
         Preference licenseButton = new Preference(this);
         licenseButton.setTitle("Show license.");
@@ -254,7 +309,6 @@ public class Preferences extends PreferenceActivity {
 //            }
 //        });
 //        mainc.addPreference(shutdownButton);
-
         return root;
     }
 
