@@ -268,13 +268,16 @@ public class Preferences extends PreferenceActivity {
                         String path = file.getAbsolutePath() + "/redpanda/export " + formatter.format(new Date(System.currentTimeMillis())) + ".exp";
                         file = new File(file.getAbsolutePath() + "/redpanda/");
                         file.mkdir();
+                       
                         if (Main.backup(path, key.getText().toString())) {
-                             Toast.makeText(Preferences.this, path, Toast.LENGTH_LONG).show();
+                             Toast.makeText(Preferences.this, "Saved to "+path+".", Toast.LENGTH_LONG).show();
                         }else{
                          Toast.makeText(Preferences.this, "Export failed.", Toast.LENGTH_SHORT).show();
                         
                         }
-
+                        if ( file.list().length!=0){
+                        Toast.makeText(Preferences.this, file.list()[0], Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
