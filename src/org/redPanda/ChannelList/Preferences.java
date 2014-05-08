@@ -263,9 +263,9 @@ public class Preferences extends PreferenceActivity {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy-hh:mm:ss");
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy_hh-mm-ss");
                         File file = Environment.getExternalStorageDirectory();
-                        String path = file.getAbsolutePath() + "/redpanda/export " + formatter.format(new Date(System.currentTimeMillis())) + ".exp";
+                        String path = file.getAbsolutePath() + "/redpanda/" + formatter.format(new Date(System.currentTimeMillis())) + ".exp";
                         file = new File(file.getAbsolutePath() + "/redpanda/");
                         file.mkdir();
                        
