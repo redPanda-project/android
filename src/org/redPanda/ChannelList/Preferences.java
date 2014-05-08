@@ -269,7 +269,7 @@ public class Preferences extends PreferenceActivity {
                         file = new File(file.getAbsolutePath() + "/redpanda/");
                         file.mkdir();
                         if (Main.backup(path, key.getText().toString())) {
-                             Toast.makeText(Preferences.this, "Saved.", Toast.LENGTH_SHORT).show();
+                             Toast.makeText(Preferences.this, "Saved to "+path+".", Toast.LENGTH_SHORT).show();
                         }else{
                          Toast.makeText(Preferences.this, "Export failed.", Toast.LENGTH_SHORT).show();
                         
