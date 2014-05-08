@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.os.Message;
 import android.os.RemoteException;
 import android.preference.*;
+import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -249,6 +250,7 @@ public class Preferences extends PreferenceActivity {
                 key.setHintTextColor(Color.CYAN);
                 key.setText("");
                 key.setHint("Password");
+                key.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 name.setVisibility(View.GONE);
 //                final EditText input = new EditText(FlActivity.this);
 //                
@@ -264,7 +266,14 @@ public class Preferences extends PreferenceActivity {
                         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy-hh:mm:ss");
                         File file = Environment.getExternalStorageDirectory();
                         String path = file.getAbsolutePath() + "/redpanda/export " + formatter.format(new Date(System.currentTimeMillis())) + ".exp";
-                        Main.backup(path, key.getText().toString());
+                        file = new File(file.getAbsolutePath() + "/redpanda/");
+                        file.mkdir();
+                        if (Main.backup(path, key.getText().toString())) {
+                             Toast.makeText(Preferences.this, "Saved.", Toast.LENGTH_SHORT).show();
+                        }else{
+                         Toast.makeText(Preferences.this, "Export failed.", Toast.LENGTH_SHORT).show();
+                        
+                        }
 
                     }
                 });
