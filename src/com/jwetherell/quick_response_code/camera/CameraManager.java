@@ -17,6 +17,7 @@
 package com.jwetherell.quick_response_code.camera;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
@@ -40,10 +41,10 @@ public final class CameraManager {
 
     private static final String TAG = CameraManager.class.getSimpleName();
 
-    private static final int MIN_FRAME_WIDTH = 240;
-    private static final int MIN_FRAME_HEIGHT = 240;
-    private static final int MAX_FRAME_WIDTH = 600;
-    private static final int MAX_FRAME_HEIGHT = 400;
+    private static final int MIN_FRAME_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
+    private static final int MIN_FRAME_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
+    private static final int MAX_FRAME_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
+    private static final int MAX_FRAME_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
 
     private final CameraConfigurationManager configManager;
     private Camera camera;

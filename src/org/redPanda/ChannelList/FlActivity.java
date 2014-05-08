@@ -723,27 +723,83 @@ public class FlActivity extends Activity {
         if (intent1 != null) {
             if (intent1.getExtras() != null) {
                 if (intent1.getExtras().getBoolean("newChannel") == true) {
-                    Message msg = Message.obtain(null,
-                            BS.ADD_CHANNEL);
-                    Bundle b = new Bundle();
-                    b.putString("name", intent1.getExtras().getString("ChannelName"));
-                    b.putString("key", intent1.getExtras().getString("ChannelKey"));
-                    msg.setData(b);
-                    msg.replyTo = mMessenger;
-                    try {
-                        mService.send(msg);
-                    } catch (RemoteException ex) {
-                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    msg = Message.obtain(null,
-                            BS.GET_CHANNELS);
-                    msg.replyTo = mMessenger;
-                    try {
-                        mService.send(msg);
-                    } catch (RemoteException ex) {
-                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    String keystr =intent1.getExtras().getString("ChannelKey");
+                    String namestr =intent1.getExtras().getString("ChannelName");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
+                    builder.setTitle("Import Channel");
 
+//// Set up the input
+                    final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
+
+                    final EditText name = (EditText) ll.findViewById(R.id.channame);
+                    final EditText key = (EditText) ll.findViewById(R.id.chankey);
+                    name.setHintTextColor(Color.RED);
+                    key.setHintTextColor(Color.CYAN);
+                    key.setText(keystr);
+                    name.setText(namestr);
+//                final EditText input = new EditText(FlActivity.this);
+//                
+//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+                    builder.setView(ll);
+
+// Set up the buttons
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Message msg = Message.obtain(null,
+                                    BS.ADD_CHANNEL);
+                            Bundle b = new Bundle();
+                            b.putString("name", name.getText().toString());
+                            b.putString("key", key.getText().toString());
+                            msg.setData(b);
+                            msg.replyTo = mMessenger;
+                            try {
+                                mService.send(msg);
+                            } catch (RemoteException ex) {
+                                Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            msg = Message.obtain(null,
+                                    BS.GET_CHANNELS);
+                            msg.replyTo = mMessenger;
+                            try {
+                                mService.send(msg);
+                            } catch (RemoteException ex) {
+                                Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.show();
+
+//                    Message msg = Message.obtain(null,
+//                            BS.ADD_CHANNEL);
+//                    Bundle b = new Bundle();
+//                    b.putString("name", intent1.getExtras().getString("ChannelName"));
+//                    b.putString("key", intent1.getExtras().getString("ChannelKey"));
+//                    msg.setData(b);
+//                    msg.replyTo = mMessenger;
+//                    try {
+//                        mService.send(msg);
+//                    } catch (RemoteException ex) {
+//                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                    msg = Message.obtain(null,
+//                            BS.GET_CHANNELS);
+//                    msg.replyTo = mMessenger;
+//                    try {
+//                        mService.send(msg);
+//                    } catch (RemoteException ex) {
+//                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
                 }
             }
         }

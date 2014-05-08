@@ -90,42 +90,14 @@ public class QRCaptureActivity extends DecoderActivity {
         onPause();
         CharSequence res = resultHandler.getDisplayContents();
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(QRCaptureActivity.this);
-        builder.setTitle("Import Channel");
-
-        final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
-
-        final EditText name = (EditText) ll.findViewById(R.id.channame);
-        final EditText key = (EditText) ll.findViewById(R.id.chankey);
-        name.setHintTextColor(Color.RED);
-        key.setHintTextColor(Color.CYAN);
-        key.setText(res);
-
-        builder.setView(ll);
-
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent;
-                intent = new Intent(QRCaptureActivity.this, FlActivity.class);
-                //TODO look at flags
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.putExtra("newChannel", true);
-                intent.putExtra("ChannelName", name.getText().toString());
-                intent.putExtra("ChannelKey", key.getText().toString());
-                startActivity(intent);
-
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-                onBackPressed();
-            }
-        });
-
-        builder.show();
+        Intent intent;
+        intent = new Intent(QRCaptureActivity.this, FlActivity.class);
+        //TODO look at flags
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra("newChannel", true);
+        intent.putExtra("ChannelName", "");
+        intent.putExtra("ChannelKey", res);
+        startActivity(intent);
 
     }
 
