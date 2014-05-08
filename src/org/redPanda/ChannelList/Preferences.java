@@ -350,7 +350,7 @@ public class Preferences extends PreferenceActivity {
                         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                boolean asd = Main.restoreBackup(path, key.getText().toString());
+                                boolean asd = Main.restoreBackup(p, key.getText().toString());
                                 if (asd) {
                                     Toast.makeText(Preferences.this, "Imported " + path + " successful", Toast.LENGTH_SHORT).show();
                                 } else {
