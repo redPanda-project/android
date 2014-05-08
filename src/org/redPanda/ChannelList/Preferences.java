@@ -370,6 +370,7 @@ public class Preferences extends PreferenceActivity {
                         builder.show();
                     }
                 });
+                builder1.setView(lv);
                 builder1.show();
                 return true;
             }
