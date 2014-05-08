@@ -312,10 +312,10 @@ public class Preferences extends PreferenceActivity {
                 final String path = file.getAbsolutePath() + "/redpanda/";
                 file = new File(path);
                 TextView tv = new TextView(con);
-                tv.setId(0); 
+                tv.setId(0);
                 ListView lv = new ListView(con);
                 final String[] asd = file.list();
-                ListAdapter ad = new ArrayAdapter(con, tv.getId(), asd);
+                ArrayAdapter<String> ad = new ArrayAdapter<String>(con, tv.getId(), asd);
                 lv.setAdapter(ad);
                 lv.setFocusableInTouchMode(true);
                 if (asd.length != 0) {
