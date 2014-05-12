@@ -43,6 +43,7 @@ import org.redPanda.License;
 import org.redPanda.R;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Settings;
+import org.redPandaLib.services.SearchLan;
 
 /**
  *
@@ -322,7 +323,6 @@ public class Preferences extends PreferenceActivity {
                     Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
                 }
                 lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         final String p = path + asd[position];
                         AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
@@ -376,6 +376,21 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(impbutton);
+
+        Preference lanSearchButton = new Preference(this);
+        lanSearchButton.setTitle("Search nodes on the local area network.");
+        lanSearchButton.setSummary("Adds all local addresses and set MIN_CON to 100");
+
+        lanSearchButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                SearchLan.searchLan();
+                Settings.MIN_CONNECTIONS = 100;
+                Settings.MAX_CONNECTIONS = 120;
+                return true;
+            }
+        });
+        mainc.addPreference(lanSearchButton);
 
         Preference licenseButton = new Preference(this);
         licenseButton.setTitle("Show license.");

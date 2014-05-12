@@ -24,6 +24,8 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -61,7 +63,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 401;
+    public static final int VERSION = 412;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -114,6 +116,12 @@ public class BS extends Service {
 
                     ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
 
+                    Collections.sort(ml, new Comparator<TextMessageContent>() {
+                        public int compare(TextMessageContent t, TextMessageContent t1) {
+                            return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+                        }
+                    });
+
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
                     Bundle b2 = new Bundle();
@@ -150,7 +158,6 @@ public class BS extends Service {
 
                     final String msgContent = mesg.getData().getString("msg");
                     new Thread() {
-
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
@@ -163,7 +170,6 @@ public class BS extends Service {
                     final Messenger replyTo = mesg.replyTo;
 
                     new Thread() {
-
                         @Override
                         public void run() {
                             chanlist = Main.getChannels();
@@ -292,7 +298,6 @@ public class BS extends Service {
         new ExceptionLogger(this);
 
         new Thread() {
-
             @Override
             public void run() {
 
@@ -331,7 +336,6 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
-
             @Override
             public void run() {
                 ConnectivityChanged connectivityChanged = new ConnectivityChanged();
@@ -347,7 +351,6 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
-
             @Override
             public void run() {
                 try {
@@ -490,12 +493,11 @@ public class BS extends Service {
                 MediaScannerConnection.scanFile(BS.this,
                         new String[]{pathToFile}, null,
                         new MediaScannerConnection.OnScanCompletedListener() {
-
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                //....                              
-                            }
-                        });
+                    @Override
+                    public void onScanCompleted(String path, Uri uri) {
+                        //....                              
+                    }
+                });
 
             }
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
@@ -625,7 +627,6 @@ public class BS extends Service {
         lastUpdateChecked = System.currentTimeMillis();
 
         new Thread() {
-
             @Override
             public void run() {
 //                Properties systemProperties = System.getProperties();
