@@ -48,6 +48,8 @@ public class PopupListener implements NewMessageListener {
     public void newMessage(TextMessageContent msg) {
 
         if (msg.fromMe) {
+            NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.cancel(msg.getChannel().getId());
             return;
         }
 
