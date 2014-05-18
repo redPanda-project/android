@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:emojicon="http://schemas.android.com/apk/res-auto"
     android:id="@+id/chatrow"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" 
@@ -39,7 +40,7 @@
             android:textSize="12sp"
         >  
         </TextView>
-        <TextView
+        <com.rockerhieu.emojicon.EmojiconTextView
             
             android:id="@+id/bubbleText"        
             android:layout_width="wrap_content"
@@ -50,13 +51,13 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/bubbleTime"
 
-        
+            emojicon:emojiconSize="28sp"
         
             android:autoLink="web"
             android:textSize="16sp"
             android:textColorLink="#FFFFFF"
         >  
-        </TextView>
+        </com.rockerhieu.emojicon.EmojiconTextView>
 
         <ImageView
             android:id="@+id/bubbleImage"        
