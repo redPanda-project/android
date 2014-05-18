@@ -13,10 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import java.util.List;
 import static org.redPanda.ChannelList.FlActivity.context;
 import org.redPanda.ChannelViewElement;
 import org.redPanda.R;
+import org.redPandaLib.core.messages.ImageMsg;
+import org.redPandaLib.core.messages.TextMsg;
 
 /**
  *
@@ -36,6 +39,7 @@ public class FLAdapter extends ArrayAdapter<ChannelViewElement> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        
         View row = convertView;
         Holder holder = null;
 

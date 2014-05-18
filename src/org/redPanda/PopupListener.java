@@ -48,6 +48,8 @@ public class PopupListener implements NewMessageListener {
     public void newMessage(TextMessageContent msg) {
 
         if (msg.fromMe) {
+            NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.cancel(msg.getChannel().getId());
             return;
         }
 
@@ -60,9 +62,10 @@ public class PopupListener implements NewMessageListener {
         }
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean notifications = sharedPref.getBoolean(ChanPref.CHAN_NOTIFICATIONS + msg.channel.getId(), true);
         boolean silent = sharedPref.getBoolean(ChanPref.CHAN_SILENT + msg.channel.getId(), false);
 
-        if (silent) {
+        if (!notifications) {
             return;
         }
 
@@ -91,7 +94,11 @@ public class PopupListener implements NewMessageListener {
 
 
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setSound(soundUri).setContentIntent(contentIntent);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setContentIntent(contentIntent);
+
+        if (!silent) {
+            mBuilder = mBuilder.setSound(soundUri);
+        }
 
         mBuilder.setAutoCancel(true);
 
@@ -113,12 +120,13 @@ public class PopupListener implements NewMessageListener {
         mBuilder.setLights(0x88ff0000, 300, 5000);
         mBuilder.setPriority(1);
 
+        if (!silent) {
 
-        if (lastVibrated < System.currentTimeMillis() - 5000) {
-            lastVibrated = System.currentTimeMillis();
-            mBuilder.setVibrate(pattern);
+            if (lastVibrated < System.currentTimeMillis() - 5000) {
+                lastVibrated = System.currentTimeMillis();
+                mBuilder.setVibrate(pattern);
+            }
         }
-
 
 
         //        NotificationCompat.InboxStyle inboxStyle =

@@ -22,6 +22,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -38,8 +39,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ListMessage.Mes;
+import org.redPandaLib.Main;
 import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.ImageMsg;
@@ -50,16 +54,20 @@ import org.redPandaLib.core.messages.TextMsg;
  */
 public class ChatAdapter extends BaseAdapter {
 
-    final static int imageMaxSize = 400;
+    final static int daydevider = 5;
+  public  final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
     private Bitmap placeholderBitmap;
+    private Resources mResources;
 
     public ChatAdapter(Context context, ArrayList<ChatMsg> messages) {
         super();
         this.mContext = context;
         this.mMessages = messages;
-        placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.loading_top);
+        mResources = mContext.getResources();
+        // Toast.makeText(mContext, "" + (Runtime.getRuntime().maxMemory() / 1024 / 1024), Toast.LENGTH_SHORT).show();
+        //  placeholderBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.placeholder);
     }
 
     @Override
@@ -73,28 +81,65 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     @Override
+    public int getViewTypeCount() {
+        return 3; //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static int getImageMaxSize() {
+        return imageMaxSize;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mMessages.get(position).getMsgType() == ImageMsg.BYTE) {
+            return 0;
+        } //To change body of generated methods, choose Tools | Templates.
+        if (mMessages.get(position).getMsgType() == daydevider) {
+            return 2;
+        }
+
+        return 1;
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
         ChatMsg cM = (ChatMsg) this.getItem(position);
 
         ViewHolder holder;
+
         if (convertView == null) {
             holder = new ViewHolder();
-            convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
-            holder.big = (LinearLayout) convertView.findViewById(R.id.chatrow);
-            holder.bubbleLayout = (RelativeLayout) convertView.findViewById(R.id.bubble);
+            if (cM.getMsgType() != daydevider) {
+
+                convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
+                holder.big = (LinearLayout) convertView.findViewById(R.id.chatrow);
+                holder.bubbleLayout = (RelativeLayout) convertView.findViewById(R.id.bubble);
 //            holder.head = (TextView) convertView.findViewById(R.id.head);
-            holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
-            holder.bubbleText = (TextView) convertView.findViewById(R.id.bubbleText);
-            holder.bubbleTime = (TextView) convertView.findViewById(R.id.bubbleTime);
-            holder.bubbleDeliverd = (TextView) convertView.findViewById(R.id.bubbleDeliverd);
-            holder.bubbleImage = null;
-            //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
-            convertView.setTag(holder);
-            // holder.bubble.setPadding(0, 0, 0, 0);
+                holder.bubbleHead = (TextView) convertView.findViewById(R.id.bubbleHead);
+
+                holder.bubbleTime = (TextView) convertView.findViewById(R.id.bubbleTime);
+//holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
+                if (cM.getMsgType() == ImageMsg.BYTE) {
+                    holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
+                } else {
+                    holder.bubbleText = (TextView) convertView.findViewById(R.id.bubbleText);
+                }
+                holder.bubbleDeliverd = (TextView) convertView.findViewById(R.id.bubbleDeliverd);
+                //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
+                convertView.setTag(holder);
+                // holder.bubble.setPadding(0, 0, 0, 0);
+            } else {
+                convertView = LayoutInflater.from(mContext).inflate(R.layout.daydivider, parent, false);
+                holder.bubbleText = (TextView) convertView.findViewById(R.id.ddText);
+                convertView.setTag(holder);
+            }
         } else {
+
             holder = (ViewHolder) convertView.getTag();
 
         }
+
         //   Toast.makeText(mContext, "blablabla", Toast.LENGTH_SHORT).show();
         // Mes mes = (Mes) b.text.get(0);
         String bub = "";
@@ -112,56 +157,79 @@ public class ChatAdapter extends BaseAdapter {
         //inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
         // bub += "<small>" + time + "</small> " + content + readText;
         //holder.bubbleText.setText(Html.fromHtml(bub));
-        if (cM.getMsgType() == TextMsg.BYTE) {
-            holder.bubbleText.setVisibility(View.VISIBLE);
-            holder.bubbleText.setText(content);
-            if (holder.bubbleImage != null) {
-                holder.bubbleImage.get().setVisibility(View.GONE);
-                holder.bubbleImage = null;
-            }
-        } else if (cM.getMsgType() == ImageMsg.BYTE) {
-            holder.bubbleImage = null;
-            if (holder.bubbleImage == null) {
-                holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
-
-            }
-
-            // holder.bubbleImage.get().setImageBitmap(decodeFile(content, 200));
-            loadBitmap(content, holder.bubbleImage.get(), imageMaxSize);
-            holder.bubbleImage.get().setVisibility(View.VISIBLE);
-            holder.bubbleText.setVisibility(View.GONE);
-
-            holder.bubbleImage.get().setOnClickListener(new View.OnClickListener() {
-                public void onClick(View view) {
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.parse("file://" + content), "image/*");
-                    mContext.startActivity(intent);
-
-                }
-            });
-
+        if (cM.getMsgType() == daydevider) {
+            holder.bubbleText.setText(cM.getText());
+            holder.bubbleText.setGravity(Gravity.CENTER);
+            return convertView;
         } else {
-            holder.bubbleText.setVisibility(View.VISIBLE);
-            holder.bubbleText.setText("MsgType not implemented");
-            if (holder.bubbleImage != null) {
-                holder.bubbleImage.get().setVisibility(View.GONE);
-                holder.bubbleImage = null;
+            if (cM.getMsgType() == TextMsg.BYTE) {
+                //  holder.bubbleTime.setPadding(0, 0, 0, 0);
+                holder.bubbleDeliverd.setTextColor(Color.BLACK);
+                //   holder.bubbleText.setVisibility(View.VISIBLE);
+                holder.bubbleText.setText(content);
+                holder.bubbleText.setOnLongClickListener(new BubbleOnClickListener(cM));
+//            if (holder.bubbleImage != null) {
+//                //holder.bubbleImage.get().setVisibility(View.GONE);
+//                holder.bubbleImage.setVisibility(View.GONE);
+//                if (holder.bubbleImage.getDrawable() != null) {
+//                    Bitmap bitmap = ((BitmapDrawable) holder.bubbleImage.getDrawable()).getBitmap();
+//                    if (bitmap != null) {
+//                        bitmap.recycle();
+//                    }
+//                }
+//                holder.bubbleImage.setImageDrawable(null);
+//            }
+            } else if (cM.getMsgType() == ImageMsg.BYTE) {
+                holder.bubbleDeliverd.setTextColor(Color.WHITE);
+            // holder.bubbleTime.setPadding(0, 0, 0, 40);
+//            if (holder.bubbleImage == null) {
+//                //holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
+//                holder.bubbleImage = (ImageView) convertView.findViewById(R.id.bubbleImage);
+//            }
+
+                // holder.bubbleImage.get().setImageBitmap(decodeFile(content, 200));
+                loadBitmap(content, holder.bubbleImage, imageMaxSize);
+
+                //holder.bubbleImage.get().setVisibility(View.VISIBLE);
+                //       holder.bubbleText.setVisibility(View.GONE);
+                holder.bubbleImage.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View view) {
+
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.parse("file://" + content.split("\n")[0]), "image/*");
+                        mContext.startActivity(intent);
+
+                    }
+                });
+
+            } else {
+
+                holder.bubbleDeliverd.setTextColor(Color.BLACK);
+                if (holder.bubbleText != null) {
+                    holder.bubbleText.setVisibility(View.VISIBLE);
+                    holder.bubbleText.setText("MsgType not implemented");
+                }
+
+                if (holder.bubbleImage != null) {
+                    holder.bubbleImage.setVisibility(View.GONE);
+                }
             }
         }
-
-        if (!readText.equals("")) {
+        if (!readText.equals(
+                "")) {
             holder.bubbleDeliverd.setText(readText);
             holder.bubbleDeliverd.setVisibility(View.VISIBLE);
-            if (holder.bubbleImage != null) {
-                holder.bubbleImage.get().setPadding(0, 0, 0, 40);
-            }
+//            if (holder.bubbleImage != null && holder.bubbleImage.getPaddingBottom() == 0) {
+//                // holder.bubbleImage.get().setPadding(0, 0, 0, 40);
+//
+//            }
         } else {
             holder.bubbleDeliverd.setVisibility(View.GONE);
-            if (holder.bubbleImage != null) {
-                holder.bubbleImage.get().setPadding(0, 0, 0, 0);
-            }
+//            if (holder.bubbleImage != null && holder.bubbleImage.getPaddingBottom() != 0) {
+//                //  holder.bubbleImage.get().setPadding(0, 0, 0, 0);
+//            }
         }
+
         holder.bubbleTime.setText(time);
         //System.out.println("1234 "+message.getData().getString("msg"));       
 //        holder.message.setText(genReadableText(b));
@@ -196,7 +264,11 @@ public class ChatAdapter extends BaseAdapter {
             //  params.addRule(RelativeLayout.RIGHT_OF, R.id.bubbleHead);
             // holder.bubble.setGravity(Gravity.LEFT);
             //  lp = (LayoutParams) holder.bubble.getLayoutParams();
-            holder.bubbleHead.setText(cM.getName());
+            if (cM.getName().equals("")) {
+                holder.bubbleHead.setText("    ");
+            } else {
+                holder.bubbleHead.setText(cM.getName());
+            }
             //params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
             //            String strhex = Long.toHexString(cM.getIdentity()).toUpperCase();
             //            strhex = strhex.substring(strhex.length()-6, strhex.length());
@@ -223,19 +295,21 @@ public class ChatAdapter extends BaseAdapter {
         // System.out.println("123456 " + b.text.size());
         // holder.bubble.getLayoutParams().height = (int) (getHeight(mContext, iA)+20);
 
-        holder.bubbleHead.setOnLongClickListener(new BubbleHeadOnClickListener(cM, this));
+        holder.bubbleHead.setOnLongClickListener(
+                new BubbleHeadOnClickListener(cM, this));
 
-        holder.bubbleText.setOnLongClickListener(new BubbleOnClickListener(cM));
         return convertView;
     }
 
     private static class ViewHolder {
 
-        WeakReference< ImageView> bubbleImage;
+        //WeakReference< ImageView> bubbleImage;
+        ImageView bubbleImage;
         TextView bubbleHead;
         TextView bubbleText, bubbleTime, bubbleDeliverd;
         RelativeLayout bubbleLayout;
         LinearLayout big;
+        //WeakReference<Bitmap> bitmap;
     }
 
     @Override
@@ -245,47 +319,109 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     public void loadBitmap(String path, ImageView imageView, int reqSize) {
-        if (cancelPotentialWork(path, imageView)) {
-            final BitmapWorkerTask task = new BitmapWorkerTask(imageView, path, reqSize);
-            final AsyncDrawable asyncDrawable = new AsyncDrawable(mContext.getResources(), placeholderBitmap, task);
-            imageView.setImageDrawable(asyncDrawable);
-            task.execute();
+        String[] tmp = path.split("\n");
+        final Bitmap bitmap = FlActivity.getBitmapFromMemCache(tmp[0]);
+        if (bitmap != null) {
+            if (tmp.length == 4) {
+                imageView.setImageBitmap(bitmap);
+                imageView.setVisibility(View.VISIBLE);
+            } else {
+                imageView.setVisibility(View.GONE);
+            }
+        } else {
+
+            if (cancelPotentialWork(tmp[0], imageView)) {
+                //TODO set picture size for the imageView
+                // Toast.makeText(mContext, "Image content" + path, Toast.LENGTH_LONG).show();
+
+                if (tmp.length == 4) {
+                    int width = Integer.parseInt(tmp[1]);
+                    int height = Integer.parseInt(tmp[2]);
+                    int scale = Integer.parseInt(tmp[3]);
+                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+                    lp.width = width;
+                    lp.height = height;
+                    imageView.setLayoutParams(lp);
+                    imageView.setVisibility(View.VISIBLE);
+                    // Toast.makeText(mContext, "ImageView: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
+                    //imageView.setImageBitmap(bm);
+                    final BitmapWorkerTask task = new BitmapWorkerTask(imageView, tmp[0], scale, width, height);
+                    final AsyncDrawable asyncDrawable = new AsyncDrawable(mResources, null, task);
+                    imageView.setImageDrawable(asyncDrawable);
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        task.execute();
+                    }
+                } else {
+                    imageView.setVisibility(View.GONE);
+                    //imageView.setImageResource(R.drawable.placeholder); 
+                    //Toast.makeText(mContext, "ImageMsg content wrong length: " + tmp.length, Toast.LENGTH_SHORT).show();
+
+                }
+            }
         }
     }
 
     class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
 
         private final WeakReference<ImageView> imageViewReference;
-        private int reqSize = 0;
+        private int scale = 0, width, height;
         private String path;
 
-        public BitmapWorkerTask(ImageView imageView, String path, int reqSize) {
+        public BitmapWorkerTask(ImageView imageView, String path, int scale, int width, int height) {
             // Use a WeakReference to ensure the ImageView can be garbage collected
             imageViewReference = new WeakReference<ImageView>(imageView);
             this.path = path;
-            this.reqSize = reqSize;
+            this.scale = scale;
+            this.width = width;
+            this.height = height;
         }
 
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Integer... params) {
+            WeakReference<Bitmap> bm = null;
 
-            return decodeFile(path, reqSize);
+            try {
+                bm = new WeakReference<Bitmap>(decodeFile(path, scale));
+                if (height != 0 && width != 0 && bm.get() != null) {
+                    bm = new WeakReference<Bitmap>(Bitmap.createScaledBitmap(bm.get(), width, height, false));
+                } else {
+                    //  Main.sendBroadCastMsg("Bm: " + bm.get() + " after decoding!\n" + path);
+                }
+            } catch (Throwable e) {
+                Main.sendBroadCastMsg("Error while scaling" + width + " " + height + "\n" + path
+                        + "\n" + ExceptionLogger.stacktrace2String(e));
+            }
+            if (bm != null) {
+                return bm.get();
+            } else {
+                return null;
+            }
         }
 
         // Once complete, see if ImageView is still around and set bitmap.
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-
+            if (bitmap != null) {
+                FlActivity.addBitmapToMemoryCache(path, bitmap);
+            }
             if (isCancelled()) {
                 bitmap = null;
 
             }
-
+            //   Toast.makeText(mContext, "Bitmap: " + width + " " + height + "\n" + path, Toast.LENGTH_SHORT).show();
             if (imageViewReference != null && bitmap != null) {
                 final ImageView imageView = imageViewReference.get();
+
                 final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
                 if (this == bitmapWorkerTask && imageView != null) {
+                    ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+                    lp.width = LayoutParams.WRAP_CONTENT;
+                    lp.height = LayoutParams.WRAP_CONTENT;
+                    imageView.setLayoutParams(lp);
                     imageView.setImageBitmap(bitmap);
 
                 }
@@ -320,6 +456,7 @@ public class ChatAdapter extends BaseAdapter {
             }
         }
         return null;
+
     }
 
     static class AsyncDrawable extends BitmapDrawable {
@@ -328,7 +465,6 @@ public class ChatAdapter extends BaseAdapter {
 
         public AsyncDrawable(Resources res, Bitmap bitmap,
                 BitmapWorkerTask bitmapWorkerTask) {
-
             super(res, bitmap);
             bitmapWorkerTaskReference = new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
         }
@@ -338,25 +474,60 @@ public class ChatAdapter extends BaseAdapter {
         }
     }
 
-    private Bitmap decodeFile(String str, int REQUIRED_SIZE) {
+    private Bitmap decodeFile(String str, int scale) {
 
         //Decode image size
-        BitmapFactory.Options o = new BitmapFactory.Options();
-        o.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(str, o);
-
         //The new size we want to scale to
         //Find the correct scale value. It should be the power of 2.
-        int scale = 1;
-        while (o.outWidth / scale / 2 >= REQUIRED_SIZE && o.outHeight / scale / 2 >= REQUIRED_SIZE) {
-            scale *= 2;
-        }
-
+//        int scale = 1;
+//        while (o.outWidth / scale / 2 >= REQUIRED_SIZE) {//&& o.outHeight / scale / 2 >= REQUIRED_SIZE
+//            scale *= 2;
+//        }
+//        int maxwidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+//        int width = o.outWidth;
+//        int height = o.outHeight;
+//        if (maxwidth <= 0) {
+//            maxwidth = 400;
+//        }
+        // Main.sendBroadCastMsg("before" + width + " + " + height + " + " + maxwidth + "\n" + str);
+//        if (width > maxwidth) {
+//            double tmp = maxwidth * height;
+//            tmp = tmp / width;
+//            height = (int) tmp;
+//            width = maxwidth;
+//        }
+        //Main.sendBroadCastMsg("after" + width + " + " + height + " + " + maxwidth + "\n" + str);
+        int factor = 1;
+//        while (width / factor  >= maxwidth) {
+//            factor *= 2;
+//        }
         //Decode with inSampleSize
         BitmapFactory.Options o2 = new BitmapFactory.Options();
-        o2.inSampleSize = scale;
-        return BitmapFactory.decodeFile(str, o2);
+        //   o2.inTempStorage = new byte[16 * 1024];
+        //  o2.inPurgeable = true;
 
+        o2.inSampleSize = scale;
+        o2.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        Bitmap bm = null;
+        try {
+            bm = BitmapFactory.decodeFile(str, o2);
+        } catch (Throwable e) {
+            System.gc();
+            Main.sendBroadCastMsg("Version: " + BS.VERSION + "\n Error while loading Image:\n" + str
+                    + "\n" + scale + "\n" + ExceptionLogger.stacktrace2String(e));
+            try {
+                bm = BitmapFactory.decodeFile(str, o2);
+            } catch (Throwable e2) {
+                Main.sendBroadCastMsg("Version: " + BS.VERSION + "\n Error while loading Image AGAIN:\n" + str
+                        + "\n" + scale + "\n" + ExceptionLogger.stacktrace2String(e2));
+            }
+        }
+//        if (bm != null) {
+//            Bitmap b2 = Bitmap.createScaledBitmap(bm, width, height, false);
+//            return b2;
+//        }
+        return bm;
     }
 
     public static String genReadableText(Mes msg) {
@@ -372,28 +543,34 @@ public class ChatAdapter extends BaseAdapter {
 
         String out = "";
 
-        out += formatTime(date) + ": " + str;
+        out += formatTime(date, false) + ": " + str;
 
         return out;
     }
 
-    public static String formatTime(Date date) {
+    public static String formatTime(Date date, boolean getDay) {
+        if (getDay) {
 
-        String hours = "" + date.getHours();
-        String minutes = "" + date.getMinutes();
-        String seconds = "" + date.getSeconds();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
 
-        if (hours.length() == 1) {
-            hours = "0" + hours;
-        }
-        if (minutes.length() == 1) {
-            minutes = "0" + minutes;
-        }
-        if (seconds.length() == 1) {
-            seconds = "0" + seconds;
-        }
+            return formatter.format(date);
+        } else {
+            String hours = "" + date.getHours();
+            String minutes = "" + date.getMinutes();
+            String seconds = "" + date.getSeconds();
 
-        return hours + ":" + minutes + ":" + seconds;
+            if (hours.length() == 1) {
+                hours = "0" + hours;
+            }
+            if (minutes.length() == 1) {
+                minutes = "0" + minutes;
+            }
+            if (seconds.length() == 1) {
+                seconds = "0" + seconds;
+            }
+
+            return hours + ":" + minutes + ":" + seconds;
+        }
 
     }
 
@@ -423,6 +600,7 @@ public class ChatAdapter extends BaseAdapter {
             height += view.getMeasuredHeight();
         }
         return height;
+
     }
 
     class BubbleOnClickListener implements View.OnLongClickListener {
@@ -484,8 +662,21 @@ public class ChatAdapter extends BaseAdapter {
                     Test.localSettings.identity2Name.remove(cM.getIdentity());
                     Test.localSettings.identity2Name.put(cM.getIdentity(), input.getText().toString());
                     Test.localSettings.save();
-                    cM.setName(input.getText().toString());
                     cA.notifyDataSetChanged();
+                    final FlActivity fl = (FlActivity) FlActivity.context;
+                    fl.lv.invalidateViews();
+                    ChannelViewElement cve = fl.channels.get(fl.channels.size() - 1);
+                    fl.channels.remove(fl.channels.size() - 1);
+                    fl.adapter.notifyDataSetChanged();
+                    fl.channels.add(cve);
+
+                    fl.runOnUiThread(new Runnable() {
+
+                        public void run() {
+                            fl.adapter.notifyDataSetChanged();
+                        }
+                    });
+
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

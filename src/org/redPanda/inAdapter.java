@@ -81,7 +81,7 @@ public class inAdapter extends BaseAdapter {
         Date date = new Date(sendTime);
 
 
-        String time = formatTime(date);
+        String time = formatTime(date,false);
         String content = mes.getMes();
         String readText = "";
 

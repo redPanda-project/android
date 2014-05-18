@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -241,17 +242,31 @@ public class AndroidSaver implements SaverInterface {
             File mkdirs = new File(context.getFilesDir(), SAVE_DIR);
             mkdirs.mkdir();
 
-            File file = new File(context.getFilesDir(), SAVE_DIR + "/trustData" + getPrefix() + ".dat");
+            File fileTmp = new File(context.getFilesDir(), SAVE_DIR + "/trustData-tmp" + getPrefix() + ".dat");
 
-            file.createNewFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileTmp.createNewFile();
+            FileOutputStream fileOutputStream = new FileOutputStream(fileTmp);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(peertrusts.clone());
             objectOutputStream.close();
             fileOutputStream.close();
 
-        } catch (Exception ex) {
-            Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex);
+            File originFile = new File(context.getFilesDir(), SAVE_DIR + "/trustData" + getPrefix() + ".dat");
+            originFile.delete();
+            fileTmp.renameTo(originFile);
+
+        } catch (final Exception ex) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        sleep(20000);
+                    } catch (InterruptedException ex1) {
+                        Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex1);
+                    }
+                    Test.sendStacktrace(ex);
+                }
+            }.start();
         }
     }
 
@@ -269,8 +284,32 @@ public class AndroidSaver implements SaverInterface {
             ArrayList<PeerTrustData> msgs = (ArrayList<PeerTrustData>) readObject;
             return msgs;
 
-        } catch (ClassNotFoundException ex) {
-        } catch (IOException ex) {
+        } catch (final ClassNotFoundException ex) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        sleep(20000);
+                    } catch (InterruptedException ex1) {
+                        Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex1);
+                    }
+                    Test.sendStacktrace(ex);
+                }
+            }.start();
+
+        } catch (final IOException ex) {
+
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        sleep(20000);
+                    } catch (InterruptedException ex1) {
+                        Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex1);
+                    }
+                    Test.sendStacktrace(ex);
+                }
+            }.start();
 
             try {
                 Main.sendBroadCastMsg("[DRSM] + IOException loading msgs... ");

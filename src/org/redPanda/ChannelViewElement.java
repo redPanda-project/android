@@ -8,7 +8,10 @@ import org.redPanda.ChannelList.FlActivity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
+import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.Test;
 
 /**
  *
@@ -56,7 +59,9 @@ public class ChannelViewElement extends Channel {
 
         if (lastMessage == 0) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(FlActivity.context);
-            lastMessage = sharedPref.getLong("lastMessageForChannel" + id, -1);
+
+            lastMessage = sharedPref.getLong("lastMessageForChannel" + id, 1397836192756L);//TODO: hack
+
         }
         return lastMessage;
     }
@@ -65,8 +70,24 @@ public class ChannelViewElement extends Channel {
 
         if (lastMessageText == null) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(FlActivity.context);
-            lastMessageText = sharedPref.getString("lastMessageTextForChannel" + id, "-");
+            long identity = Long.parseLong(sharedPref.getString("lastMessageTextForChannelid" + id, "0"));
+
+            if (identity == 0) {
+                lastMessageText = "-";
+            } else {
+                if (Test.localSettings.identity == identity) {
+                    lastMessageText = "Me: " + sharedPref.getString("lastMessageTextForChannel" + id, "-");
+                } else {
+                    String from = "unknown";
+                    if (Test.localSettings.identity2Name.containsKey(identity)) {
+                        from = Test.localSettings.identity2Name.get(identity);
+                    }
+                    lastMessageText = from + ": " + sharedPref.getString("lastMessageTextForChannel" + id, "-");
+                }
+                // Toast.makeText(FlActivity.context, Test.localSettings.identity2Name.get(identity) + "", Toast.LENGTH_SHORT).show();
+            }
         }
+
         return lastMessageText;
     }
 

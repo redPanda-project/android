@@ -24,6 +24,9 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -33,6 +36,7 @@ import org.redPanda.ChannelList.Preferences;
 import org.redPandaLib.Main;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.PeerTrustData;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
@@ -60,7 +64,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 326;
+    public static final int VERSION = 415;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -77,13 +81,14 @@ public class BS extends Service {
     private static long lastUpdateChecked = 0;
     public static int currentViewedChannel = -100;
     private long lastTrimmed = 0;
+    public static BS bs;
     /**
      * Handler of incoming messages from clients.
      */
     private ArrayList<Channel> chanlist;
     private final HashMap<Channel, ArrayList<Messenger>> hm = new HashMap<Channel, ArrayList<Messenger>>();
     private Messenger flm;
-    private SqLiteConnection sqLiteConnection;
+    public static SqLiteConnection sqLiteConnection;
 
     class IncomingHandler extends Handler {
 
@@ -112,6 +117,13 @@ public class BS extends Service {
 
                     ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
 
+                    Collections.sort(ml, new Comparator<TextMessageContent>() {
+
+                        public int compare(TextMessageContent t, TextMessageContent t1) {
+                            return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+                        }
+                    });
+
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
                     Bundle b2 = new Bundle();
@@ -129,6 +141,7 @@ public class BS extends Service {
 
                     }
                     break;
+
                 case MSG_UNREGISTER_CLIENT:
 
                     int unchanid = mesg.getData().getInt("chanid");
@@ -147,6 +160,7 @@ public class BS extends Service {
 
                     final String msgContent = mesg.getData().getString("msg");
                     new Thread() {
+
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
@@ -159,6 +173,7 @@ public class BS extends Service {
                     final Messenger replyTo = mesg.replyTo;
 
                     new Thread() {
+
                         @Override
                         public void run() {
                             chanlist = Main.getChannels();
@@ -260,6 +275,7 @@ public class BS extends Service {
      */
     @Override
     public void onCreate() {
+        bs = this;
         //Toast.makeText(this, "Sevice onCreate", Toast.LENGTH_SHORT).show();
 
 //        super.onCreate();
@@ -286,6 +302,7 @@ public class BS extends Service {
         new ExceptionLogger(this);
 
         new Thread() {
+
             @Override
             public void run() {
 
@@ -294,6 +311,7 @@ public class BS extends Service {
                 try {
                     File albumStorageDir = getAlbumStorageDir("redPanda");
                     Main.setImageStoreFolder(albumStorageDir.getAbsolutePath() + "/");
+                    Main.setImageInfos(new ImageInfosAndroid());
 
                     //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
@@ -323,6 +341,7 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
+
             @Override
             public void run() {
                 ConnectivityChanged connectivityChanged = new ConnectivityChanged();
@@ -338,6 +357,7 @@ public class BS extends Service {
         }.start();
 
         new Thread() {
+
             @Override
             public void run() {
                 try {
@@ -350,9 +370,9 @@ public class BS extends Service {
                     Channel importChannelFromHuman = Main.importChannelFromHuman("prAZqUNKAu9D4Xtrpiv7yLHL3Pc4gUV6bQ86t86sgrJQ3SkDLn6E1ffez", "All Android Users");
                     if (importChannelFromHuman != null) {
                         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
-                        if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
-                            sharedPref.edit().putBoolean(ChanPref.CHAN_SILENT + importChannelFromHuman.getId(), true).commit();
-                        }
+                        //if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
+                        sharedPref.edit().putBoolean(ChanPref.CHAN_NOTIFICATIONS + importChannelFromHuman.getId(), false).commit();
+                        //}
                     }
 
                 } catch (AddressFormatException ex) {
@@ -473,21 +493,21 @@ public class BS extends Service {
         @SuppressWarnings("empty-statement")
         public void newMessage(TextMessageContent msg) {
 
-//            if (msg.message_type == ImageMsg.BYTE) {
-//
-//                String pathToFile = msg.getText();
-//                //Gallery scan file!
-//                MediaScannerConnection.scanFile(BS.this,
-//                        new String[]{pathToFile}, null,
-//                        new MediaScannerConnection.OnScanCompletedListener() {
-//
-//                            @Override
-//                            public void onScanCompleted(String path, Uri uri) {
-//                                //....                              
-//                            }
-//                        });
-//
-//            }
+            if (msg.message_type == ImageMsg.BYTE) {
+
+                String pathToFile = msg.getText().split("\n")[0];
+                //Gallery scan file!
+                MediaScannerConnection.scanFile(BS.this,
+                        new String[]{pathToFile}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+
+                            @Override
+                            public void onScanCompleted(String path, Uri uri) {
+                                //....                              
+                            }
+                        });
+
+            }
             //   Toast.makeText(BS.this, "new MSG in SERVICE", Toast.LENGTH_SHORT).show();
             Channel chan = msg.getChannel();
             Message ms;
@@ -495,6 +515,33 @@ public class BS extends Service {
             Messenger m;
             Iterator<Messenger> its;
             System.out.println(chan.getId() + " " + chan.toString() + " " + hm.get(chan));
+
+            if (msg.message_type == ImageMsg.BYTE) {
+
+                String[] tmp = msg.text.split("\n");
+                if (tmp.length == 3) {
+                    double width = Integer.parseInt(tmp[1]);
+                    double height = Integer.parseInt(tmp[2]);
+                    int scale = 1;
+//                                while (width / 2 > ChatAdapter.imageMaxSize) {
+//                                    width = width / 2;
+//                                    height = height / 2;
+//                                    scale *= 2;
+//                                }
+                    double tmpdouble = ChatAdapter.imageMaxSize * 0.6;
+                    int reqWidth = (int) tmpdouble;
+
+                    if (width > reqWidth) {
+                        final double ratio = width / reqWidth;
+
+                        height = height * 1 / ratio;
+                        width = tmpdouble;
+                        scale = (int) Math.round(ratio);
+                    }
+                    msg.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
+                }
+
+            }
 
             if (msg.message_type == TextMsg.BYTE || msg.message_type == ImageMsg.BYTE) {
                 //Set shared Pref for FLActivity
@@ -508,14 +555,17 @@ public class BS extends Service {
                 }
                 String text = "";
                 if (msg.message_type == TextMsg.BYTE) {
-                    text = from + ": " + msg.getText();
+                    //text = from + ": " + msg.getText();
+                    text = msg.getText();
                 } else if (msg.message_type == ImageMsg.BYTE) {
-                    text = from + ": " + "Picture";
+                    // text = from + ": " + "Picture";
+                    text = "Picture";
                 }
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
                 SharedPreferences.Editor edit = sharedPref.edit();
                 edit.putLong("lastMessageForChannel" + id, time);
                 edit.putString("lastMessageTextForChannel" + id, text);
+                edit.putString("lastMessageTextForChannelid" + id, "" + msg.getIdentity());
                 edit.commit();
 
                 //
@@ -585,6 +635,7 @@ public class BS extends Service {
         lastUpdateChecked = System.currentTimeMillis();
 
         new Thread() {
+
             @Override
             public void run() {
 //                Properties systemProperties = System.getProperties();
@@ -659,10 +710,12 @@ public class BS extends Service {
                 String cmd = intent.getStringExtra("cmd");
                 if (cmd.equals("fullSync")) {
                     Settings.initFullNetworkSync = true;
+
+                    Test.peerTrusts = new ArrayList<PeerTrustData>();
+
                 } else if (cmd.equals("removeOldMessages")) {
                     Main.removeOldMessagesDecryptedContent();
                     Main.removeOldMessages();
-
                 }
 
             }
@@ -674,6 +727,16 @@ public class BS extends Service {
         // Get the directory for the user's public pictures directory.
         File file = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), albumName);
+        if (!file.mkdirs()) {
+            System.out.println("filedir not created...");
+        }
+        return file;
+    }
+
+    public File getXmlStorageDir(String xmlDirName) {
+        // Get the directory for the user's public pictures directory.
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                "Documents"), xmlDirName);
         if (!file.mkdirs()) {
             System.out.println("filedir not created...");
         }

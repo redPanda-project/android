@@ -12,7 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,11 +27,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +46,7 @@ import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.messages.DeliveredMsg;
+import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 
 /**
@@ -108,12 +114,10 @@ public class ChatActivity extends ListActivity {
 //        });
         Button button = (Button) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
-
             public void onClick(View arg0) {
 
                 final String text = editText.getText().toString();
                 Runnable runnable = new Runnable() {
-
                     public void run() {
                         editText.setText("");
                     }
@@ -156,8 +160,27 @@ public class ChatActivity extends ListActivity {
         //super.onBackPressed();
         Intent intent;
         intent = new Intent(ChatActivity.this, FlActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        //TODO look at flags
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        
         startActivity(intent);
+    }
+
+    class MergeTask extends AsyncTask<Integer, Void, ArrayList<ChatMsg>> {
+
+        public MergeTask(ImageView imageView, String path, int scale, int width, int height) {
+
+        }
+
+        @Override
+        protected ArrayList<ChatMsg> doInBackground(Integer... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<ChatMsg> al) {
+
+        }
     }
 
     /**
@@ -187,7 +210,6 @@ public class ChatActivity extends ListActivity {
 //                    if (t.message_type != DeliveredMsg.BYTE) {
 //                        getListView().setSelection(cA.mMessages.size() - 1);
 //                    }
-
                     //  System.out.println( "12345 "+genReadableText(msg));                   
                     break;
                 case BS.NEW_MSGL:
@@ -198,8 +220,8 @@ public class ChatActivity extends ListActivity {
                         merge(it.next());
                     }
                     cA.notifyDataSetChanged();
-                    getListView().setSelection(cA.mMessages.size() - 1);
-                    System.out.println("12345 " + cA.mMessages.size());
+                    //getListView().setSelection(cA.mMessages.size() - 1);
+                    //System.out.println("12345 " + cA.mMessages.size());
                     break;
 
                 default:
@@ -208,12 +230,11 @@ public class ChatActivity extends ListActivity {
         }
 
         public void merge(final TextMessageContent tmc) {
-
+//TODO do the merge in Background
             if (tmc.message_type == DeliveredMsg.BYTE) {
 
                 if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
                     new Thread() {
-
                         @Override
                         public void run() {
                             Main.sendBroadCastMsg("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
@@ -228,19 +249,19 @@ public class ChatActivity extends ListActivity {
                 wrap.get();//skip message_type
                 long identity = wrap.getLong();
                 byte public_type = wrap.get();
-                long time = wrap.getLong();
+                long timestamp = wrap.getLong();
                 int nonce = wrap.getInt();
 
                 tmc.identity = identity;
 
                 boolean found = false;
                 //String hans = "";
-                String deliveredTo = "";
+                String deliveredTo = tmc.getName();
                 for (ChatMsg cM : cA.mMessages) {
 
                     //hans += " " + message.ts;
                     //todo: wird nur timestamp überprüft
-                    if (time == cM.getTimestamp()) {
+                    if (timestamp == cM.getTimestamp()) {
                         deliveredTo = cM.getDeliverdTo();
                         found = true;
 
@@ -253,8 +274,8 @@ public class ChatActivity extends ListActivity {
                         return;
                     } else {
                     }
-
                 }
+//                }
 
                 //final String hhans = hans;
 //                if (!found) {
@@ -283,14 +304,62 @@ public class ChatActivity extends ListActivity {
 //                    cM = new ListMessage(tmc);
 //                }
             }
+
+            if (tmc.message_type == ImageMsg.BYTE) {
+
+                String[] tmp = tmc.text.split("\n");
+                if (tmp.length == 3) {
+                    double width = Integer.parseInt(tmp[1]);
+                    double height = Integer.parseInt(tmp[2]);
+                    int scale = 1;
+//                                while (width / 2 > ChatAdapter.imageMaxSize) {
+//                                    width = width / 2;
+//                                    height = height / 2;
+//                                    scale *= 2;
+//                                }
+                    double tmpdouble = ChatAdapter.imageMaxSize * 0.6;
+                    int reqWidth = (int) tmpdouble;
+
+                    if (width > reqWidth) {
+                        final double ratio = width / reqWidth;
+
+                        height = height * 1 / ratio;
+                        width = tmpdouble;
+                        scale = (int) Math.round(ratio);
+                    }
+                    tmc.text = tmp[0] + "\n" + (int) width + "\n" + (int) height + "\n" + scale;
+                }
+
+            }
+
             Date date = new Date(tmc.getTimestamp());
-            String time = ChatAdapter.formatTime(date);
+            String time = ChatAdapter.formatTime(date, false);
 
-            cM = new ChatMsg(tmc.getText(), time, tmc.getName(), tmc.identity, tmc.getTimestamp(), tmc.fromMe, (byte) tmc.message_type);
+            cM = new ChatMsg(tmc.getText(), time, tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type);
+            ChatMsg oCM;
+            if (cA.mMessages.isEmpty()) {
+                TextMessageContent tmptmc = new TextMessageContent();
+                tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
+                tmptmc.message_type = ChatAdapter.daydevider;
+                cA.mMessages.add(new ChatMsg(tmptmc));
 
+            } else {
+                oCM = cA.mMessages.get(cA.mMessages.size() - 1);
+                String d, oD;
+                d = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
+                oD = ChatAdapter.formatTime(new Date(oCM.getTimestamp()), true);
+                if (!d.equals(oD)) {
+                    TextMessageContent tmptmc = new TextMessageContent();
+                    tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
+                    tmptmc.message_type = ChatAdapter.daydevider;
+                    cA.mMessages.add(new ChatMsg(tmptmc));
+                }
+            }
             cA.mMessages.add(cM);
+
         }
     }
+
     /**
      * Target we publish for clients to send messages to IncomingHandler.
      */
@@ -299,20 +368,18 @@ public class ChatActivity extends ListActivity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
-
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
-            // This is called when the connection with the service has been
+                // This is called when the connection with the service has been
             // established, giving us the service object we can use to
             // interact with the service.  We are communicating with our
             // service through an IDL interface, so get a client-side
             // representation of that from the raw service object.
             mService = new Messenger(service);
 
-            // We want to monitor the service for as long as we are
+                // We want to monitor the service for as long as we are
             // connected to it.
             new Thread() {
-
                 @Override
                 public void run() {
                     Message msg = Message.obtain(null,
@@ -325,7 +392,7 @@ public class ChatActivity extends ListActivity {
                         mService.send(msg);
 
                     } catch (RemoteException e) {
-                        // In this case the service has crashed before we could even
+                            // In this case the service has crashed before we could even
                         // do anything with it; we can count on soon being
                         // disconnected (and then reconnected if it can be restarted)
                         // so there is no need to do anything here.
@@ -337,7 +404,7 @@ public class ChatActivity extends ListActivity {
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
+                // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
             doBindService();
@@ -346,7 +413,7 @@ public class ChatActivity extends ListActivity {
     };
 
     void doBindService() {
-        // Establish a connection with the service.  We use an explicit
+            // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
         mIsBound = bindService(new Intent(ChatActivity.this,
@@ -356,7 +423,7 @@ public class ChatActivity extends ListActivity {
 
     void doUnbindService() {
         if (mIsBound) {
-            // If we have received the service, and hence registered with
+                // If we have received the service, and hence registered with
             // it, then now is the time to unregister.
             if (mService != null) {
                 try {
@@ -368,7 +435,7 @@ public class ChatActivity extends ListActivity {
                     msg.replyTo = mMessenger;
                     mService.send(msg);
                 } catch (RemoteException e) {
-                    // There is nothing special we need to do if the service
+                        // There is nothing special we need to do if the service
                     // has crashed.
                 }
             }
@@ -380,7 +447,8 @@ public class ChatActivity extends ListActivity {
         }
     }
 
-    public static String genReadableText(Message msg) {
+
+public static String genReadableText(Message msg) {
         long sendTime = msg.getData().getLong("sendtime");
         String str = msg.getData().getString("msg");
         Date date = new Date(sendTime);
@@ -413,7 +481,7 @@ public class ChatActivity extends ListActivity {
     }
 
     @Override
-    protected void onResume() {
+        protected void onResume() {
         super.onResume();
         if (chan != null) {
             BS.currentViewedChannel = chan.getId();
@@ -426,13 +494,13 @@ public class ChatActivity extends ListActivity {
     }
 
     @Override
-    protected void onPause() {
+        protected void onPause() {
         super.onPause();
         BS.currentViewedChannel = -100;
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+        protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
     }
 
@@ -449,13 +517,13 @@ public class ChatActivity extends ListActivity {
      * Clears all activitys and starts the FlActivity
      */
     @Override
-    public void onBackPressed() {
+        public void onBackPressed() {
         backToFlActivity();
-
+        finish();
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+        public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 backToFlActivity();
@@ -480,29 +548,24 @@ public class ChatActivity extends ListActivity {
 //    }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+        public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.chat_menu, menu);
         return true;
     }
 
     @Override
-    protected void onActivityResult(final int requestCode, final int resultCode,
+        protected void onActivityResult(final int requestCode, final int resultCode,
             final Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
         new Thread() {
-
             @Override
-            public void run() {
-
-
+        public void run() {
 
                 switch (requestCode) {
                     case SELECT_PHOTO:
                         if (resultCode == RESULT_OK) {
-
-
 
                             Uri selectedImage = imageReturnedIntent.getData();
                             String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -515,12 +578,9 @@ public class ChatActivity extends ListActivity {
                             final String filePath = cursor.getString(columnIndex);
                             cursor.close();
 
-
-
                             Main.sendImageToChannel(chan, filePath);
 
                             runOnUiThread(new Runnable() {
-
                                 public void run() {
                                     Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
                                 }

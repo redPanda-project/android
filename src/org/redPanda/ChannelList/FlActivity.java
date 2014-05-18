@@ -6,16 +6,15 @@ package org.redPanda.ChannelList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
-import android.app.PendingIntent.CanceledException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -32,7 +31,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -55,6 +53,9 @@ import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Peer;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
+import android.support.v4.util.LruCache;
+import com.jwetherell.quick_response_code.CaptureActivity;
+import org.redPandaLib.core.PeerTrustData;
 
 /**
  *
@@ -67,10 +68,35 @@ public class FlActivity extends Activity {
     private boolean active;
     TextView infotext;
     public static Context context;
-    ListView lv;
+    public ListView lv;
+    public static LruCache<String, Bitmap> mMemoryCache;
+    public String qrtext = "";
 
+    @Override
     public void onCreate(Bundle savedInstanceState) {
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 8;
+
+        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    return bitmap.getByteCount() / 1024;
+                } else {
+                    return bitmap.getRowBytes() * bitmap.getHeight() / 1024;
+                }
+
+            }
+        };
+
         context = this;
+
         new ExceptionLogger(this);
 
         //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
@@ -83,11 +109,12 @@ public class FlActivity extends Activity {
         setContentView(R.layout.fl);
 
         Button newChButton = (Button) findViewById(R.id.NKButton);
+
         infotext = (TextView) findViewById(R.id.infotext);
         infotext.setTextColor(Color.BLUE);
         newChButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
 
+            public void onClick(View arg0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
                 builder.setTitle("Erstelle neuen Channel");
 
@@ -103,6 +130,7 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -120,6 +148,7 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -130,8 +159,20 @@ public class FlActivity extends Activity {
 
             }
         });
+        Button newChByQRButton = (Button) findViewById(R.id.NKByQRButton);
+
+        newChByQRButton.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View arg0) {
+                Intent is;
+                is = new Intent(FlActivity.this, QRCaptureActivity.class);
+                startActivity(is);
+            }
+        });
+
         Button impButton = (Button) findViewById(R.id.imbutton);
         impButton.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
@@ -154,6 +195,7 @@ public class FlActivity extends Activity {
 
 // Set up the buttons
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -180,6 +222,7 @@ public class FlActivity extends Activity {
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -212,6 +255,26 @@ public class FlActivity extends Activity {
 
         doBindService();
         this.registerForContextMenu(lv);
+
+        // Get intent, action and MIME type
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                //handleSendText(intent); // Handle text being sent
+            } else if (type.startsWith("image/")) {
+                handleSendImage(intent); // Handle single image being sent
+            }
+        } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null) {
+            if (type.startsWith("image/")) {
+                handleSendMultipleImages(intent); // Handle multiple images being sent
+            }
+        } else {
+            // Handle other intents, such as being started from the home screen
+        }
+
     }
 
     private class OnItemClickListenerImpl implements OnItemClickListener {
@@ -232,11 +295,13 @@ public class FlActivity extends Activity {
             if (clickedChannel != null) {
 //                clickedChannel.setLastMessageTime(System.currentTimeMillis());
                 adapter.sort(new Comparator<ChannelViewElement>() {
+
                     public int compare(ChannelViewElement t, ChannelViewElement t1) {
                         return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                     }
                 });
                 Collections.sort(channels, new Comparator<ChannelViewElement>() {
+
                     public int compare(ChannelViewElement t, ChannelViewElement t1) {
                         return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                     }
@@ -251,7 +316,6 @@ public class FlActivity extends Activity {
             intent.putExtra("Channel", clickedChannel);
             //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
             startActivity(intent);
 
         }
@@ -263,7 +327,7 @@ public class FlActivity extends Activity {
         if (v.getId() == R.id.chanlist) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             menu.setHeaderTitle(channels.get(info.position).toString());
-            String[] menuItems = {"Open", "Share", "Edit", "Delete"};
+            String[] menuItems = {"Open", "Share", "Share by QR", "Edit", "Delete"};
             for (int i = 0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
             }
@@ -286,7 +350,7 @@ public class FlActivity extends Activity {
                 intent.putExtra("Channel", channels.get(pos));
                 startActivity(intent);
                 break;
-            case 2:
+            case 3:
                 Intent intent2 = new Intent(this, ChanPref.class);
                 Bundle b = new Bundle();
                 b.putSerializable("Channel", channels.get(pos));
@@ -310,7 +374,7 @@ public class FlActivity extends Activity {
                 Toast.makeText(FlActivity.this, "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
 
                 break;
-            case 3:
+            case 4:
                 Main.removeChannel(channels.get(pos));
 
                 Message msg = Message.obtain(null,
@@ -321,6 +385,13 @@ public class FlActivity extends Activity {
                 } catch (RemoteException ex) {
                     Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                break;
+            case 2:
+                Intent inte;
+                inte = new Intent(FlActivity.this, QRCodeActivity.class);
+                inte.putExtra("title", channels.get(pos).toString());
+                inte.putExtra("Key", channels.get(pos).exportForHumans());
+                startActivity(inte);
                 break;
             default:
                 break;
@@ -366,11 +437,13 @@ public class FlActivity extends Activity {
 //                            Toast.makeText(FlActivity.this, "name: " + chan.toString(), Toast.LENGTH_SHORT).show();
                         }
                         adapter.sort(new Comparator<ChannelViewElement>() {
+
                             public int compare(ChannelViewElement t, ChannelViewElement t1) {
                                 return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                             }
                         });
                         Collections.sort(channels, new Comparator<ChannelViewElement>() {
+
                             public int compare(ChannelViewElement t, ChannelViewElement t1) {
                                 return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                             }
@@ -395,17 +468,18 @@ public class FlActivity extends Activity {
                     }
 
                     adapter.sort(new Comparator<ChannelViewElement>() {
+
                         public int compare(ChannelViewElement t, ChannelViewElement t1) {
                             return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                         }
                     });
                     Collections.sort(channels, new Comparator<ChannelViewElement>() {
+
                         public int compare(ChannelViewElement t, ChannelViewElement t1) {
                             return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
                         }
                     });
                     adapter.notifyDataSetInvalidated();
-
 
                     break;
                 default:
@@ -421,6 +495,7 @@ public class FlActivity extends Activity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
+
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
 //            Toast.makeText(FlActivity.this, "Serviceconnected", Toast.LENGTH_SHORT).show();
@@ -453,7 +528,7 @@ public class FlActivity extends Activity {
                 // disconnected (and then reconnected if it can be restarted)
                 // so there is no need to do anything here.
             }
-
+            importChannelfromIntent();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -463,6 +538,19 @@ public class FlActivity extends Activity {
             doBindService();
         }
     };
+
+    public static void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null && mMemoryCache != null) {
+            mMemoryCache.put(key, bitmap);
+        }
+    }
+
+    public static Bitmap getBitmapFromMemCache(String key) {
+        if (mMemoryCache != null) {
+            return mMemoryCache.get(key);
+        }
+        return null;
+    }
 
     void doBindService() {
         // Establish a connection with the service.  We use an explicit
@@ -536,7 +624,8 @@ public class FlActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
-        adapter.notifyDataSetChanged();
+        adapter.notifyDataSetInvalidated();
+        active = true;
     }
 
     @Override
@@ -551,6 +640,7 @@ public class FlActivity extends Activity {
         active = true;
 
         new Thread() {
+
             @Override
             public void run() {
                 while (active) {
@@ -570,18 +660,32 @@ public class FlActivity extends Activity {
                             }
                         }
 
+                        int trustedIps = 0;
+                        final ArrayList<PeerTrustData> clonedTrusts = (ArrayList<PeerTrustData>) Test.peerTrusts.clone();
+
+                        for (PeerTrustData ptd : clonedTrusts) {
+                            trustedIps += ptd.ips.size();
+                        }
+
+                        final int trustedIpsFinal = trustedIps;
                         final int activeConnections = actCons;
                         final int connectingConnections = connectingCons;
 
                         infotext.post(new Runnable() {
+
                             public void run() {
-                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size());
+                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal);
                             }
                         });
                     } else {
                         infotext.post(new Runnable() {
+
                             public void run() {
-                                infotext.setText("loading...");
+                                if (BS.sqLiteConnection == null) {
+                                    infotext.setText("loading database...");
+                                } else {
+                                    infotext.setText("loading...");
+                                }
                             }
                         });
                     }
@@ -592,6 +696,7 @@ public class FlActivity extends Activity {
                 }
 
                 infotext.post(new Runnable() {
+
                     public void run() {
                         infotext.setText("Nodes: -/-/-");
                     }
@@ -619,5 +724,108 @@ public class FlActivity extends Activity {
         startMain.addCategory(Intent.CATEGORY_HOME);
         startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(startMain);
+        finish();
+    }
+
+    void handleSendImage(Intent intent) {
+        Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (imageUri != null) {
+            // Update UI to reflect image being shared
+        }
+    }
+
+    void handleSendMultipleImages(Intent intent) {
+        ArrayList<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        if (imageUris != null) {
+            // Update UI to reflect multiple images being shared
+        }
+    }
+
+    public void importChannelfromIntent() {
+        Intent intent1 = getIntent();
+        if (intent1 != null) {
+            if (intent1.getExtras() != null) {
+                if (intent1.getExtras().getBoolean("newChannel") == true) {
+                    String keystr =intent1.getExtras().getString("ChannelKey");
+                    String namestr =intent1.getExtras().getString("ChannelName");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
+                    builder.setTitle("Import Channel");
+
+//// Set up the input
+                    final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
+
+                    final EditText name = (EditText) ll.findViewById(R.id.channame);
+                    final EditText key = (EditText) ll.findViewById(R.id.chankey);
+                    name.setHintTextColor(Color.RED);
+                    key.setHintTextColor(Color.CYAN);
+                    key.setText(keystr);
+                    name.setText(namestr);
+//                final EditText input = new EditText(FlActivity.this);
+//                
+//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+                    builder.setView(ll);
+
+// Set up the buttons
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Message msg = Message.obtain(null,
+                                    BS.ADD_CHANNEL);
+                            Bundle b = new Bundle();
+                            b.putString("name", name.getText().toString());
+                            b.putString("key", key.getText().toString());
+                            msg.setData(b);
+                            msg.replyTo = mMessenger;
+                            try {
+                                mService.send(msg);
+                            } catch (RemoteException ex) {
+                                Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            msg = Message.obtain(null,
+                                    BS.GET_CHANNELS);
+                            msg.replyTo = mMessenger;
+                            try {
+                                mService.send(msg);
+                            } catch (RemoteException ex) {
+                                Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.show();
+
+//                    Message msg = Message.obtain(null,
+//                            BS.ADD_CHANNEL);
+//                    Bundle b = new Bundle();
+//                    b.putString("name", intent1.getExtras().getString("ChannelName"));
+//                    b.putString("key", intent1.getExtras().getString("ChannelKey"));
+//                    msg.setData(b);
+//                    msg.replyTo = mMessenger;
+//                    try {
+//                        mService.send(msg);
+//                    } catch (RemoteException ex) {
+//                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                    msg = Message.obtain(null,
+//                            BS.GET_CHANNELS);
+//                    msg.replyTo = mMessenger;
+//                    try {
+//                        mService.send(msg);
+//                    } catch (RemoteException ex) {
+//                        Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+                }
+            }
+        }
+
     }
 }
