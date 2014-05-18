@@ -34,6 +34,7 @@ public class ChanPref extends PreferenceActivity {
     // public static final String KEY_NICK = "a";
     public static String CHAN_NAME = "CN";
     public static String CHAN_SILENT = "chan_silent";
+    public static String CHAN_NOTIFICATIONS = "chan_notify";
     public Intent intent;
     public Channel chan;
 
@@ -62,6 +63,7 @@ public class ChanPref extends PreferenceActivity {
         activePref.setSummary("The name of the channel. Visible only for you.");
         activePref.setText(chan.toString());
         activePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+
             public boolean onPreferenceChange(Preference arg0, Object arg1) {
 
                 try {
@@ -83,9 +85,16 @@ public class ChanPref extends PreferenceActivity {
         CheckBoxPreference silentPref = new CheckBoxPreference(this);
         silentPref.setKey(CHAN_SILENT + chan.getId());
         silentPref.setTitle("Silent Mode");
-        silentPref.setSummary("If activated, you will not get any notification for new messages.");
+        silentPref.setSummary("If activated, the notification will not make any sound or will vibrate.");
         silentPref.setDefaultValue(false);
         mainc.addPreference(silentPref);
+
+        CheckBoxPreference noNotifications = new CheckBoxPreference(this);
+        noNotifications.setKey(CHAN_NOTIFICATIONS + chan.getId());
+        noNotifications.setTitle("Notifications");
+        noNotifications.setSummary("If disabled, you will not get any notification for new messages.");
+        noNotifications.setDefaultValue(true);
+        mainc.addPreference(noNotifications);
 
         return root;
     }
@@ -98,6 +107,7 @@ public class ChanPref extends PreferenceActivity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
+
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
             // This is called when the connection with the service has been

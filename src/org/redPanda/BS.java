@@ -64,7 +64,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 414;
+    public static final int VERSION = 415;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -370,9 +370,9 @@ public class BS extends Service {
                     Channel importChannelFromHuman = Main.importChannelFromHuman("prAZqUNKAu9D4Xtrpiv7yLHL3Pc4gUV6bQ86t86sgrJQ3SkDLn6E1ffez", "All Android Users");
                     if (importChannelFromHuman != null) {
                         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
-                        if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
-                            sharedPref.edit().putBoolean(ChanPref.CHAN_SILENT + importChannelFromHuman.getId(), true).commit();
-                        }
+                        //if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
+                        sharedPref.edit().putBoolean(ChanPref.CHAN_NOTIFICATIONS + importChannelFromHuman.getId(), false).commit();
+                        //}
                     }
 
                 } catch (AddressFormatException ex) {
