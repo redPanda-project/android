@@ -595,6 +595,21 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
      */
     @Override
     public void onBackPressed() {
+
+        if (emojiconKeyboardVisible) {
+            FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+            RelativeLayout.LayoutParams lpEmo = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
+            //lpEmo.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            lpEmo.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+
+            RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
+            lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            tr.hide(emojiconsFragment);
+
+            emojiconKeyboardVisible = false;
+            return;
+        }
+
         backToFlActivity();
         finish();
     }

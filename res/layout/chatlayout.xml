@@ -47,7 +47,8 @@
             android:paddingRight="5sp"
             android:paddingTop="5sp"
             android:text=":)"
-            android:textColor="#FFF" />
+            android:textColor="#FFF"
+            android:minWidth="0dp"/>
         />
                 
         <com.rockerhieu.emojicon.EmojiconEditText
@@ -83,7 +84,7 @@
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/emojicons"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="250dp"
             class="com.rockerhieu.emojicon.EmojiconsFragment"/>
 
 
