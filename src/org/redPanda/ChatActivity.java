@@ -606,6 +606,9 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
             tr.hide(emojiconsFragment);
 
+            //mainLayoutInputAndSend.invalidate();
+            tr.commit();
+
             emojiconKeyboardVisible = false;
             return;
         }

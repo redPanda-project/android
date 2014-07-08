@@ -46,9 +46,9 @@ public class SqLiteConnection {
 
 
 
-        //stmt.executeUpdate("SET FILES CACHE ROWS 5000");//rows
-        //stmt.executeUpdate("SET FILES CACHE SIZE 5000");//kb
-        //stmt.executeUpdate("SET AUTOCOMMIT TRUE");
+        stmt.executeUpdate("SET FILES CACHE ROWS 10000");//rows
+        stmt.executeUpdate("SET FILES CACHE SIZE 20000");//kb
+        stmt.executeUpdate("SET AUTOCOMMIT TRUE");
 
 //            PubKey
 //id INTEGER
@@ -63,10 +63,7 @@ public class SqLiteConnection {
         }
 
         //AUTOINCREMENT -- IDENTITY
-
-        stmt.executeUpdate("create CACHED table if not exists pubkey (pubkey_id integer PRIMARY KEY IDENTITY, pubkey BINARY(33) UNIQUE)");
-
-
+ stmt.executeUpdate("create CACHED table if not exists pubkey (pubkey_id integer PRIMARY KEY IDENTITY, pubkey BINARY(33) UNIQUE)");
 
 //Channel
 //id INTEGER
@@ -74,8 +71,6 @@ public class SqLiteConnection {
 //private_key BINARY(32)
 //name LONGVARBINARY
         stmt.executeUpdate("create CACHED table if not exists channel (channel_id integer PRIMARY KEY IDENTITY, pubkey_id INTEGER UNIQUE, private_key BINARY(32) UNIQUE, name LONGVARBINARY)");
-
-
 
 //Message
 //id INTEGER
@@ -92,12 +87,22 @@ public class SqLiteConnection {
         stmt.executeUpdate("create CACHED table if not exists message (message_id INTEGER PRIMARY KEY IDENTITY, pubkey_id INTEGER, public_type TINYINT, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
 
         stmt.executeUpdate("create CACHED table if not exists channelmessage (pubkey_id INTEGER, message_id INTEGER, message_type INTEGER, decryptedContent LONGVARBINARY, identity BIGINT, fromMe BOOLEAN, FOREIGN KEY (pubkey_id) REFERENCES pubkey(pubkey_id))");
+
+        //table for sticks
+        stmt.executeUpdate("create CACHED table if not exists sticks (pubkey_id INTEGER, message_id INTEGER, difficulty DOUBLE, validTill BIGINT, FOREIGN KEY (pubkey_id) REFERENCES pubkey(pubkey_id))");
+
+        stmt.executeUpdate("create CACHED table if not exists peerMessagesIntroducedToMe (peer_id BIGINT, message_id INTEGER)");
+        stmt.executeUpdate("create CACHED table if not exists peerMessagesIntroducedToHim (peer_id BIGINT, message_id INTEGER, FOREIGN KEY (message_id) REFERENCES message(message_id) ON DELETE CASCADE)");
+
+        stmt.executeUpdate("create CACHED table if not exists haveToSendMessageToPeer (peer_id BIGINT, message_id INTEGER, FOREIGN KEY (message_id) REFERENCES message(message_id) ON DELETE CASCADE)");
+        stmt.executeUpdate("create CACHED table if not exists filterChannels (peer_id BIGINT, channel_id INTEGER)");//, FOREIGN KEY (channel_id) REFERENCES channel(channel_id) ON DELETE CASCADE
+
 //        ResultSet executeQuery = stmt.executeQuery("SELECT * FROM information_schema.statistics");
 //
 //
 //        System.out.println("d3uwne3quzne " + executeQuery.getFetchSize());
 //        executeQuery.close();
-
+//        stmt.executeUpdate("create CACHED table if not exists syncHash (channel_id integer, from BIGINT, to BIGINT, count INTEGER, hashcode INTEGER)");
         try {
             stmt.executeUpdate("CREATE INDEX messagePubkeyIndex ON message(pubkey_id)");
         } catch (SQLSyntaxErrorException e) {
@@ -108,6 +113,25 @@ public class SqLiteConnection {
         }
         try {
             stmt.executeUpdate("CREATE INDEX messageNonceIndex ON message(nonce)");
+        } catch (SQLSyntaxErrorException e) {
+        }
+        try {
+            stmt.executeUpdate("CREATE INDEX messageMsgIdIndex ON message(message_id)");
+        } catch (SQLSyntaxErrorException e) {
+        }
+
+        try {
+            stmt.executeUpdate("CREATE INDEX peerMessagesIntroducedToMeIndex ON peerMessagesIntroducedToMe(peer_id,message_id)");
+        } catch (SQLSyntaxErrorException e) {
+        }
+
+        try {
+            stmt.executeUpdate("CREATE INDEX peerMessagesIntroducedToHimIndex ON peerMessagesIntroducedToHim(peer_id,message_id)");
+        } catch (SQLSyntaxErrorException e) {
+        }
+
+        try {
+            stmt.executeUpdate("CREATE INDEX peerMessagesIntroducedToHimIndexForMsgId ON peerMessagesIntroducedToHim(message_id)");
         } catch (SQLSyntaxErrorException e) {
         }
 
@@ -124,42 +148,6 @@ public class SqLiteConnection {
             stmt.executeUpdate("CREATE INDEX syncHashchannel_idIndex ON syncHash(channel_id)");
         } catch (SQLSyntaxErrorException e) {
         }
-
-        //stmt.executeUpdate("create CACHED table if not exists stick (stick_id INTEGER PRIMARY KEY IDENTITY, pubkey_id INTEGER, timestamp BIGINT, nonce INTEGER,  signature BINARY(72), content LONGVARBINARY, verified boolean)");
-
-//            stmt.executeUpdate("insert into person values(1, 'leo')");
-//            stmt.executeUpdate("insert into person values(2, 'yui')");
-//            ResultSet rs2 = stmt.executeQuery("select * from person");
-//            while (rs2.next()) {
-//                // read the result set
-//                System.out.println("name = " + rs2.getString("name"));
-//                System.out.println("id = " + rs2.getInt("id"));
-//            }
-//
-//
-//
-//
-//
-//            String sql2 = "CREATE TABLE if not exists test (id INT NOT NULL,content INT NOT NULL ,PRIMARY KEY (id))";
-//            stmt.execute(sql2);
-//
-////            String sql3 = "INSERT INTO test (id ,content) VALUES ('1',  '55');";
-////            stmt.execute(sql3);
-//
-//            // Alle Kunden ausgeben
-//            String sql = "SELECT * FROM test";
-//            ResultSet rs = stmt.executeQuery(sql);
-//
-//            while (rs.next()) {
-//                String id = rs.getString(1);
-//                String content = rs.getString(2);
-//                System.out.println(id + ", " + content + " ");
-//            }
-//
-//            // Resultset schließen
-//            rs.close();
-
-        // Statement schließen
         stmt.close();
 
     }
