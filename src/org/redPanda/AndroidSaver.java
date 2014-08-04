@@ -238,6 +238,10 @@ public class AndroidSaver implements SaverInterface {
     }
 
     public void saveTrustedPeers(ArrayList<PeerTrustData> peertrusts) {
+
+        FileOutputStream fileOutputStream = null;
+        ObjectOutputStream objectOutputStream = null;
+
         try {
             File mkdirs = new File(context.getFilesDir(), SAVE_DIR);
             mkdirs.mkdir();
@@ -245,8 +249,8 @@ public class AndroidSaver implements SaverInterface {
             File fileTmp = new File(context.getFilesDir(), SAVE_DIR + "/trustData-tmp" + getPrefix() + ".dat");
 
             fileTmp.createNewFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(fileTmp);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            fileOutputStream = new FileOutputStream(fileTmp);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(peertrusts.clone());
             objectOutputStream.close();
             fileOutputStream.close();
@@ -256,17 +260,31 @@ public class AndroidSaver implements SaverInterface {
             fileTmp.renameTo(originFile);
 
         } catch (final Exception ex) {
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        sleep(20000);
-                    } catch (InterruptedException ex1) {
-                        Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex1);
-                    }
-                    Test.sendStacktrace(ex);
+
+            if (objectOutputStream != null) {
+                try {
+                    objectOutputStream.close();
+                } catch (IOException ex1) {
                 }
-            }.start();
+            }
+
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException ex1) {
+                }
+            }
+//            new Thread() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        sleep(20000);
+//                    } catch (InterruptedException ex1) {
+//                        Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex1);
+//                    }
+//                    Test.sendStacktrace(ex);
+//                }
+//            }.start();
         }
     }
 
@@ -286,6 +304,7 @@ public class AndroidSaver implements SaverInterface {
 
         } catch (final ClassNotFoundException ex) {
             new Thread() {
+
                 @Override
                 public void run() {
                     try {
@@ -300,6 +319,7 @@ public class AndroidSaver implements SaverInterface {
         } catch (final IOException ex) {
 
             new Thread() {
+
                 @Override
                 public void run() {
                     try {

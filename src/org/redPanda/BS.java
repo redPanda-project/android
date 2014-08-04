@@ -44,6 +44,7 @@ import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
 import org.redPandaLib.core.messages.TextMsg;
 import org.redPandaLib.crypt.AddressFormatException;
+import org.redPandaLib.database.HsqlConnection;
 
 /**
  *
@@ -64,7 +65,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 415;
+    public static final int VERSION = 455;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -88,7 +89,7 @@ public class BS extends Service {
     private ArrayList<Channel> chanlist;
     private final HashMap<Channel, ArrayList<Messenger>> hm = new HashMap<Channel, ArrayList<Messenger>>();
     private Messenger flm;
-    public static SqLiteConnection sqLiteConnection;
+    public static HsqlConnection hsqlConnection;
 
     class IncomingHandler extends Handler {
 
@@ -316,15 +317,16 @@ public class BS extends Service {
                     //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
                     //Settings.STD_PORT += 2;
+                    Settings.SEND_DELIVERED_MSG = true;
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     Settings.REMOVE_OLD_MESSAGES = true;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
                     //HsqlConnection.db_file = getFilesDir() + "/data/";
-                    sqLiteConnection = new SqLiteConnection(BS.this);
+                    hsqlConnection = new HsqlConnection(BS.this.getFilesDir().toString(), "/messages");
 
-                    Main.setMessageStore(sqLiteConnection.getConnection());
+                    Main.setMessageStore(hsqlConnection);
 
                     Main.startUp(false, androidSaver);
                     PopupListener popupListener = new PopupListener(BS.this);
@@ -463,7 +465,7 @@ public class BS extends Service {
                 try {
                     Toast.makeText(BS.this, "rebooting database - low memory", Toast.LENGTH_SHORT).show();
                     //SqLiteConnection oldCon = sqLiteConnection;
-                    Statement stmt = sqLiteConnection.getConnection().createStatement();
+                    Statement stmt = hsqlConnection.getConnection().createStatement();
                     stmt.executeUpdate("CHECKPOINT");//shutdown + reopen
 //                sqLiteConnection.getConnection().close();
 //                sqLiteConnection = new SqLiteConnection(this);

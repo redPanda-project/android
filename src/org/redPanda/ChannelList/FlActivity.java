@@ -681,7 +681,7 @@ public class FlActivity extends Activity {
                         infotext.post(new Runnable() {
 
                             public void run() {
-                                if (BS.sqLiteConnection == null) {
+                                if (BS.hsqlConnection == null) {
                                     infotext.setText("loading database...");
                                 } else {
                                     infotext.setText("loading...");

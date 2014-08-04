@@ -21,7 +21,7 @@
 
     <uses-permission android:name="android.permission.CAMERA"/>
           
-    <application android:label="@string/app_name" android:icon="@drawable/icon" android:largeHeap="true">
+    <application android:label="@string/app_name" android:icon="@drawable/icon" android:largeHeap="true" android:debuggable="true">
         <activity android:name="MainActivity"
                   android:theme="@style/customtheme"
                   android:label="@string/app_name">

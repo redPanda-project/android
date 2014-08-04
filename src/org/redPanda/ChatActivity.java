@@ -7,6 +7,7 @@ package org.redPanda;
 import android.app.Activity;
 import android.app.ListActivity;
 import android.app.NotificationManager;
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -22,18 +23,28 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.provider.MediaStore;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.rockerhieu.emojicon.EmojiconGridFragment;
+import com.rockerhieu.emojicon.EmojiconsFragment;
+import com.rockerhieu.emojicon.emoji.Emojicon;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -53,7 +64,7 @@ import org.redPandaLib.core.messages.TextMessageContent;
  *
  * @author mflohr
  */
-public class ChatActivity extends ListActivity {
+public class ChatActivity extends FragmentActivity implements EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener {
 
     private TextView conversationText;
     //  private ListView listView;
@@ -64,11 +75,13 @@ public class ChatActivity extends ListActivity {
     private ChatAdapter cA;
     public static final int MENU_IMAGE = Menu.FIRST;
     private static final int SELECT_PHOTO = 100;
+    private boolean emojiconKeyboardVisible = false;
+    private EmojiconsFragment emojiconsFragment;
+    private LinearLayout mainLayoutInputAndSend;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         new ExceptionLogger(this);
         Intent in = getIntent();
         this.setTitle(in.getExtras().getString("title"));
@@ -87,7 +100,60 @@ public class ChatActivity extends ListActivity {
         editText = (EditText) findViewById(R.id.mainEditText);
         messages = new ArrayList<ChatMsg>();
         cA = new ChatAdapter(this, messages);
-        setListAdapter(cA);
+
+        ListView lv = (ListView) findViewById(R.id.chatlayout_bubblelist);
+        lv.setAdapter(cA);
+
+
+        mainLayoutInputAndSend = (LinearLayout) findViewById(R.id.mainLayoutInputAndSend);
+
+        //hide smiley keyboard at beginning
+        emojiconsFragment = (EmojiconsFragment) getSupportFragmentManager().findFragmentById(R.id.emojicons);
+        FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+        tr.hide(emojiconsFragment);
+        tr.commit();
+
+
+
+        Button toogleEmojiconKeyboard = (Button) findViewById(R.id.emojiconEnableButton);
+        toogleEmojiconKeyboard.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View arg0) {
+
+                FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+
+                InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
+
+                if (emojiconKeyboardVisible) {
+                    RelativeLayout.LayoutParams lpEmo = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
+                    //lpEmo.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    lpEmo.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+
+                    RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
+                    lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    tr.hide(emojiconsFragment);
+
+
+                    imm.showSoftInput(editText, 0);
+                } else {
+                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+
+                    RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
+                    //lpLin.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+                    tr.show(emojiconsFragment);
+
+                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                }
+
+                tr.commit();
+
+                emojiconKeyboardVisible = !emojiconKeyboardVisible;
+
+            }
+        });
+
 
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
 //            public boolean onTouch(View arg0, MotionEvent e) {
@@ -114,10 +180,12 @@ public class ChatActivity extends ListActivity {
 //        });
         Button button = (Button) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View arg0) {
 
                 final String text = editText.getText().toString();
                 Runnable runnable = new Runnable() {
+
                     public void run() {
                         editText.setText("");
                     }
@@ -162,14 +230,23 @@ public class ChatActivity extends ListActivity {
         intent = new Intent(ChatActivity.this, FlActivity.class);
         //TODO look at flags
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        
+
         startActivity(intent);
+    }
+
+    @Override
+    public void onEmojiconClicked(Emojicon emojicon) {
+        EmojiconsFragment.input(editText, emojicon);
+    }
+
+    @Override
+    public void onEmojiconBackspaceClicked(View v) {
+        EmojiconsFragment.backspace(editText);
     }
 
     class MergeTask extends AsyncTask<Integer, Void, ArrayList<ChatMsg>> {
 
         public MergeTask(ImageView imageView, String path, int scale, int width, int height) {
-
         }
 
         @Override
@@ -179,7 +256,6 @@ public class ChatActivity extends ListActivity {
 
         @Override
         protected void onPostExecute(ArrayList<ChatMsg> al) {
-
         }
     }
 
@@ -235,6 +311,7 @@ public class ChatActivity extends ListActivity {
 
                 if (cA.mMessages == null || tmc.decryptedContent.length != 1 + 8 + 1 + 8 + 4) {
                     new Thread() {
+
                         @Override
                         public void run() {
                             Main.sendBroadCastMsg("delivered msg wrong bytes.... " + tmc.decryptedContent.length);
@@ -359,7 +436,6 @@ public class ChatActivity extends ListActivity {
 
         }
     }
-
     /**
      * Target we publish for clients to send messages to IncomingHandler.
      */
@@ -368,18 +444,20 @@ public class ChatActivity extends ListActivity {
      * Class for interacting with the main interface of the service.
      */
     private ServiceConnection mConnection = new ServiceConnection() {
+
         public void onServiceConnected(ComponentName className,
                 IBinder service) {
-                // This is called when the connection with the service has been
+            // This is called when the connection with the service has been
             // established, giving us the service object we can use to
             // interact with the service.  We are communicating with our
             // service through an IDL interface, so get a client-side
             // representation of that from the raw service object.
             mService = new Messenger(service);
 
-                // We want to monitor the service for as long as we are
+            // We want to monitor the service for as long as we are
             // connected to it.
             new Thread() {
+
                 @Override
                 public void run() {
                     Message msg = Message.obtain(null,
@@ -392,7 +470,7 @@ public class ChatActivity extends ListActivity {
                         mService.send(msg);
 
                     } catch (RemoteException e) {
-                            // In this case the service has crashed before we could even
+                        // In this case the service has crashed before we could even
                         // do anything with it; we can count on soon being
                         // disconnected (and then reconnected if it can be restarted)
                         // so there is no need to do anything here.
@@ -404,7 +482,7 @@ public class ChatActivity extends ListActivity {
         }
 
         public void onServiceDisconnected(ComponentName className) {
-                // This is called when the connection with the service has been
+            // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
             doBindService();
@@ -413,7 +491,7 @@ public class ChatActivity extends ListActivity {
     };
 
     void doBindService() {
-            // Establish a connection with the service.  We use an explicit
+        // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
         mIsBound = bindService(new Intent(ChatActivity.this,
@@ -423,7 +501,7 @@ public class ChatActivity extends ListActivity {
 
     void doUnbindService() {
         if (mIsBound) {
-                // If we have received the service, and hence registered with
+            // If we have received the service, and hence registered with
             // it, then now is the time to unregister.
             if (mService != null) {
                 try {
@@ -435,7 +513,7 @@ public class ChatActivity extends ListActivity {
                     msg.replyTo = mMessenger;
                     mService.send(msg);
                 } catch (RemoteException e) {
-                        // There is nothing special we need to do if the service
+                    // There is nothing special we need to do if the service
                     // has crashed.
                 }
             }
@@ -447,8 +525,7 @@ public class ChatActivity extends ListActivity {
         }
     }
 
-
-public static String genReadableText(Message msg) {
+    public static String genReadableText(Message msg) {
         long sendTime = msg.getData().getLong("sendtime");
         String str = msg.getData().getString("msg");
         Date date = new Date(sendTime);
@@ -481,7 +558,7 @@ public static String genReadableText(Message msg) {
     }
 
     @Override
-        protected void onResume() {
+    protected void onResume() {
         super.onResume();
         if (chan != null) {
             BS.currentViewedChannel = chan.getId();
@@ -494,13 +571,13 @@ public static String genReadableText(Message msg) {
     }
 
     @Override
-        protected void onPause() {
+    protected void onPause() {
         super.onPause();
         BS.currentViewedChannel = -100;
     }
 
     @Override
-        protected void onNewIntent(Intent intent) {
+    protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
     }
 
@@ -517,13 +594,31 @@ public static String genReadableText(Message msg) {
      * Clears all activitys and starts the FlActivity
      */
     @Override
-        public void onBackPressed() {
+    public void onBackPressed() {
+
+        if (emojiconKeyboardVisible) {
+            FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+            RelativeLayout.LayoutParams lpEmo = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
+            //lpEmo.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            lpEmo.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+
+            RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
+            lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            tr.hide(emojiconsFragment);
+
+            //mainLayoutInputAndSend.invalidate();
+            tr.commit();
+
+            emojiconKeyboardVisible = false;
+            return;
+        }
+
         backToFlActivity();
         finish();
     }
 
     @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 backToFlActivity();
@@ -548,20 +643,21 @@ public static String genReadableText(Message msg) {
 //    }
 
     @Override
-        public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.chat_menu, menu);
         return true;
     }
 
     @Override
-        protected void onActivityResult(final int requestCode, final int resultCode,
+    protected void onActivityResult(final int requestCode, final int resultCode,
             final Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
         new Thread() {
+
             @Override
-        public void run() {
+            public void run() {
 
                 switch (requestCode) {
                     case SELECT_PHOTO:
@@ -581,6 +677,7 @@ public static String genReadableText(Message msg) {
                             Main.sendImageToChannel(chan, filePath);
 
                             runOnUiThread(new Runnable() {
+
                                 public void run() {
                                     Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
                                 }
