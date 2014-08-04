@@ -67,7 +67,7 @@ public class ChannelViewElement extends Channel {
         if (lastMessage == 0) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(FlActivity.context);
 
-            lastMessage = sharedPref.getLong("lastMessageForChannel" + id, 1404584866193L);//TODO: hack
+            lastMessage = sharedPref.getLong("lastMessageForChannel" + id, 1406815323540L);//TODO: hack
 
         }
         return lastMessage;
