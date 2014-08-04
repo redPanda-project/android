@@ -33,15 +33,29 @@ public class ChannelViewElement extends Channel {
         return channelViewElement;
     }
 
-    public int compareTo(ChannelViewElement o) {
-        long l = getLastMessageTime() - o.getLastMessageTime();
+    @Override
+    public int compareTo(Channel o) {
+        if (o instanceof ChannelViewElement) {
+            ChannelViewElement oe = (ChannelViewElement) o;
+            //name += "" + getLastMessageTime();
+            //long l = getLastMessageTime() - oe.getLastMessageTime();
 
-        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
-            //not an integer! move to last position
+//        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
+//            //not an integer! move to last position
+//            return Integer.MIN_VALUE;
+//        }
+//        Long t =getLastMessageTime(),ol =o.getLastMessageTime();
+//        return t.compareTo(ol);
+            if (getLastMessageTime() > oe.getLastMessageTime()) {
+                return -1;
+            } else if (getLastMessageTime() < oe.getLastMessageTime()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
             return Integer.MIN_VALUE;
         }
-
-        return (int) l;
     }
 
     //currently just last Clicked!!!
@@ -67,7 +81,7 @@ public class ChannelViewElement extends Channel {
         if (lastMessage == 0) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(FlActivity.context);
 
-            lastMessage = sharedPref.getLong("lastMessageForChannel" + id, 1406815323540L);//TODO: hack
+            lastMessage = sharedPref.getLong("lastMessageForChannel" + id, 1);//TODO: hack
 
         }
         return lastMessage;
