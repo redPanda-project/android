@@ -298,6 +298,7 @@ public class FlActivity extends Activity {
 
                     public int compare(ChannelViewElement t, ChannelViewElement t1) {
                         return (int) (t1.getLastMessageTime() - t.getLastMessageTime());
+                        
                     }
                 });
                 Collections.sort(channels, new Comparator<ChannelViewElement>() {
