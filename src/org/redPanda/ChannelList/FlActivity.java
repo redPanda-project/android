@@ -301,8 +301,9 @@ public class FlActivity extends Activity {
 //                        
 //                    }
 //                });
-                Collections.sort(adapter.objects);
+                Collections.sort(adapter.objects);                
                 adapter.notifyDataSetChanged();
+                adapter.notifyDataSetInvalidated();
             }
 
             Intent intent;
@@ -322,7 +323,7 @@ public class FlActivity extends Activity {
             ContextMenuInfo menuInfo) {
         if (v.getId() == R.id.chanlist) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-            menu.setHeaderTitle(channels.get(info.position).toString());
+            menu.setHeaderTitle(adapter.objects.get(info.position).toString());
             String[] menuItems = {"Open", "Share", "Share by QR", "Edit", "Delete"};
             for (int i = 0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
@@ -342,14 +343,14 @@ public class FlActivity extends Activity {
                 Intent intent;
                 intent = new Intent(FlActivity.this, ChatActivity.class);
 
-                intent.putExtra("title", channels.get(pos).toString());
-                intent.putExtra("Channel", channels.get(pos));
+                intent.putExtra("title", adapter.objects.get(pos).toString());
+                intent.putExtra("Channel", adapter.objects.get(pos));
                 startActivity(intent);
                 break;
             case 3:
                 Intent intent2 = new Intent(this, ChanPref.class);
                 Bundle b = new Bundle();
-                b.putSerializable("Channel", channels.get(pos));
+                b.putSerializable("Channel", adapter.objects.get(pos));
                 intent2.putExtras(b);
                 startActivity(intent2);
                 break;
@@ -366,12 +367,12 @@ public class FlActivity extends Activity {
 //                    Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
 //                }
                 ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                cm.setText(channels.get(pos).exportForHumans());
+                cm.setText(adapter.objects.get(pos).exportForHumans());
                 Toast.makeText(FlActivity.this, "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
 
                 break;
             case 4:
-                Main.removeChannel(channels.get(pos));
+                Main.removeChannel(adapter.objects.get(pos));
 
                 Message msg = Message.obtain(null,
                         BS.GET_CHANNELS);
@@ -385,8 +386,8 @@ public class FlActivity extends Activity {
             case 2:
                 Intent inte;
                 inte = new Intent(FlActivity.this, QRCodeActivity.class);
-                inte.putExtra("title", channels.get(pos).toString());
-                inte.putExtra("Key", channels.get(pos).exportForHumans());
+                inte.putExtra("title", adapter.objects.get(pos).toString());
+                inte.putExtra("Key", adapter.objects.get(pos).exportForHumans());
                 startActivity(inte);
                 break;
             default:
