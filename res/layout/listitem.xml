@@ -1,25 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?> 
     
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:emojicon="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+              xmlns:emojicon="http://schemas.android.com/apk/res-auto"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
 >
-    <com.rockerhieu.emojicon.EmojiconTextView
-        android:id="@+id/Channel"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+    
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:textSize="25dip"
         android:paddingTop="4dip"
-    />
-    <com.rockerhieu.emojicon.EmojiconTextView
-        android:id="@+id/lastMsg"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textSize="13dip"
-        android:paddingBottom="4dip"
-        android:maxLines="2"
-        android:ellipsize="end"
-    />
+        android:contentDescription="Icon"
+        android:src="@drawable/no_picture"
+        android:adjustViewBounds="true"
+        android:maxWidth="42dp"  
+        android:maxHeight="42dp"  
+        android:scaleType="fitCenter"  
+        android:layout_margin="3dp"
+        android:layout_marginLeft="9dp"/>
+    
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:emojicon="http://schemas.android.com/apk/res-auto"
+                  android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+    >
+        <com.rockerhieu.emojicon.EmojiconTextView
+            android:id="@+id/Channel"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="25dip"
+            android:paddingTop="4dip"
+        />
+        <com.rockerhieu.emojicon.EmojiconTextView
+            android:id="@+id/lastMsg"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13dip"
+            android:paddingBottom="4dip"
+            android:maxLines="2"
+            android:ellipsize="end"
+        />
+    </LinearLayout>
 </LinearLayout>

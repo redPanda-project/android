@@ -92,7 +92,7 @@ public class Preferences extends PreferenceActivity {
 
                         try {
                             // Create a URL for the desired page
-                            URL url = new URL("http://redpanda.hopto.org/android/version" + (developerUpdates ? "-developer" : ""));
+                            URL url = new URL("http://files.redpanda.im/android/version" + (developerUpdates ? "-developer" : ""));
                             // Read all the text returned by the server
                             BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
                             String str;
@@ -110,7 +110,7 @@ public class Preferences extends PreferenceActivity {
                                         public void run() {
                                             Toast.makeText(Preferences.this, "Update found.", Toast.LENGTH_SHORT).show();
 
-                                            String url2 = "http://redpanda.hopto.org/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
+                                            String url2 = "http://files.redpanda.im/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
                                             Intent i = new Intent(Intent.ACTION_VIEW);
                                             i.setData(Uri.parse(url2));
                                             startActivity(i);

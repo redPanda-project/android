@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
+import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -104,7 +106,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         ListView lv = (ListView) findViewById(R.id.chatlayout_bubblelist);
         lv.setAdapter(cA);
 
-
         mainLayoutInputAndSend = (LinearLayout) findViewById(R.id.mainLayoutInputAndSend);
 
         //hide smiley keyboard at beginning
@@ -112,8 +113,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
         tr.hide(emojiconsFragment);
         tr.commit();
-
-
 
         Button toogleEmojiconKeyboard = (Button) findViewById(R.id.emojiconEnableButton);
         toogleEmojiconKeyboard.setOnClickListener(new View.OnClickListener() {
@@ -132,7 +131,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
                     lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
                     tr.hide(emojiconsFragment);
-
 
                     imm.showSoftInput(editText, 0);
                 } else {
@@ -153,7 +151,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
             }
         });
-
 
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
 //            public boolean onTouch(View arg0, MotionEvent e) {
@@ -207,6 +204,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
             }
         });
+
+        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
 
     }
 
