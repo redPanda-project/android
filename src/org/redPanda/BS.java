@@ -36,6 +36,7 @@ import org.redPanda.ChannelList.Preferences;
 import org.redPandaLib.Main;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.Log;
 import org.redPandaLib.core.PeerTrustData;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
@@ -65,7 +66,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 470;
+    public static final int VERSION = 472;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -321,6 +322,7 @@ public class BS extends Service {
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     Settings.REMOVE_OLD_MESSAGES = true;
+                    Log.LEVEL = -100;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
                     //HsqlConnection.db_file = getFilesDir() + "/data/";
