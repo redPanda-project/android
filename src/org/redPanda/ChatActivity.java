@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -89,6 +90,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         this.setTitle(in.getExtras().getString("title"));
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
+        
+        getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         Intent intent = new Intent(this, BS.class);
@@ -205,7 +208,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             }
         });
 
-        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+        //getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+        
 
     }
 
