@@ -66,7 +66,8 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 474;
+    public static final int VERSION = 477;
+    public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -98,7 +99,9 @@ public class BS extends Service {
         @Override
         public void handleMessage(final Message mesg) {
 
-            checkForUpdate();
+            if (updateAbleViaWeb) {
+                checkForUpdate();
+            }
 
             Bundle b;
             Message ms;
