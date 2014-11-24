@@ -20,7 +20,6 @@ public class SqLiteConnection {
 
     public SqLiteConnection(Context context) throws SQLException {
 
-
 //        try {
 //            // Treiberklasse laden
 //            Class.forName("org.sqldroid.SqldroidDriver");
@@ -28,7 +27,6 @@ public class SqLiteConnection {
 //            System.err.println("Treiberklasse nicht gefunden!");
 //            return;
 //        }
-
         try {
             // Treiberklasse laden
             Class.forName("org.hsqldb.jdbcDriver");
@@ -44,17 +42,13 @@ public class SqLiteConnection {
 
         Statement stmt = con.createStatement();
 
-
-
         stmt.executeUpdate("SET FILES CACHE ROWS 10000");//rows
-        stmt.executeUpdate("SET FILES CACHE SIZE 20000");//kb
+        stmt.executeUpdate("SET FILES CACHE SIZE 40000");//kb
         stmt.executeUpdate("SET AUTOCOMMIT TRUE");
 
 //            PubKey
 //id INTEGER
 //key BINARY(33)
-
-
         if (false) {
             stmt.executeUpdate("drop table if exists channelmessage");
             stmt.executeUpdate("drop table if exists message");
@@ -62,8 +56,11 @@ public class SqLiteConnection {
             stmt.executeUpdate("drop table if exists pubkey");
         }
 
+        stmt.executeUpdate("drop table if exists peerMessagesIntroducedToMe");
+        stmt.executeUpdate("drop table if exists peerMessagesIntroducedToHim");
+
         //AUTOINCREMENT -- IDENTITY
- stmt.executeUpdate("create CACHED table if not exists pubkey (pubkey_id integer PRIMARY KEY IDENTITY, pubkey BINARY(33) UNIQUE)");
+        stmt.executeUpdate("create CACHED table if not exists pubkey (pubkey_id integer PRIMARY KEY IDENTITY, pubkey BINARY(33) UNIQUE)");
 
 //Channel
 //id INTEGER

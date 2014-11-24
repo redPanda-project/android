@@ -43,12 +43,14 @@ public class ExceptionLogger {
 
                 String ownStackTrace = stacktrace2String(thrwbl);
 
-
 //                ownStackTrace = ownStackTrace.replaceAll(":", "");
-
                 Main.sendBroadCastMsg("Version: " + BS.VERSION + " \n" + ownStackTrace);
 
-                defaultUEH.uncaughtException(thread, thrwbl);
+                try {
+                    defaultUEH.uncaughtException(thread, thrwbl);
+                } catch (Throwable e) {
+                    System.out.println("exception here? android is annoying, have to abort. Otherwise stackoverflow exception...");
+                }
 
             }
         });

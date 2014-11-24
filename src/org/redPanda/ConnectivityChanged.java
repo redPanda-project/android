@@ -55,16 +55,12 @@ public class ConnectivityChanged extends BroadcastReceiver {
             } else {
                 Settings.MIN_CONNECTIONS = 3;
             }
-        } else if (mobile.isConnected()) {
-
+        } else if (mobile != null && mobile.isConnected()) {
 
             Settings.MIN_CONNECTIONS = 2;
 
-
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
             boolean saveInternet = sharedPref.getBoolean(Preferences.KEY_SAVE_MOBILE_INTERNET, false);
-
-
 
             if (saveInternet) {
 
