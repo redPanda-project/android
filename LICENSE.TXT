@@ -42,6 +42,7 @@ Software licensed under APACHE 2.0 with the copyright owner "Google Inc." is:
 
 Source code from the bitcoinj software were modified, especially the ECKey-Class was modified for our needs
 
+redPanda uses emojicon from "rockerhieu" licensed under the APACHE 2.0 license the link is https://github.com/rockerhieu/emojicon.
 
 The copyrigh owner of Qt is "Digia plc". Read more at https://qt-project.org/products/licensing.
  
