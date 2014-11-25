@@ -23,6 +23,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -55,7 +56,7 @@ import org.redPandaLib.core.messages.TextMsg;
 public class ChatAdapter extends BaseAdapter {
 
     final static int daydevider = 5;
-  public  final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
+    public final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
     private Bitmap placeholderBitmap;
@@ -194,11 +195,15 @@ public class ChatAdapter extends BaseAdapter {
                 //       holder.bubbleText.setVisibility(View.GONE);
                 holder.bubbleImage.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
-
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.parse("file://" + content.split("\n")[0]), "image/*");
+                        Intent intent;
+                        intent = new Intent(mContext, PictureActivity.class);
+                        intent.putExtra("path", content.split("\n")[0]);
+                        intent.putExtra("Pic_Height", new Integer(content.split("\n")[2]));
+                        Toast.makeText(mContext, content, Toast.LENGTH_LONG).show();
                         mContext.startActivity(intent);
-
+//                        Intent intent = new Intent(Intent.ACTION_VIEW);
+//                        intent.setDataAndType(Uri.parse("file://" + content.split("\n")[0]), "image/*");
+//                        mContext.startActivity(intent);
                     }
                 });
 
