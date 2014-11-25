@@ -369,6 +369,7 @@ public class Preferences extends PreferenceActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
+                                
                                 new Thread() {
 
                                     @Override
