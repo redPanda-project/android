@@ -120,7 +120,13 @@
                   android:screenOrientation="landscape">
         </activity>
         
-        
+        <activity android:name="PictureActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  
+                  android:label="PictureActivity" 
+                  android:icon="@drawable/icon" >
+                
+        </activity>
         
         
         

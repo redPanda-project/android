@@ -321,6 +321,7 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(expbutton);
+
         final Context con = this;
         Preference impbutton = new Preference(this);
         impbutton.setTitle("Import");
@@ -334,18 +335,13 @@ public class Preferences extends PreferenceActivity {
                 File file = Environment.getExternalStorageDirectory();
                 final String path = file.getAbsolutePath() + "/redpanda/";
                 file = new File(path);
-                ListView lv = new ListView(con);
                 final String[] asd = file.list();
-                ArrayAdapter<String> ad = new ArrayAdapter<String>(con, android.R.layout.simple_list_item_1, android.R.id.text1, asd);
-                lv.setAdapter(ad);
-                lv.setFocusableInTouchMode(true);
-                if (asd.length != 0) {
-                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath() + "\n" + asd[0], Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-                }
-                lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                builder1.setSingleChoiceItems(asd, 0, null);
+                builder1.setPositiveButton("Import", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                         final String p = path + asd[position];
                         AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
                         builder.setTitle("Password");
@@ -401,7 +397,6 @@ public class Preferences extends PreferenceActivity {
 
                                     }
                                 }.start();
-
                             }
                         });
                         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -414,7 +409,15 @@ public class Preferences extends PreferenceActivity {
                         builder.show();
                     }
                 });
-                builder1.setView(lv);
+
+                ArrayAdapter<String> ad = new ArrayAdapter<String>(con, android.R.layout.simple_list_item_1, android.R.id.text1, asd);
+
+                if (asd.length != 0) {
+                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath() + "\n" + asd[0], Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                }
+
                 builder1.show();
                 return true;
             }
