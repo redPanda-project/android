@@ -111,7 +111,7 @@ public class FlActivity extends Activity {
         Button newChButton = (Button) findViewById(R.id.NKButton);
 
         infotext = (TextView) findViewById(R.id.infotext);
-        infotext.setTextColor(Color.BLUE);
+        infotext.setTextColor(Color.GRAY);
         newChButton.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View arg0) {
@@ -275,6 +275,8 @@ public class FlActivity extends Activity {
             // Handle other intents, such as being started from the home screen
         }
 
+//        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+
     }
 
     private class OnItemClickListenerImpl implements OnItemClickListener {
@@ -301,7 +303,7 @@ public class FlActivity extends Activity {
 //                        
 //                    }
 //                });
-                Collections.sort(adapter.objects);                
+                Collections.sort(adapter.objects);
                 adapter.notifyDataSetChanged();
                 adapter.notifyDataSetInvalidated();
             }
@@ -434,7 +436,7 @@ public class FlActivity extends Activity {
                             adapter.add(chan);
 //                            Toast.makeText(FlActivity.this, "name: " + chan.toString(), Toast.LENGTH_SHORT).show();
                         }
-                        
+
 //                        adapter.sort(new Comparator<ChannelViewElement>() {
 //
 //                            public int compare(ChannelViewElement t, ChannelViewElement t1) {
@@ -737,8 +739,8 @@ public class FlActivity extends Activity {
         if (intent1 != null) {
             if (intent1.getExtras() != null) {
                 if (intent1.getExtras().getBoolean("newChannel") == true) {
-                    String keystr =intent1.getExtras().getString("ChannelKey");
-                    String namestr =intent1.getExtras().getString("ChannelName");
+                    String keystr = intent1.getExtras().getString("ChannelKey");
+                    String namestr = intent1.getExtras().getString("ChannelName");
                     AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
                     builder.setTitle("Import Channel");
 

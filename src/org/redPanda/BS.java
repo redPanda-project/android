@@ -36,6 +36,7 @@ import org.redPanda.ChannelList.Preferences;
 import org.redPandaLib.Main;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.Log;
 import org.redPandaLib.core.PeerTrustData;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
@@ -65,7 +66,8 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 463;
+    public static final int VERSION = 478;
+    public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
     public static final int MSG_UNREGISTER_CLIENT = 3;
@@ -97,7 +99,9 @@ public class BS extends Service {
         @Override
         public void handleMessage(final Message mesg) {
 
-            checkForUpdate();
+            if (updateAbleViaWeb) {
+                checkForUpdate();
+            }
 
             Bundle b;
             Message ms;
@@ -321,6 +325,7 @@ public class BS extends Service {
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     Settings.REMOVE_OLD_MESSAGES = true;
+                    Log.LEVEL = -100;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
                     //HsqlConnection.db_file = getFilesDir() + "/data/";
@@ -649,7 +654,7 @@ public class BS extends Service {
 
                 try {
                     // Create a URL for the desired page
-                    URL url = new URL("http://redpanda.hopto.org/android/version" + (developerUpdates ? "-developer" : ""));
+                    URL url = new URL("http://files.redpanda.im/android/version" + (developerUpdates ? "-developer" : ""));
                     // Read all the text returned by the server
                     BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
                     String str;
@@ -686,7 +691,7 @@ public class BS extends Service {
         boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, true);
 
         // The PendingIntent to launch our activity if the user selects this notification
-        String url2 = "http://redpanda.hopto.org/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
+        String url2 = "http://files.redpanda.im/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url2));
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);

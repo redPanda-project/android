@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.BS;
 import org.redPanda.ExceptionLogger;
+import static org.redPanda.ExceptionLogger.stacktrace2String;
 import org.redPanda.License;
 import org.redPanda.R;
 import org.redPandaLib.Main;
@@ -72,50 +73,51 @@ public class Preferences extends PreferenceActivity {
         mainc.setTitle("General");
         root.addPreference(mainc);
 
-        Preference updateButton = new Preference(this);
-        updateButton.setTitle("Search for update.");
-        updateButton.setSummary("Current version " + BS.VERSION + ".");
+        if (BS.updateAbleViaWeb) {
+            Preference updateButton = new Preference(this);
+            updateButton.setTitle("Search for update.");
+            updateButton.setSummary("Current version " + BS.VERSION + ".");
 
-        updateButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference arg0) {
+            updateButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference arg0) {
 
-                new Thread() {
-                    @Override
-                    public void run() {
+                    new Thread() {
+                        @Override
+                        public void run() {
 //                Properties systemProperties = System.getProperties();
 //                systemProperties.setProperty("sun.net.client.defaultConnectTimeout", "300");
 //                systemProperties.setProperty("sun.net.client.defaultReadTimeout", "300");
 
-                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(Preferences.this);
-                        final boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, false);
+                            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(Preferences.this);
+                            final boolean developerUpdates = sharedPref.getBoolean(Preferences.KEY_SEARCH_DEVELOPER_UPDATES, false);
 
-                        try {
-                            // Create a URL for the desired page
-                            URL url = new URL("http://redpanda.hopto.org/android/version" + (developerUpdates ? "-developer" : ""));
-                            // Read all the text returned by the server
-                            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-                            String str;
-                            while ((str = in.readLine()) != null) {
-                                // str is one line of text;readLine() strips the newline character(s)
-                                //System.out.println("line: " + str);
+                            try {
+                                // Create a URL for the desired page
+                                URL url = new URL("http://files.redpanda.im/android/version" + (developerUpdates ? "-developer" : ""));
+                                // Read all the text returned by the server
+                                BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+                                String str;
+                                while ((str = in.readLine()) != null) {
+                                    // str is one line of text;readLine() strips the newline character(s)
+                                    //System.out.println("line: " + str);
 
-                                int v = Integer.parseInt(str);
+                                    int v = Integer.parseInt(str);
 
-                                //if (v > BS.VERSION && developerUpdates || !developerUpdates && v - BS.VERSION > 50) {
-                                if (v > BS.VERSION) {
-                                    //System.out.println("MVersion: " + LBS.VERSION + " found: " + v);
+                                    //if (v > BS.VERSION && developerUpdates || !developerUpdates && v - BS.VERSION > 50) {
+                                    if (v > BS.VERSION) {
+                                        //System.out.println("MVersion: " + LBS.VERSION + " found: " + v);
 
-                                    runOnUiThread(new Runnable() {
-                                        public void run() {
-                                            Toast.makeText(Preferences.this, "Update found.", Toast.LENGTH_SHORT).show();
+                                        runOnUiThread(new Runnable() {
+                                            public void run() {
+                                                Toast.makeText(Preferences.this, "Update found.", Toast.LENGTH_SHORT).show();
 
-                                            String url2 = "http://redpanda.hopto.org/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
-                                            Intent i = new Intent(Intent.ACTION_VIEW);
-                                            i.setData(Uri.parse(url2));
-                                            startActivity(i);
-                                        }
-                                    });
+                                                String url2 = "http://files.redpanda.im/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
+                                                Intent i = new Intent(Intent.ACTION_VIEW);
+                                                i.setData(Uri.parse(url2));
+                                                startActivity(i);
+                                            }
+                                        });
 
 //                                    String url2 = "http://xana.hopto.org/redPanda/redPanda.apk";
 //                                    // The PendingIntent to launch our activity if the user selects this notification
@@ -133,33 +135,53 @@ public class Preferences extends PreferenceActivity {
 //                                    // Send the notification.
 //                                    // We use a string id because it is a unique number.  We use it later to cancel.
 //                                    ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(-10, notification);
-                                    break;
-                                } else {
+                                        break;
+                                    } else {
 
-                                    runOnUiThread(new Runnable() {
-                                        public void run() {
-                                            Toast.makeText(Preferences.this, "Latest version installed.", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                        runOnUiThread(new Runnable() {
+                                            public void run() {
+                                                Toast.makeText(Preferences.this, "Latest version installed.", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+
+                                    }
 
                                 }
+                                in.close();
 
+                            } catch (MalformedURLException e) {
+                            } catch (IOException e) {
+                            } catch (NumberFormatException e) {
                             }
-                            in.close();
-
-                        } catch (MalformedURLException e) {
-                        } catch (IOException e) {
-                        } catch (NumberFormatException e) {
-                        }
 //                System.getProperties().remove("sun.net.client.defaultConnectTimeout");
 //                System.getProperties().remove("sun.net.client.defaultReadTimeout");
-                    }
-                }.start();
+                        }
+                    }.start();
 
-                return true;
-            }
-        });
-        mainc.addPreference(updateButton);
+                    return true;
+                }
+            });
+            mainc.addPreference(updateButton);
+
+        } else {
+
+            Preference updateButton = new Preference(this);
+            updateButton.setTitle("Search for update.");
+            updateButton.setSummary("Current version " + BS.VERSION + ".");
+
+            updateButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference arg0) {
+                    String url2 = "https://play.google.com/store/apps/details?id=org.redPanda";
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(url2));
+                    startActivity(i);
+                    return true;
+                }
+            });
+            mainc.addPreference(updateButton);
+
+        }
 
 //        EditTextPreference activePref = new EditTextPreference(this);
 //        activePref.setKey(KEY_NICK);
@@ -299,6 +321,7 @@ public class Preferences extends PreferenceActivity {
             }
         });
         mainc.addPreference(expbutton);
+
         final Context con = this;
         Preference impbutton = new Preference(this);
         impbutton.setTitle("Import");
@@ -312,18 +335,13 @@ public class Preferences extends PreferenceActivity {
                 File file = Environment.getExternalStorageDirectory();
                 final String path = file.getAbsolutePath() + "/redpanda/";
                 file = new File(path);
-                ListView lv = new ListView(con);
                 final String[] asd = file.list();
-                ArrayAdapter<String> ad = new ArrayAdapter<String>(con, android.R.layout.simple_list_item_1, android.R.id.text1, asd);
-                lv.setAdapter(ad);
-                lv.setFocusableInTouchMode(true);
-                if (asd.length != 0) {
-                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath() + "\n" + asd[0], Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-                }
-                lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                builder1.setSingleChoiceItems(asd, 0, null);
+                builder1.setPositiveButton("Import", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                         final String p = path + asd[position];
                         AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
                         builder.setTitle("Password");
@@ -350,14 +368,35 @@ public class Preferences extends PreferenceActivity {
                         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                boolean asd = Main.restoreBackup(p, key.getText().toString());
-                                if (asd) {
-                                    Toast.makeText(Preferences.this, "Imported " + path + " successful", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(Preferences.this, "Import failed.", Toast.LENGTH_SHORT).show();
 
-                                }
+                                
+                                new Thread() {
 
+                                    @Override
+                                    public void run() {
+                                        try {
+
+                                            final boolean asd = Main.restoreBackup(p, key.getText().toString());
+
+                                            runOnUiThread(new Runnable() {
+
+                                                public void run() {
+                                                    if (asd) {
+                                                        Toast.makeText(Preferences.this, "Imported " + path + " successful", Toast.LENGTH_SHORT).show();
+                                                    } else {
+                                                        Toast.makeText(Preferences.this, "Import failed.", Toast.LENGTH_SHORT).show();
+
+                                                    }
+                                                }
+                                            });
+
+                                        } catch (Exception e) {
+                                            String ownStackTrace = stacktrace2String(e);
+                                            Main.sendBroadCastMsg("Version: " + BS.VERSION + " \n" + ownStackTrace);
+                                        }
+
+                                    }
+                                }.start();
                             }
                         });
                         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -370,7 +409,15 @@ public class Preferences extends PreferenceActivity {
                         builder.show();
                     }
                 });
-                builder1.setView(lv);
+
+                ArrayAdapter<String> ad = new ArrayAdapter<String>(con, android.R.layout.simple_list_item_1, android.R.id.text1, asd);
+
+                if (asd.length != 0) {
+                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath() + "\n" + asd[0], Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                }
+
                 builder1.show();
                 return true;
             }
