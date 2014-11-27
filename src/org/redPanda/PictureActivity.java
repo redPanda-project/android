@@ -112,7 +112,7 @@ public class PictureActivity extends Activity {
         ImageView mImageView = null;
         // final Bitmap bitmap = FlActivity.getBitmapFromMemCache(path);
         boolean isgif = true;
-        if (true){//(path.endsWith(".jpg")) { // HACK because file namesget not transmitted
+        if (true){//(path.endsWith(".jpg")) { // HACK because all pictures are saved as .jpg
             try {
                 mGifImageView.setImageDrawable(new GifDrawable(path));
                 mImageView = mGifImageView;
