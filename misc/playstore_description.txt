@@ -1,0 +1,33 @@
+redPanda is open sourced via https://github.com/redPanda-project/.
+
+Our aim is to develop a messenger with the same comfort as commercial centralized messengers (cf. WhatsApp, Facebook Messenger, etc) but with a secure decentralized infrastructure.
+
+What is working for now?
+- Chatting with emojicons.
+- Received status of messages/pictures.
+- Sending and receiving images.
+- Enlaged view of images and paying gifs with zooming.
+- Share and import channels (private keys) with QR-Codes.
+- Rename users by long press on name.
+- Disable notifications and sounds for individual channels.
+- Export and import of private keys and names as backup on SD card.
+
+
+*The System*
+Addresses are private keys. You just need such a key to write messages to a given channel. A channel can be just one person or a group of people. At this stage of development you share the private keys directly. Because of this you have to be careful with key sharing. Once a person got your key he can read all your messages.
+
+
+There is currently also a desktop client for windows and linux based on java
+with basic functionality only.
+
+
+By installing this app you accept our GPL 3.0 license (http://git.io/yqDNAQ).
+
+
+*Security*
+There are no real identities, you can just fake one if you want. The whole system is based on trust with respect to your chat partners. Also, the delivery of messages will utilize your network of (trusted) nodes. This system focuses on chatting between known people, whom you can trust. If you want to send emails over a secure peer-to-peer system you should have a look at bitmessage (https://bitmessage.org/).
+
+RedPanda uses currently elliptic curve, AES256 and the broken and risky ARC4. Elliptic curve is used for signing messages. The AES256 for crypt and decrypt the messages. ARC4 is only used for peer to peer communications, so no messages can be read because of the broken ARC4.
+
+*Attention*
+Currently all clients send crashing and debugging information over the redPanda-network to the so called 'Main Channel'. We need them to fix bugs fast at this stage of development. We only guarantee that the latest version is able to reciev messages. Nothing is fixed at this moment, everything can change.
