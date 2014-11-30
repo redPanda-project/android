@@ -247,8 +247,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.main_menu, menu);
         return true;
 
     }
@@ -261,10 +261,10 @@ public class MainActivity extends Activity {
 //                Intent intent = new Intent(this, FlActivity.class);
 //                startActivity(intent);
 //                return true;
-            case R.id.prefMenuButton:
-                Intent intent2 = new Intent(this, Preferences.class);
-                startActivity(intent2);
-                return true;
+//            case R.id.prefMenuButton:
+//                Intent intent2 = new Intent(this, Preferences.class);
+//                startActivity(intent2);
+//                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
