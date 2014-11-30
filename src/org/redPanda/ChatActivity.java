@@ -5,11 +5,14 @@
 package org.redPanda;
 
 import android.app.Activity;
+import static android.app.Activity.RESULT_OK;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -90,7 +93,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         this.setTitle(in.getExtras().getString("title"));
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
-        
+
         getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
@@ -209,8 +212,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         });
 
         //getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
-        
-
     }
 
     @Override
@@ -657,7 +658,25 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             final Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        new Thread() {
+        Uri selectedImage = imageReturnedIntent.getData();
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+        Cursor cursor = getContentResolver().query(
+                selectedImage, filePathColumn, null, null, null);
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        final String filePath = cursor.getString(columnIndex);
+        cursor.close();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Send picture");
+        String str = filePath.split("/")[filePath.split("/").length - 1];
+        builder.setMessage("Do you want to send the picture " + str + " to " + this.getTitle() + "?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                        new Thread() {
 
             @Override
             public void run() {
@@ -665,17 +684,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 switch (requestCode) {
                     case SELECT_PHOTO:
                         if (resultCode == RESULT_OK) {
-
-                            Uri selectedImage = imageReturnedIntent.getData();
-                            String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
-                            Cursor cursor = getContentResolver().query(
-                                    selectedImage, filePathColumn, null, null, null);
-                            cursor.moveToFirst();
-
-                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                            final String filePath = cursor.getString(columnIndex);
-                            cursor.close();
 
                             Main.sendImageToChannel(chan, filePath);
 
@@ -692,5 +700,10 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
             }
         }.start();
+            }
+        });
+        builder.setNegativeButton("No", null);
+        builder.show();
+
     }
 }

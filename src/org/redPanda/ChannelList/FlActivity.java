@@ -39,7 +39,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +53,10 @@ import org.redPandaLib.core.Peer;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import android.support.v4.util.LruCache;
-import com.jwetherell.quick_response_code.CaptureActivity;
+import android.support.v4.widget.DrawerLayout;
+import android.view.KeyEvent;
+import android.widget.ArrayAdapter;
+import org.redPanda.MenuAdapter;
 import org.redPandaLib.core.PeerTrustData;
 
 /**
@@ -71,6 +73,8 @@ public class FlActivity extends Activity {
     public ListView lv;
     public static LruCache<String, Bitmap> mMemoryCache;
     public String qrtext = "";
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,142 +102,270 @@ public class FlActivity extends Activity {
         context = this;
 
         new ExceptionLogger(this);
-
+        startService(new Intent(this, BS.class));
         //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
         super.onCreate(savedInstanceState);
-        adapter = new FLAdapter(this, R.layout.listitem, channels);
-        startService(new Intent(this, BS.class));
-//        Intent intent = new Intent(this, BS.class);
-//        startService(intent);
-//        Toast.makeText(FlActivity.this, "doBindService", Toast.LENGTH_SHORT).show();
         setContentView(R.layout.fl);
 
-        Button newChButton = (Button) findViewById(R.id.NKButton);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        String[] str = new String[]{"Create new channel", "Import channel", "Scan QR-code", "Settings"};
+        // Set the adapter for the list view
+        mDrawerList.setBackgroundColor(Color.WHITE);
+        mDrawerList.setAdapter(new MenuAdapter(context, str));
+        // Set the list's onClickListeners
+        mDrawerList.setOnItemClickListener(new OnItemClickListener() {
 
-        infotext = (TextView) findViewById(R.id.infotext);
-        infotext.setTextColor(Color.GRAY);
-        newChButton.setOnClickListener(new View.OnClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                AlertDialog.Builder builder;
 
-            public void onClick(View arg0) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
-                builder.setTitle("Erstelle neuen Channel");
+                switch (position) {
+                    case 0: // Create new Channel
+                        builder = new AlertDialog.Builder(FlActivity.this);
+                        builder.setTitle("Create new Channel");
 
-//// Set up the input
-                final EditText input = new EditText(FlActivity.this);
-//                
-//// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
-                input.setHint("Neuer Channel Name");
-                input.setHintTextColor(Color.RED);
+                        //// Set up the input
+                        final EditText input = new EditText(FlActivity.this);
+                        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
+                        input.setHint("New channel name");
+                        input.setHintTextColor(Color.RED);
 
-                builder.setView(input);
+                        builder.setView(input);
 
-// Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                        Main.addChannel(Channel.generateNew(input.getText().toString()));
+                                Main.addChannel(Channel.generateNew(input.getText().toString()));
 
-                        Message msg = Message.obtain(null,
-                                BS.GET_CHANNELS);
-                        msg.replyTo = mMessenger;
-                        try {
-                            mService.send(msg);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                                Message msg = Message.obtain(null,
+                                        BS.GET_CHANNELS);
+                                msg.replyTo = mMessenger;
+                                try {
+                                    mService.send(msg);
+                                } catch (RemoteException ex) {
+                                    Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                                }
 
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
 
-                builder.show();
+                        builder.show();
 
-            }
-        });
-        Button newChByQRButton = (Button) findViewById(R.id.NKByQRButton);
+                        break;
+                    case 1: // import channel
 
-        newChByQRButton.setOnClickListener(new View.OnClickListener() {
-
-            public void onClick(View arg0) {
-                Intent is;
-                is = new Intent(FlActivity.this, QRCaptureActivity.class);
-                startActivity(is);
-            }
-        });
-
-        Button impButton = (Button) findViewById(R.id.imbutton);
-        impButton.setOnClickListener(new View.OnClickListener() {
-
-            public void onClick(View arg0) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
-                builder.setTitle("Import Channel");
+                        builder = new AlertDialog.Builder(FlActivity.this);
+                        builder.setTitle("Import Channel");
 
 //// Set up the input
-                final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
+                        final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
 
-                final EditText name = (EditText) ll.findViewById(R.id.channame);
-                final EditText key = (EditText) ll.findViewById(R.id.chankey);
-                name.setHintTextColor(Color.RED);
-                key.setHintTextColor(Color.CYAN);
-                //key.setText("ApLd3t77vbqxnYguJ3eP61eLBnK9TVcgo15G8NxYJF6V", TextView.BufferType.NORMAL);
+                        final EditText name = (EditText) ll.findViewById(R.id.channame);
+                        final EditText key = (EditText) ll.findViewById(R.id.chankey);
+                        name.setHintTextColor(Color.RED);
+                        key.setHintTextColor(Color.CYAN);
+                        //key.setText("ApLd3t77vbqxnYguJ3eP61eLBnK9TVcgo15G8NxYJF6V", TextView.BufferType.NORMAL);
 //                final EditText input = new EditText(FlActivity.this);
 //                
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
 //                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-                builder.setView(ll);
+                        builder.setView(ll);
 
 // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                        Message msg = Message.obtain(null,
-                                BS.ADD_CHANNEL);
-                        Bundle b = new Bundle();
-                        b.putString("name", name.getText().toString());
-                        b.putString("key", key.getText().toString());
-                        msg.setData(b);
-                        msg.replyTo = mMessenger;
-                        try {
-                            mService.send(msg);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        msg = Message.obtain(null,
-                                BS.GET_CHANNELS);
-                        msg.replyTo = mMessenger;
-                        try {
-                            mService.send(msg);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                Message msg = Message.obtain(null,
+                                        BS.ADD_CHANNEL);
+                                Bundle b = new Bundle();
+                                b.putString("name", name.getText().toString());
+                                b.putString("key", key.getText().toString());
+                                msg.setData(b);
+                                msg.replyTo = mMessenger;
+                                try {
+                                    mService.send(msg);
+                                } catch (RemoteException ex) {
+                                    Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                                msg = Message.obtain(null,
+                                        BS.GET_CHANNELS);
+                                msg.replyTo = mMessenger;
+                                try {
+                                    mService.send(msg);
+                                } catch (RemoteException ex) {
+                                    Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
 
-                builder.show();
+                        builder.show();
 
+                        break;
+                    case 2: //scan Qr code
+                        Intent is;
+                        is = new Intent(FlActivity.this, QRCaptureActivity.class);
+                        startActivity(is);
+                        break;
+                    case 3: //settings
+                        Intent intent2 = new Intent(context, Preferences.class);
+                        startActivity(intent2);
+                        break;
+
+                }
+                mDrawerLayout.closeDrawers();
             }
         });
 
+        adapter = new FLAdapter(this, R.layout.listitem, channels);
+
+//        Intent intent = new Intent(this, BS.class);
+//        startService(intent);
+//        Toast.makeText(FlActivity.this, "doBindService", Toast.LENGTH_SHORT).show();
+        infotext = (TextView) findViewById(R.id.infotext);
+        infotext.setTextColor(Color.GRAY);
+
+//        Button newChButton = (Button) findViewById(R.id.NKButton);
+//
+//        newChButton.setOnClickListener(new View.OnClickListener() {
+//
+//            public void onClick(View arg0) {
+//                AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
+//                builder.setTitle("Erstelle neuen Channel");
+//
+////// Set up the input
+//                final EditText input = new EditText(FlActivity.this);
+////                
+////// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
+//                input.setHint("Neuer Channel Name");
+//                input.setHintTextColor(Color.RED);
+//
+//                builder.setView(input);
+//
+//// Set up the buttons
+//                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//
+//                        Main.addChannel(Channel.generateNew(input.getText().toString()));
+//
+//                        Message msg = Message.obtain(null,
+//                                BS.GET_CHANNELS);
+//                        msg.replyTo = mMessenger;
+//                        try {
+//                            mService.send(msg);
+//                        } catch (RemoteException ex) {
+//                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//
+//                    }
+//                });
+//                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.cancel();
+//                    }
+//                });
+//
+//                builder.show();
+//
+//            }
+//        });
+//        Button newChByQRButton = (Button) findViewById(R.id.NKByQRButton);
+//
+//        newChByQRButton.setOnClickListener(new View.OnClickListener() {
+//
+//            public void onClick(View arg0) {
+//                Intent is;
+//                is = new Intent(FlActivity.this, QRCaptureActivity.class);
+//                startActivity(is);
+//            }
+//        });
+//
+//        Button impButton = (Button) findViewById(R.id.imbutton);
+//        impButton.setOnClickListener(new View.OnClickListener() {
+//
+//            public void onClick(View arg0) {
+//
+//                AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
+//                builder.setTitle("Import Channel");
+//
+////// Set up the input
+//                final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
+//
+//                final EditText name = (EditText) ll.findViewById(R.id.channame);
+//                final EditText key = (EditText) ll.findViewById(R.id.chankey);
+//                name.setHintTextColor(Color.RED);
+//                key.setHintTextColor(Color.CYAN);
+//                //key.setText("ApLd3t77vbqxnYguJ3eP61eLBnK9TVcgo15G8NxYJF6V", TextView.BufferType.NORMAL);
+////                final EditText input = new EditText(FlActivity.this);
+////                
+////// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+////                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+//
+//                builder.setView(ll);
+//
+//// Set up the buttons
+//                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//
+//                        Message msg = Message.obtain(null,
+//                                BS.ADD_CHANNEL);
+//                        Bundle b = new Bundle();
+//                        b.putString("name", name.getText().toString());
+//                        b.putString("key", key.getText().toString());
+//                        msg.setData(b);
+//                        msg.replyTo = mMessenger;
+//                        try {
+//                            mService.send(msg);
+//                        } catch (RemoteException ex) {
+//                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                        msg = Message.obtain(null,
+//                                BS.GET_CHANNELS);
+//                        msg.replyTo = mMessenger;
+//                        try {
+//                            mService.send(msg);
+//                        } catch (RemoteException ex) {
+//                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                    }
+//                });
+//                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.cancel();
+//                    }
+//                });
+//
+//                builder.show();
+//
+//            }
+//        });
 //        ArrayList<Channel> channelslist = Main.getChannels();
 //        Channel[] toArray = new Channel[channels.size()];
 //        if (channelslist == null) {
@@ -276,7 +408,6 @@ public class FlActivity extends Activity {
         }
 
 //        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
-
     }
 
     private class OnItemClickListenerImpl implements OnItemClickListener {
@@ -337,7 +468,7 @@ public class FlActivity extends Activity {
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         int menuItemIndex = item.getItemId();
-        int pos = info.position;
+        final int pos = info.position;
         // String[] menuItems = {"Open", "Share", "Delete"};
         //String menuItemName = menuItems[menuItemIndex];
         switch (menuItemIndex) {
@@ -374,16 +505,28 @@ public class FlActivity extends Activity {
 
                 break;
             case 4:
-                Main.removeChannel(adapter.objects.get(pos));
 
-                Message msg = Message.obtain(null,
-                        BS.GET_CHANNELS);
-                msg.replyTo = mMessenger;
-                try {
-                    mService.send(msg);
-                } catch (RemoteException ex) {
-                    Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Delete Channel");
+                builder.setMessage("Do you realy want to delete the Channel " + adapter.objects.get(pos).toString() + "?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        Main.removeChannel(adapter.objects.get(pos));
+
+                        Message msg = Message.obtain(null,
+                                BS.GET_CHANNELS);
+                        msg.replyTo = mMessenger;
+                        try {
+                            mService.send(msg);
+                        } catch (RemoteException ex) {
+                            Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                });
+                builder.setNegativeButton("No", null);
+                builder.show();
+
                 break;
             case 2:
                 Intent inte;
@@ -579,9 +722,9 @@ public class FlActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.main_menu, menu);
+        return false;
     }
 
     @Override
@@ -603,11 +746,10 @@ public class FlActivity extends Activity {
 ////                startActivity(intent);
 //                return true;
 
-            case R.id.prefMenuButton:
-                Intent intent2 = new Intent(this, Preferences.class);
-                startActivity(intent2);
-                return true;
-
+//            case R.id.prefMenuButton:
+//                Intent intent2 = new Intent(this, Preferences.class);
+//                startActivity(intent2);
+//                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -821,4 +963,20 @@ public class FlActivity extends Activity {
         }
 
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent e) {
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            // your action...
+
+            if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+                mDrawerLayout.openDrawer(mDrawerList);
+            } else {
+                mDrawerLayout.closeDrawers();
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, e);
+    }
+
 }
