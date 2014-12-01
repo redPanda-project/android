@@ -555,8 +555,11 @@ public class FlActivity extends Activity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case BS.CHANNELS:
-                    //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
+                    if (isFinishing()) {
+                        return;
+                    }
 
+                    //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 //                    new ExceptionLogger(FlActivity.this);
 //                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
                     ArrayList<ChannelViewElement> arrayList = new ArrayList<ChannelViewElement>();
@@ -732,14 +735,19 @@ public class FlActivity extends Activity {
         // Handle item selection
         switch (item.getItemId()) {
             case android.R.id.home:
-                String[] a = {
-                    "http://i.imgur.com/Equm7wX.jpg", "http://i.imgur.com/KeCGnyX.jpg", "http://i.imgur.com/Rtayxtv.jpg", "http://i.imgur.com/VCigjPe.jpg", "http://i.imgur.com/BkrlFxl.jpg"
-                };
-                Random r = new Random();
-                String url = a[r.nextInt(a.length)];
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
+//                String[] a = {
+//                    "http://i.imgur.com/Equm7wX.jpg", "http://i.imgur.com/KeCGnyX.jpg", "http://i.imgur.com/Rtayxtv.jpg", "http://i.imgur.com/VCigjPe.jpg", "http://i.imgur.com/BkrlFxl.jpg"
+//                };
+//                Random r = new Random();
+//                String url = a[r.nextInt(a.length)];
+//                Intent i = new Intent(Intent.ACTION_VIEW);
+//                i.setData(Uri.parse(url));
+//                startActivity(i);
+                if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+                    mDrawerLayout.openDrawer(mDrawerList);
+                } else {
+                    mDrawerLayout.closeDrawers();
+                }
                 return true;
 //            case R.id.FL:
 ////                Intent intent = new Intent(this, FlActivity.class);
@@ -806,6 +814,9 @@ public class FlActivity extends Activity {
                         final int activeConnections = actCons;
                         final int connectingConnections = connectingCons;
 
+                        if (isFinishing()) {
+                            return;
+                        }
                         infotext.post(new Runnable() {
 
                             public void run() {
@@ -813,6 +824,9 @@ public class FlActivity extends Activity {
                             }
                         });
                     } else {
+                        if (isFinishing()) {
+                            return;
+                        }
                         infotext.post(new Runnable() {
 
                             public void run() {
@@ -830,6 +844,9 @@ public class FlActivity extends Activity {
                     }
                 }
 
+                if (isFinishing()) {
+                    return;
+                }
                 infotext.post(new Runnable() {
 
                     public void run() {
