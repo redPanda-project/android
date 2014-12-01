@@ -205,7 +205,25 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     msg.setData(b);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
-                } catch (RemoteException e) {
+                } catch (final Throwable e) {
+
+                    new Thread() {
+
+                        @Override
+                        public void run() {
+                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                            Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
+
+                            runOnUiThread(new Runnable() {
+
+                                public void run() {
+                                    Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+
+                    }.start();
+
                 }
 
             }
@@ -658,6 +676,17 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             final Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
+        if (imageReturnedIntent == null) {
+            //no image selected...
+            runOnUiThread(new Runnable() {
+
+                public void run() {
+                    Toast.makeText(ChatActivity.this, "No image selected.", Toast.LENGTH_SHORT).show();
+                }
+            });
+            return;
+        }
+
         Uri selectedImage = imageReturnedIntent.getData();
         String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
@@ -676,30 +705,30 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int which) {
-                        new Thread() {
+                new Thread() {
 
-            @Override
-            public void run() {
+                    @Override
+                    public void run() {
 
-                switch (requestCode) {
-                    case SELECT_PHOTO:
-                        if (resultCode == RESULT_OK) {
+                        switch (requestCode) {
+                            case SELECT_PHOTO:
+                                if (resultCode == RESULT_OK) {
 
-                            Main.sendImageToChannel(chan, filePath);
+                                    Main.sendImageToChannel(chan, filePath);
 
-                            runOnUiThread(new Runnable() {
+                                    runOnUiThread(new Runnable() {
 
-                                public void run() {
-                                    Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
+                                        public void run() {
+                                            Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
+                                    //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
                                 }
-                            });
-
-                            //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
                         }
-                }
 
-            }
-        }.start();
+                    }
+                }.start();
             }
         });
         builder.setNegativeButton("No", null);

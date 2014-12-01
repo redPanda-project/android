@@ -6,11 +6,14 @@ package org.redPanda;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import org.apache.http.util.ExceptionUtils;
+import org.redPanda.ChannelList.Preferences;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.MessageHolder;
 
@@ -43,9 +46,13 @@ public class ExceptionLogger {
 
                 String ownStackTrace = stacktrace2String(thrwbl);
 
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                sharedPref.edit().putString("stacktrace", ownStackTrace).commit();
+
 //                ownStackTrace = ownStackTrace.replaceAll(":", "");
                 Main.sendBroadCastMsg("Version: " + BS.VERSION + " \n" + ownStackTrace);
-
+                sharedPref.edit().putString("stacktrace", "").commit();
+                
                 try {
                     defaultUEH.uncaughtException(thread, thrwbl);
                 } catch (Throwable e) {

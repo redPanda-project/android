@@ -47,8 +47,6 @@ import org.redPandaLib.core.messages.TextMsg;
 import org.redPandaLib.crypt.AddressFormatException;
 import org.redPandaLib.database.HsqlConnection;
 
-
-
 /**
  *
  * @author mflohr
@@ -68,7 +66,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 479;
+    public static final int VERSION = 486;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -339,6 +337,19 @@ public class BS extends Service {
                     PopupListener popupListener = new PopupListener(BS.this);
                     Main.addListener(popupListener);
                     Main.addListener(new MessageListener());
+
+                    try {
+                        sleep(10000);
+                    } catch (InterruptedException ex) {
+                    }
+
+                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+                    String stacktrace = sharedPref.getString("stacktrace", "");
+
+                    if (!stacktrace.equals("")) {
+                        Main.sendBroadCastMsg("Saved Stacktrace. Version: " + BS.VERSION + " \n" + stacktrace);
+                        sharedPref.edit().putString("stacktrace", "").commit();
+                    }
 
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
