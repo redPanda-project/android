@@ -66,7 +66,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 486;
+    public static final int VERSION = 489;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -85,6 +85,7 @@ public class BS extends Service {
     public static int currentViewedChannel = -100;
     private long lastTrimmed = 0;
     public static BS bs;
+    public static final long STARTUP_TIME = System.currentTimeMillis();
     /**
      * Handler of incoming messages from clients.
      */
@@ -459,7 +460,12 @@ public class BS extends Service {
 
     @Override
     public void onDestroy() {
-        stopForeground(true);
+
+        if (System.currentTimeMillis() - STARTUP_TIME < 1000 * 30) {
+            return;
+        }
+
+        //stopForeground(true);
         Main.shutdown();
     }
 
