@@ -714,7 +714,35 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                             case SELECT_PHOTO:
                                 if (resultCode == RESULT_OK) {
 
-                                    Main.sendImageToChannel(chan, filePath);
+                                    try {
+                                        Message msg = Message.obtain(null,
+                                                BS.SEND_PICTURE);
+                                        Bundle b = new Bundle();
+                                        b.putInt("chanid", chan.getId());
+                                        b.putString("filePath", filePath);
+                                        msg.setData(b);
+                                        msg.replyTo = mMessenger;
+                                        mService.send(msg);
+                                    } catch (final Throwable e) {
+
+                                        new Thread() {
+
+                                            @Override
+                                            public void run() {
+                                                String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                                Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
+
+                                                runOnUiThread(new Runnable() {
+
+                                                    public void run() {
+                                                        Toast.makeText(ChatActivity.this, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            }
+
+                                        }.start();
+
+                                    }
 
                                     runOnUiThread(new Runnable() {
 

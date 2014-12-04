@@ -81,6 +81,7 @@ public class BS extends Service {
     public static final int FL_UNREG = 11;
     public static final int NEW_MSGL = 12;
     public static final int FL_DSC = 13;
+    public static final int SEND_PICTURE = 14;
     private static long lastUpdateChecked = 0;
     public static int currentViewedChannel = -100;
     private long lastTrimmed = 0;
@@ -269,6 +270,20 @@ public class BS extends Service {
                     break;
                 case FL_UNREG:
                     flm = null;
+                    break;
+                case SEND_PICTURE:
+                    int spchanid = mesg.getData().getInt("chanid");
+                    final Channel spchan = Channel.getChannelById(spchanid);
+
+                    final String filePath = mesg.getData().getString("filePath");
+                    new Thread() {
+
+                        @Override
+                        public void run() {
+                            setPriority(Thread.MIN_PRIORITY);
+                            Main.sendImageToChannel(spchan, filePath);
+                        }
+                    }.start();
                     break;
                 default:
                     super.handleMessage(mesg);

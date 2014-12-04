@@ -5,12 +5,14 @@
 package org.redPanda.ChannelList;
 
 import android.app.Activity;
+import static android.app.Activity.RESULT_OK;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
@@ -21,6 +23,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.MediaStore;
 import android.text.ClipboardManager;
 import android.text.InputType;
 import android.view.ContextMenu;
@@ -75,6 +78,9 @@ public class FlActivity extends Activity {
     public String qrtext = "";
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+    private boolean isImageAction = false, isTextAction = false;
+    private String textAction = "", imageAction = "";
+    private final String[] imageFileExtensions = new String[]{"jpg", "png", "gif", "jpeg"};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -395,9 +401,17 @@ public class FlActivity extends Activity {
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if ("text/plain".equals(type)) {
+                isTextAction = true;
+                textAction = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+                Toast.makeText(FlActivity.this, textAction, Toast.LENGTH_LONG).show();
+
                 //handleSendText(intent); // Handle text being sent
             } else if (type.startsWith("image/")) {
-                handleSendImage(intent); // Handle single image being sent
+                isImageAction = true;
+                imageAction = getImagePath((Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM));
+                Toast.makeText(FlActivity.this, imageAction, Toast.LENGTH_LONG).show();
+                // Handle single image being sent
             }
         } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null) {
             if (type.startsWith("image/")) {
@@ -423,7 +437,7 @@ public class FlActivity extends Activity {
         @Override
         public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                 long arg3) {
-            ChannelViewElement clickedChannel = array.get(arg2);
+            final ChannelViewElement clickedChannel = array.get(arg2);
             new ExceptionLogger(FlActivity.this);
             if (clickedChannel != null) {
 //                clickedChannel.setLastMessageTime(System.currentTimeMillis());
@@ -439,14 +453,146 @@ public class FlActivity extends Activity {
                 adapter.notifyDataSetInvalidated();
             }
 
-            Intent intent;
-            intent = new Intent(FlActivity.this, ChatActivity.class);
+            if (isImageAction) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Send picture");
+                String str = imageAction.split("/")[imageAction.split("/").length - 1];
+                builder.setMessage("Do you want to send the picture " + str + " to " + clickedChannel.getName() + "?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
-            intent.putExtra("title", clickedChannel.toString());
-            intent.putExtra("Channel", clickedChannel);
-            //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    Message msg = Message.obtain(null,
+                                            BS.SEND_PICTURE);
+                                    Bundle b = new Bundle();
+                                    b.putInt("chanid", clickedChannel.getId());
+                                    b.putString("filePath", imageAction);
+                                    msg.setData(b);
+                                    msg.replyTo = mMessenger;
+                                    mService.send(msg);
+                                    Intent intent;
+                                    intent = new Intent(FlActivity.this, ChatActivity.class);
+
+                                    intent.putExtra(
+                                            "title", clickedChannel.toString());
+                                    intent.putExtra(
+                                            "Channel", clickedChannel);
+                                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    isImageAction = false;
+                                    startActivity(intent);
+                                } catch (final Throwable e) {
+
+                                    new Thread() {
+
+                                        @Override
+                                        public void run() {
+                                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                            Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
+
+                                            runOnUiThread(new Runnable() {
+
+                                                public void run() {
+                                                    Toast.makeText(FlActivity.this, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+
+                                    }.start();
+
+                                }
+
+                                runOnUiThread(new Runnable() {
+
+                                    public void run() {
+                                        Toast.makeText(FlActivity.this, "send", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                                //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+                            }
+                        }.start();
+                    }
+                });
+                builder.setNegativeButton("No", null);
+                builder.show();
+
+            } else if (isTextAction) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Send text");
+                builder.setMessage("Do you want to share the text with " + clickedChannel.getName() + "?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    Message msg = Message.obtain(null,
+                                            BS.SEND_MSG);
+                                    Bundle b = new Bundle();
+                                    b.putInt("chanid", clickedChannel.getId());
+                                    b.putString("msg", textAction);
+                                    msg.setData(b);
+                                    msg.replyTo = mMessenger;
+                                    mService.send(msg);
+                                    Intent intent;
+                                    intent = new Intent(FlActivity.this, ChatActivity.class);
+
+                                    intent.putExtra(
+                                            "title", clickedChannel.toString());
+                                    intent.putExtra(
+                                            "Channel", clickedChannel);
+                                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    isTextAction = false;
+                                    startActivity(intent);
+                                } catch (final Throwable e) {
+
+                                    new Thread() {
+
+                                        @Override
+                                        public void run() {
+                                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                            Main.sendBroadCastMsg("could not send text: \n" + ownStackTrace);
+
+                                            runOnUiThread(new Runnable() {
+
+                                                public void run() {
+                                                    Toast.makeText(FlActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+
+                                    }.start();
+
+                                }
+
+                            }
+                        }.start();
+                    }
+                });
+                builder.setNegativeButton("No", null);
+                builder.show();
+
+            } else {
+                Intent intent;
+                intent = new Intent(FlActivity.this, ChatActivity.class);
+
+                intent.putExtra(
+                        "title", clickedChannel.toString());
+                intent.putExtra(
+                        "Channel", clickedChannel);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                startActivity(intent);
+            }
 
         }
     }
@@ -474,17 +620,24 @@ public class FlActivity extends Activity {
         switch (menuItemIndex) {
             case 0:
                 Intent intent;
-                intent = new Intent(FlActivity.this, ChatActivity.class);
+                intent
+                        = new Intent(FlActivity.this, ChatActivity.class
+                        );
 
-                intent.putExtra("title", adapter.objects.get(pos).toString());
-                intent.putExtra("Channel", adapter.objects.get(pos));
+                intent.putExtra(
+                        "title", adapter.objects.get(pos).toString());
+                intent.putExtra(
+                        "Channel", adapter.objects.get(pos));
                 startActivity(intent);
                 break;
             case 3:
                 Intent intent2 = new Intent(this, ChanPref.class);
                 Bundle b = new Bundle();
-                b.putSerializable("Channel", adapter.objects.get(pos));
+
+                b.putSerializable(
+                        "Channel", adapter.objects.get(pos));
                 intent2.putExtras(b);
+
                 startActivity(intent2);
                 break;
             case 1:
@@ -500,15 +653,20 @@ public class FlActivity extends Activity {
 //                    Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
 //                }
                 ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+
                 cm.setText(adapter.objects.get(pos).exportForHumans());
-                Toast.makeText(FlActivity.this, "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FlActivity.this,
+                        "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
 
                 break;
             case 4:
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Delete Channel");
-                builder.setMessage("Do you realy want to delete the Channel " + adapter.objects.get(pos).toString() + "?");
+
+                builder.setTitle(
+                        "Delete Channel");
+                builder.setMessage(
+                        "Do you realy want to delete the Channel " + adapter.objects.get(pos).toString() + "?");
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
@@ -523,16 +681,21 @@ public class FlActivity extends Activity {
                             Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                });
+                }
+                );
                 builder.setNegativeButton("No", null);
                 builder.show();
 
                 break;
             case 2:
                 Intent inte;
-                inte = new Intent(FlActivity.this, QRCodeActivity.class);
-                inte.putExtra("title", adapter.objects.get(pos).toString());
-                inte.putExtra("Key", adapter.objects.get(pos).exportForHumans());
+                inte
+                        = new Intent(FlActivity.this, QRCodeActivity.class
+                        );
+                inte.putExtra(
+                        "title", adapter.objects.get(pos).toString());
+                inte.putExtra(
+                        "Key", adapter.objects.get(pos).exportForHumans());
                 startActivity(inte);
                 break;
             default:
@@ -547,6 +710,7 @@ public class FlActivity extends Activity {
     /**
      * Flag indicating whether we have called bind on the service.
      */
+
     boolean mIsBound;
 
     class IncomingHandler extends Handler {
@@ -689,6 +853,7 @@ public class FlActivity extends Activity {
             return mMemoryCache.get(key);
         }
         return null;
+
     }
 
     void doBindService() {
@@ -696,7 +861,8 @@ public class FlActivity extends Activity {
         // class name because there is no reason to be able to let other
         // applications replace our component.
         mIsBound = bindService(new Intent(FlActivity.this,
-                BS.class), mConnection, Context.BIND_AUTO_CREATE);
+                BS.class
+        ), mConnection, Context.BIND_AUTO_CREATE);
 
     }
 
@@ -933,16 +1099,20 @@ public class FlActivity extends Activity {
                             msg.replyTo = mMessenger;
                             try {
                                 mService.send(msg);
+
                             } catch (RemoteException ex) {
-                                Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(FlActivity.class
+                                        .getName()).log(Level.SEVERE, null, ex);
                             }
                             msg = Message.obtain(null,
                                     BS.GET_CHANNELS);
                             msg.replyTo = mMessenger;
                             try {
                                 mService.send(msg);
+
                             } catch (RemoteException ex) {
-                                Logger.getLogger(FlActivity.class.getName()).log(Level.SEVERE, null, ex);
+                                Logger.getLogger(FlActivity.class
+                                        .getName()).log(Level.SEVERE, null, ex);
                             }
                         }
                     });
@@ -994,6 +1164,26 @@ public class FlActivity extends Activity {
             return true;
         }
         return super.onKeyDown(keyCode, e);
+    }
+
+    public String getImagePath(Uri uri) {
+        // just some safety built in 
+        if (uri == null) {
+            // TODO perform some logging or show user feedback
+            return null;
+        }
+        // try to retrieve the image from the media store first
+        // this will only work for images selected from gallery
+        String[] projection = {MediaStore.Images.Media.DATA};
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        if (cursor != null) {
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        }
+        // this is our fallback here
+        return uri.getPath();
     }
 
 }
