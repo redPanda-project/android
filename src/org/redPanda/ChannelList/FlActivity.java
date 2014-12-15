@@ -1044,7 +1044,6 @@ public class FlActivity extends Activity {
         startActivity(startMain);
         finish();
     }
-
     void handleSendImage(Intent intent) {
         Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri != null) {

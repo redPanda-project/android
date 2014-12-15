@@ -86,7 +86,7 @@ public class PopupListener implements NewMessageListener {
         intent = new Intent(context, ChatActivity.class);
         intent.putExtra("title", msg.getChannel().toString());
         intent.putExtra("Channel", msg.getChannel());
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         // Set the info for the views that show in the notification panel.
@@ -122,7 +122,7 @@ public class PopupListener implements NewMessageListener {
 
         if (!silent) {
 
-            if (lastVibrated < System.currentTimeMillis() - 5000) {
+            if (System.currentTimeMillis() - lastVibrated > 5000) {
                 lastVibrated = System.currentTimeMillis();
                 mBuilder.setVibrate(pattern);
             }
@@ -148,25 +148,25 @@ public class PopupListener implements NewMessageListener {
         // We use a string id because it is a unique number.  We use it later to cancel.
         // ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(msg.getChannel().getId(), notification);
 
-        Intent resultIntent = new Intent(context, ChatActivity.class);
-        resultIntent.putExtra("title", msg.getChannel().toString());
-        resultIntent.putExtra("Channel", msg.getChannel());
-
-
-// The stack builder object will contain an artificial back stack for the
-// started Activity.
-// This ensures that navigating backward from the Activity leads out of
-// your application to the Home screen.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-// Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(ChatActivity.class);
-// Adds the Intent that starts the Activity to the top of the stack
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                0,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
+////        Intent resultIntent = new Intent(context, ChatActivity.class);
+////        resultIntent.putExtra("title", msg.getChannel().toString());
+////        resultIntent.putExtra("Channel", msg.getChannel());
+////
+////
+////// The stack builder object will contain an artificial back stack for the
+////// started Activity.
+////// This ensures that navigating backward from the Activity leads out of
+////// your application to the Home screen.
+////        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+////// Adds the back stack for the Intent (but not the Intent itself)
+////        stackBuilder.addParentStack(ChatActivity.class);
+////// Adds the Intent that starts the Activity to the top of the stack
+////        stackBuilder.addNextIntent(resultIntent);
+////        PendingIntent resultPendingIntent =
+////                stackBuilder.getPendingIntent(
+////                0,
+////                PendingIntent.FLAG_UPDATE_CURRENT);
+////        mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager mNotificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.

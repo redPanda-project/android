@@ -66,7 +66,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 486;
+    public static final int VERSION = 493;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -86,6 +86,7 @@ public class BS extends Service {
     public static int currentViewedChannel = -100;
     private long lastTrimmed = 0;
     public static BS bs;
+    public static final long STARTUP_TIME = System.currentTimeMillis();
     /**
      * Handler of incoming messages from clients.
      */
@@ -115,37 +116,48 @@ public class BS extends Service {
                     int chanid = mesg.getData().getInt("chanid");
                     chanlist = Main.getChannels();
 
-                    Channel chan = Channel.getChannelById(chanid);
+                    final Channel chan = Channel.getChannelById(chanid);
                     ArrayList<Messenger> al = hm.get(chan);
                     if (al == null) {
                         al = new ArrayList<Messenger>();
                     }
 
-                    ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
-
-                    Collections.sort(ml, new Comparator<TextMessageContent>() {
-
-                        public int compare(TextMessageContent t, TextMessageContent t1) {
-                            return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
-                        }
-                    });
-
                     al.add(mesg.replyTo);
                     hm.put(chan, al);
-                    Bundle b2 = new Bundle();
-                    if (ml != null) {
 
-                        ms = Message.obtain(null,
-                                BS.NEW_MSGL);
-                        b2.putSerializable("msgList", ml);
-                        ms.setData(b2);
-                        try {
-                            mesg.replyTo.send(ms);
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                    final Messenger messenger = mesg.replyTo;
+
+                    new Thread() {
+
+                        @Override
+                        public void run() {
+                            ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
+
+                            Collections.sort(ml, new Comparator<TextMessageContent>() {
+
+                                public int compare(TextMessageContent t, TextMessageContent t1) {
+                                    return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+                                }
+                            });
+
+                            Bundle b2 = new Bundle();
+
+                            if (ml != null) {
+                                Message ms;
+                                ms = Message.obtain(null,
+                                        BS.NEW_MSGL);
+                                b2.putSerializable("msgList", ml);
+                                ms.setData(b2);
+                                try {
+                                    messenger.send(ms);
+                                } catch (RemoteException ex) {
+                                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+
+                            }
                         }
+                    }.start();
 
-                    }
                     break;
 
                 case MSG_UNREGISTER_CLIENT:
@@ -410,8 +422,7 @@ public class BS extends Service {
                         //}
                     }
 
-                } catch (AddressFormatException ex) {
-                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Throwable ex) {
                 }
             }
         }.start();
@@ -474,7 +485,12 @@ public class BS extends Service {
 
     @Override
     public void onDestroy() {
-        stopForeground(true);
+
+        if (System.currentTimeMillis() - STARTUP_TIME < 1000 * 30) {
+            return;
+        }
+
+        //stopForeground(true);
         Main.shutdown();
     }
 
