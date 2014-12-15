@@ -293,7 +293,15 @@ public class Preferences extends PreferenceActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy_hh-mm-ss");
-                        File file = Environment.getExternalStorageDirectory();
+
+                        boolean mounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+                        File file;
+                        if (mounted) {
+                            file = Environment.getExternalStorageDirectory();
+                        } else {
+                            file = Environment.getDataDirectory();
+                        }
+
                         String path = file.getAbsolutePath() + "/redpanda/" + formatter.format(new Date(System.currentTimeMillis())) + ".exp";
                         file = new File(file.getAbsolutePath() + "/redpanda/");
                         file.mkdir();
@@ -332,7 +340,14 @@ public class Preferences extends PreferenceActivity {
             public boolean onPreferenceClick(Preference arg0) {
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(Preferences.this);
                 builder1.setTitle("Path");
-                File file = Environment.getExternalStorageDirectory();
+
+                boolean mounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+                File file;
+                if (mounted) {
+                    file = Environment.getExternalStorageDirectory();
+                } else {
+                    file = Environment.getDataDirectory();
+                }
                 final String path = file.getAbsolutePath() + "/redpanda/";
                 file = new File(path);
                 final String[] asd = file.list();
@@ -369,7 +384,6 @@ public class Preferences extends PreferenceActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
-                                
                                 new Thread() {
 
                                     @Override
