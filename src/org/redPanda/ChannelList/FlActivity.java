@@ -108,7 +108,7 @@ public class FlActivity extends Activity {
         context = this;
 
         new ExceptionLogger(this);
-        startService(new Intent(this, BS.class));
+        //startService(new Intent(this, BS.class));
         //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fl);
@@ -860,9 +860,33 @@ public class FlActivity extends Activity {
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
-        mIsBound = bindService(new Intent(FlActivity.this,
-                BS.class
-        ), mConnection, Context.BIND_AUTO_CREATE);
+
+        new Thread() {
+
+            @Override
+            public void run() {
+
+                startService(new Intent(FlActivity.this, BS.class));
+
+                while (true) {
+
+                    if (Test.STARTED_UP_SUCCESSFUL) {
+                        break;
+                    }
+
+                    try {
+                        sleep(10);
+                    } catch (InterruptedException ex) {
+                    }
+
+                }
+
+                mIsBound = bindService(new Intent(FlActivity.this,
+                        BS.class
+                ), mConnection, Context.BIND_IMPORTANT);
+            }
+
+        }.start();
 
     }
 
@@ -1044,6 +1068,7 @@ public class FlActivity extends Activity {
         startActivity(startMain);
         finish();
     }
+
     void handleSendImage(Intent intent) {
         Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri != null) {

@@ -69,30 +69,19 @@ public class PopupListener implements NewMessageListener {
             return;
         }
 
-
-
         //System.out.println("Display msg....");
-
         Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         // The PendingIntent to launch our activity if the user selects this notification
 //        Intent i = new Intent(context, MainActivity.class);
-
-
-
-
-
         Intent intent;
         intent = new Intent(context, ChatActivity.class);
         intent.putExtra("title", msg.getChannel().toString());
         intent.putExtra("Channel", msg.getChannel());
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         // Set the info for the views that show in the notification panel.
-
-
-
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setContentIntent(contentIntent);
 
@@ -104,14 +93,11 @@ public class PopupListener implements NewMessageListener {
 
         BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
 
-
         if (msg.message_type == ImageMsg.BYTE) {
             bigTextStyle.bigText(msg.getName() + ": bild...");
         } else {
             bigTextStyle.bigText(msg.getName() + ": " + msg.getText());
         }
-
-
 
         bigTextStyle.setBigContentTitle(msg.getChannel().toString());
         bigTextStyle.setSummaryText("message from redPanda");
@@ -127,7 +113,6 @@ public class PopupListener implements NewMessageListener {
                 mBuilder.setVibrate(pattern);
             }
         }
-
 
         //        NotificationCompat.InboxStyle inboxStyle =
         //                new NotificationCompat.InboxStyle();
@@ -147,7 +132,6 @@ public class PopupListener implements NewMessageListener {
         // Send the notification.
         // We use a string id because it is a unique number.  We use it later to cancel.
         // ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).notify(msg.getChannel().getId(), notification);
-
 ////        Intent resultIntent = new Intent(context, ChatActivity.class);
 ////        resultIntent.putExtra("title", msg.getChannel().toString());
 ////        resultIntent.putExtra("Channel", msg.getChannel());
@@ -167,10 +151,9 @@ public class PopupListener implements NewMessageListener {
 ////                0,
 ////                PendingIntent.FLAG_UPDATE_CURRENT);
 ////        mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager mNotificationManager
+                = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.
-
 
         Notification build = mBuilder.build();
         //build.flags = Notification.FLAG_AUTO_CANCEL;
