@@ -213,7 +213,7 @@ public class Preferences extends PreferenceActivity {
 
         Preference removeOldMessages = new Preference(this);
         removeOldMessages.setTitle("Remove old messages.");
-        removeOldMessages.setSummary("Removes messages older then one week.");
+        removeOldMessages.setSummary("Removes messages older than one week.");
         removeOldMessages.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference pref) {
                 Intent i = new Intent(Preferences.this, BS.class);

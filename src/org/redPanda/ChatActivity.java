@@ -485,7 +485,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     Message msg = Message.obtain(null,
                             BS.MSG_REGISTER_CLIENT);
                     Bundle b = new Bundle();
-                    b.putInt("chanid", chan.getId());
+                    b.putInt("chanid", chan.getId());//ToDoE: NullPointer, chan null?!?
                     msg.setData(b);
                     msg.replyTo = mMessenger;
                     try {

@@ -116,7 +116,7 @@ public class BS extends Service {
                     int chanid = mesg.getData().getInt("chanid");
                     chanlist = Main.getChannels();
 
-                    final Channel chan = Channel.getChannelById(chanid);
+                    final Channel chan = Channel.getChannelById(chanid);//ToDoE: channel list may not be loaded!!!!! Channel.java:234 NullPointer
                     ArrayList<Messenger> al = hm.get(chan);
                     if (al == null) {
                         al = new ArrayList<Messenger>();
@@ -522,6 +522,8 @@ public class BS extends Service {
                     //Main.sendBroadCastMsg("low memory - rebooted database...");
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NullPointerException e) {
+                    //could not reboot database...
                 }
 
             }

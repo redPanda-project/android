@@ -58,7 +58,7 @@ public class ChanPref extends PreferenceActivity {
         root.addPreference(mainc);
 
         EditTextPreference activePref = new EditTextPreference(this);
-        activePref.setKey(CHAN_NAME + chan.getId());
+        activePref.setKey(CHAN_NAME + chan.getId()); //ToDoE: Nollpointer in this line? chan null?
         activePref.setTitle("Channel name");
         activePref.setSummary("The name of the channel. Visible only for you.");
         activePref.setText(chan.toString());
