@@ -391,7 +391,6 @@ public class FlActivity extends Activity {
         lv.setOnItemClickListener(
                 new OnItemClickListenerImpl(channels));
 
-        doBindService();
         this.registerForContextMenu(lv);
 
         // Get intent, action and MIME type
@@ -972,6 +971,8 @@ public class FlActivity extends Activity {
         super.onStart();
         active = true;
 
+        doBindService();
+
         new Thread() {
 
             @Override
@@ -1010,7 +1011,7 @@ public class FlActivity extends Activity {
                         infotext.post(new Runnable() {
 
                             public void run() {
-                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal);
+                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal + ". Msgs: " + Test.messageStore.getMessageCount());
                             }
                         });
                     } else {

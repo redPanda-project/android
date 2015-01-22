@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.redPanda"
-          android:versionCode="495"
-          android:versionName="0.1.495 alpha">
+          android:versionCode="497"
+          android:versionName="0.1.497 alpha">
           
     <uses-sdk android:minSdkVersion="14"
               android:targetSdkVersion="11" />
@@ -20,6 +20,8 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
+    
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
           
     <application android:label="@string/app_name" android:icon="@drawable/icon" android:largeHeap="true">
         <activity android:name="MainActivity"
