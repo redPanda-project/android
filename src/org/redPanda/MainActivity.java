@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
 
         new ExceptionLogger(this);
         Intent intent = new Intent(this, BS.class);
-        startService(intent);
+        //startService(intent);
     }
 //        setContentView(R.layout.main);
 //

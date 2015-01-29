@@ -15,6 +15,7 @@ import android.os.BatteryManager;
 import android.preference.PreferenceManager;
 import java.util.ArrayList;
 import java.util.Calendar;
+import org.redPandaLib.Main;
 import org.redPandaLib.core.Peer;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
@@ -28,6 +29,7 @@ public class ConnectivityChanged extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
+        //Check if backend started successful
         if (Test.localSettings == null) {
             return;
         }
@@ -45,15 +47,23 @@ public class ConnectivityChanged extends BroadcastReceiver {
 
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
             Intent batteryStatus = context.getApplicationContext().registerReceiver(null, ifilter);
-            int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-            int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
-            float batteryPct = level / (float) scale;
+            if (batteryStatus != null) {
 
-            if (batteryPct > 0.95) {
-                Settings.MIN_CONNECTIONS = 20;
+                int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+                float batteryPct = level / (float) scale;
+
+                if (batteryPct > 0.95) {
+                    Settings.MIN_CONNECTIONS = 20;
+                } else {
+                    Settings.MIN_CONNECTIONS = 3;
+                }
             } else {
-                Settings.MIN_CONNECTIONS = 3;
+
+                Main.sendBroadCastMsg("batteryStatus was null...");//ToDo: remove
+
             }
         } else if (mobile != null && mobile.isConnected()) {
 

@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import static java.lang.Thread.sleep;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -66,7 +67,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 493;
+    public static final int VERSION = 497;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -116,7 +117,7 @@ public class BS extends Service {
                     int chanid = mesg.getData().getInt("chanid");
                     chanlist = Main.getChannels();
 
-                    final Channel chan = Channel.getChannelById(chanid);
+                    final Channel chan = Channel.getChannelById(chanid);//ToDoE: channel list may not be loaded!!!!! Channel.java:234 NullPointer
                     ArrayList<Messenger> al = hm.get(chan);
                     if (al == null) {
                         al = new ArrayList<Messenger>();
@@ -522,6 +523,8 @@ public class BS extends Service {
                     //Main.sendBroadCastMsg("low memory - rebooted database...");
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NullPointerException e) {
+                    //could not reboot database...
                 }
 
             }

@@ -51,6 +51,7 @@ import android.widget.Toast;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
+import static java.lang.Thread.sleep;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
+import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
@@ -98,7 +100,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         Intent intent = new Intent(this, BS.class);
-        startService(intent);
+        //startService(intent);
         doBindService();
         final TextView mainLayouthead = (TextView) findViewById(R.id.mainLayouthead);
         LayoutInflater.from(this).inflate(R.layout.chatrow, null);
@@ -485,7 +487,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     Message msg = Message.obtain(null,
                             BS.MSG_REGISTER_CLIENT);
                     Bundle b = new Bundle();
-                    b.putInt("chanid", chan.getId());
+                    b.putInt("chanid", chan.getId());//ToDoE: NullPointer, chan null?!?
                     msg.setData(b);
                     msg.replyTo = mMessenger;
                     try {
@@ -516,8 +518,32 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
-        mIsBound = bindService(new Intent(ChatActivity.this,
-                BS.class), mConnection, Context.BIND_AUTO_CREATE);
+
+        new Thread() {
+
+            @Override
+            public void run() {
+
+                startService(new Intent(ChatActivity.this, BS.class));
+
+                while (true) {
+
+                    if (Test.STARTED_UP_SUCCESSFUL) {
+                        break;
+                    }
+
+                    try {
+                        sleep(10);
+                    } catch (InterruptedException ex) {
+                    }
+
+                }
+
+                mIsBound = bindService(new Intent(ChatActivity.this,
+                        BS.class), mConnection, Context.BIND_IMPORTANT);
+            }
+
+        }.start();
 
     }
 

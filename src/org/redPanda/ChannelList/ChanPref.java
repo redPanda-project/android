@@ -20,10 +20,12 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.widget.CheckBox;
+import static java.lang.Thread.sleep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.BS;
 import org.redPandaLib.core.Channel;
+import org.redPandaLib.core.Test;
 
 /**
  *
@@ -50,15 +52,13 @@ public class ChanPref extends PreferenceActivity {
     private PreferenceScreen createPreferenceHierarchy() {
         PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
 
-        final Channel chan = (Channel) intent.getExtras().get("Channel");
-
-
+        //final Channel chan = (Channel) intent.getExtras().get("Channel");
         PreferenceCategory mainc = new PreferenceCategory(this);
         mainc.setTitle("Channel Einstellungen");
         root.addPreference(mainc);
 
         EditTextPreference activePref = new EditTextPreference(this);
-        activePref.setKey(CHAN_NAME + chan.getId());
+        activePref.setKey(CHAN_NAME + chan.getId()); //ToDoE: Nollpointer in this line? chan null?
         activePref.setTitle("Channel name");
         activePref.setSummary("The name of the channel. Visible only for you.");
         activePref.setText(chan.toString());
@@ -80,7 +80,6 @@ public class ChanPref extends PreferenceActivity {
             }
         });
         mainc.addPreference(activePref);
-
 
         CheckBoxPreference silentPref = new CheckBoxPreference(this);
         silentPref.setKey(CHAN_SILENT + chan.getId());
@@ -119,8 +118,6 @@ public class ChanPref extends PreferenceActivity {
 
             // We want to monitor the service for as long as we are
             // connected to it.
-
-
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -135,8 +132,32 @@ public class ChanPref extends PreferenceActivity {
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
-        mIsBound = bindService(new Intent(ChanPref.this,
-                BS.class), mConnection, Context.BIND_AUTO_CREATE);
+
+        new Thread() {
+
+            @Override
+            public void run() {
+
+                startService(new Intent(ChanPref.this, BS.class));
+
+                     while (true) {
+
+                    if (Test.STARTED_UP_SUCCESSFUL) {
+                        break;
+                    }
+
+                    try {
+                        sleep(10);
+                    } catch (InterruptedException ex) {
+                    }
+
+                }
+                
+                mIsBound = bindService(new Intent(ChanPref.this,
+                        BS.class), mConnection, Context.BIND_IMPORTANT);
+            }
+
+        }.start();
 
     }
 
