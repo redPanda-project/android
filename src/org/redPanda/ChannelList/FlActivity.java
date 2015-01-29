@@ -580,6 +580,9 @@ public class FlActivity extends Activity {
                 builder.show();
 
             } else {
+//                Toast.makeText(FlActivity.this,
+//                        "Clicked Channel " + clickedChannel.toString(), Toast.LENGTH_SHORT).show();
+
                 Intent intent;
                 intent = new Intent(FlActivity.this, ChatActivity.class);
 
@@ -588,7 +591,7 @@ public class FlActivity extends Activity {
                 intent.putExtra(
                         "Channel", clickedChannel);
                 //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                 startActivity(intent);
             }
