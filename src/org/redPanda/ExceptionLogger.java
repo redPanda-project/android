@@ -4,23 +4,15 @@
  */
 package org.redPanda;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.widget.Toast;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.apache.http.util.ExceptionUtils;
 import org.redPandaLib.Main;
-import org.redPandaLib.core.MessageHolder;
 
 /**
- * Diese Klasse fängt alle Exceptions ab, welche die App zum abstürzen bringen.
- * Der StackTrace wird dann in der Datenbank gespeichert und dann der normale
- * ExceptionHandler von Google aufgerufen, damit der Benutzer mitbekommt, dass
- * die App abgestürzt ist.
- *
- * Der StackTrace wird dann von dem Syncer an den Server übermittelt.
+ * Class for catching uncaught exceptions.
  *
  * @author rflohr
  */
@@ -30,6 +22,12 @@ public class ExceptionLogger {
     Context context;
     Thread.UncaughtExceptionHandler defaultUEH;
 
+    /**
+     * Just create a new object, then all uncaught exceptions will be send to
+     * redPanda network for this thread.
+     *
+     * @param context - Android context
+     */
     public ExceptionLogger(Context context) {
         this.context = context;
         this.defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
@@ -43,8 +41,12 @@ public class ExceptionLogger {
 
                 String ownStackTrace = stacktrace2String(thrwbl);
 
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                sharedPref.edit().putString("stacktrace", ownStackTrace).commit();
+
 //                ownStackTrace = ownStackTrace.replaceAll(":", "");
                 Main.sendBroadCastMsg("Version: " + BS.VERSION + " \n" + ownStackTrace);
+                sharedPref.edit().putString("stacktrace", "").commit();
 
                 try {
                     defaultUEH.uncaughtException(thread, thrwbl);

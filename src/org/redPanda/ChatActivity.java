@@ -5,11 +5,14 @@
 package org.redPanda;
 
 import android.app.Activity;
+import static android.app.Activity.RESULT_OK;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -48,6 +51,7 @@ import android.widget.Toast;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
+import static java.lang.Thread.sleep;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -59,6 +63,7 @@ import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
+import org.redPandaLib.core.Test;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMessageContent;
@@ -90,12 +95,12 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         this.setTitle(in.getExtras().getString("title"));
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
-        
+
         getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         Intent intent = new Intent(this, BS.class);
-        startService(intent);
+        //startService(intent);
         doBindService();
         final TextView mainLayouthead = (TextView) findViewById(R.id.mainLayouthead);
         LayoutInflater.from(this).inflate(R.layout.chatrow, null);
@@ -202,15 +207,31 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     msg.setData(b);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
-                } catch (RemoteException e) {
+                } catch (final Throwable e) {
+
+                    new Thread() {
+
+                        @Override
+                        public void run() {
+                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                            Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
+
+                            runOnUiThread(new Runnable() {
+
+                                public void run() {
+                                    Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+
+                    }.start();
+
                 }
 
             }
         });
 
         //getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
-        
-
     }
 
     @Override
@@ -232,7 +253,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         Intent intent;
         intent = new Intent(ChatActivity.this, FlActivity.class);
         //TODO look at flags
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
         startActivity(intent);
     }
@@ -466,7 +487,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     Message msg = Message.obtain(null,
                             BS.MSG_REGISTER_CLIENT);
                     Bundle b = new Bundle();
-                    b.putInt("chanid", chan.getId());
+                    b.putInt("chanid", chan.getId());//ToDoE: NullPointer, chan null?!?
                     msg.setData(b);
                     msg.replyTo = mMessenger;
                     try {
@@ -497,8 +518,32 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
-        mIsBound = bindService(new Intent(ChatActivity.this,
-                BS.class), mConnection, Context.BIND_AUTO_CREATE);
+
+        new Thread() {
+
+            @Override
+            public void run() {
+
+                startService(new Intent(ChatActivity.this, BS.class));
+
+                while (true) {
+
+                    if (Test.STARTED_UP_SUCCESSFUL) {
+                        break;
+                    }
+
+                    try {
+                        sleep(10);
+                    } catch (InterruptedException ex) {
+                    }
+
+                }
+
+                mIsBound = bindService(new Intent(ChatActivity.this,
+                        BS.class), mConnection, Context.BIND_IMPORTANT);
+            }
+
+        }.start();
 
     }
 
@@ -657,40 +702,91 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             final Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        new Thread() {
+        if (imageReturnedIntent == null) {
+            //no image selected...
+            runOnUiThread(new Runnable() {
 
-            @Override
-            public void run() {
-
-                switch (requestCode) {
-                    case SELECT_PHOTO:
-                        if (resultCode == RESULT_OK) {
-
-                            Uri selectedImage = imageReturnedIntent.getData();
-                            String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
-                            Cursor cursor = getContentResolver().query(
-                                    selectedImage, filePathColumn, null, null, null);
-                            cursor.moveToFirst();
-
-                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                            final String filePath = cursor.getString(columnIndex);
-                            cursor.close();
-
-                            Main.sendImageToChannel(chan, filePath);
-
-                            runOnUiThread(new Runnable() {
-
-                                public void run() {
-                                    Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-
-                            //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
-                        }
+                public void run() {
+                    Toast.makeText(ChatActivity.this, "No image selected.", Toast.LENGTH_SHORT).show();
                 }
+            });
+            return;
+        }
 
+        Uri selectedImage = imageReturnedIntent.getData();
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+        Cursor cursor = getContentResolver().query(
+                selectedImage, filePathColumn, null, null, null);
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        final String filePath = cursor.getString(columnIndex);
+        cursor.close();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Send picture");
+        String str = filePath.split("/")[filePath.split("/").length - 1];
+        builder.setMessage("Do you want to send the picture " + str + " to " + this.getTitle() + "?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                new Thread() {
+
+                    @Override
+                    public void run() {
+
+                        switch (requestCode) {
+                            case SELECT_PHOTO:
+                                if (resultCode == RESULT_OK) {
+
+                                    try {
+                                        Message msg = Message.obtain(null,
+                                                BS.SEND_PICTURE);
+                                        Bundle b = new Bundle();
+                                        b.putInt("chanid", chan.getId());
+                                        b.putString("filePath", filePath);
+                                        msg.setData(b);
+                                        msg.replyTo = mMessenger;
+                                        mService.send(msg);
+                                    } catch (final Throwable e) {
+
+                                        new Thread() {
+
+                                            @Override
+                                            public void run() {
+                                                String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                                Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
+
+                                                runOnUiThread(new Runnable() {
+
+                                                    public void run() {
+                                                        Toast.makeText(ChatActivity.this, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            }
+
+                                        }.start();
+
+                                    }
+
+                                    runOnUiThread(new Runnable() {
+
+                                        public void run() {
+                                            Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
+                                    //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+                                }
+                        }
+
+                    }
+                }.start();
             }
-        }.start();
+        });
+        builder.setNegativeButton("No", null);
+        builder.show();
+
     }
 }

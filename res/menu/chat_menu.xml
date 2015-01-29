@@ -2,6 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/imageSendButtonFromChat"
-          android:title="Send"
+          android:icon="@drawable/ic_action_new_attachment"
           android:showAsAction="ifRoom"/>
 </menu>

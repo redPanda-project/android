@@ -19,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -180,6 +181,7 @@ public class ChatAdapter extends BaseAdapter {
 //            }
             } else if (cM.getMsgType() == ImageMsg.BYTE) {
                 holder.bubbleDeliverd.setTextColor(Color.WHITE);
+                holder.bubbleDeliverd.setBackground(new ColorDrawable(0x80000000));
             // holder.bubbleTime.setPadding(0, 0, 0, 40);
 //            if (holder.bubbleImage == null) {
 //                //holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
