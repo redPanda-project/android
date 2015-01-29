@@ -78,7 +78,7 @@ public class PopupListener implements NewMessageListener {
         intent = new Intent(context, ChatActivity.class);
         intent.putExtra("title", msg.getChannel().toString());
         intent.putExtra("Channel", msg.getChannel());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        //intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         // Set the info for the views that show in the notification panel.

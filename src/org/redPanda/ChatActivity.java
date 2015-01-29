@@ -253,7 +253,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         Intent intent;
         intent = new Intent(ChatActivity.this, FlActivity.class);
         //TODO look at flags
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         startActivity(intent);
     }
