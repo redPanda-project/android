@@ -85,10 +85,6 @@ public class PopupListener implements NewMessageListener {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setContentIntent(contentIntent);
 
-        if (!silent) {
-            mBuilder = mBuilder.setSound(soundUri);
-        }
-
         mBuilder.setAutoCancel(true);
 
         BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
@@ -107,10 +103,12 @@ public class PopupListener implements NewMessageListener {
         mBuilder.setPriority(1);
 
         if (!silent) {
-
-            if (System.currentTimeMillis() - lastVibrated > 5000) {
+            if (System.currentTimeMillis() - lastVibrated > 15000) {
                 lastVibrated = System.currentTimeMillis();
                 mBuilder.setVibrate(pattern);
+                mBuilder = mBuilder.setSound(soundUri);
+            } else {
+                mBuilder.setVibrate(null);
             }
         }
 
