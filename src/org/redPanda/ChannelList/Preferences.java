@@ -355,6 +355,7 @@ public class Preferences extends PreferenceActivity {
                 }
                 final String[] fileList = file.list();
                 if (fileList.length == 0) {
+                    builder1.setTitle("Error");
                     builder1.setMessage("No files to import from found.\nMove the files to:\n" + file.getAbsolutePath());
                 } else {
                     builder1.setSingleChoiceItems(fileList, 0, null);
