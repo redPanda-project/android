@@ -29,10 +29,10 @@ public class ConnectivityChanged extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        //Check if backend started successful
-        if (Test.localSettings == null) {
-            return;
-        }
+//        //Check if backend started successful
+//        if (Test.localSettings == null) {
+//            return;
+//        }
 
         new ExceptionLogger(context);
 
@@ -43,6 +43,9 @@ public class ConnectivityChanged extends BroadcastReceiver {
         final android.net.NetworkInfo mobile = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
         if (wifi.isConnected()) {
+            
+            Settings.REDUCE_TRAFFIC = false;
+            
             Settings.connectToNewClientsTill = Long.MAX_VALUE;
 
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -67,6 +70,8 @@ public class ConnectivityChanged extends BroadcastReceiver {
             }
         } else if (mobile != null && mobile.isConnected()) {
 
+            Settings.REDUCE_TRAFFIC = true;
+            
             Settings.MIN_CONNECTIONS = 2;
 
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);

@@ -91,6 +91,15 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new ExceptionLogger(this);
+
+        if (savedInstanceState != null) {
+            Toast.makeText(ChatActivity.this, "savedInstanceState was not null", Toast.LENGTH_LONG).show();
+            Intent intent;
+            intent = new Intent(ChatActivity.this, FlActivity.class);
+            startActivity(intent);
+            finish();
+        }
+
         Intent in = getIntent();
         this.setTitle(in.getExtras().getString("title"));
         chan = (Channel) in.getExtras().get("Channel");
@@ -253,7 +262,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         Intent intent;
         intent = new Intent(ChatActivity.this, FlActivity.class);
         //TODO look at flags
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         startActivity(intent);
     }
@@ -556,7 +565,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     Message msg = Message.obtain(null,
                             BS.MSG_UNREGISTER_CLIENT);
                     Bundle b = new Bundle();
-                    b.putInt("chanid", chan.getId());
+                    b.putInt("chanid", chan.getId()); //ToDoE: chan null pointer -.-
                     msg.setData(b);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
