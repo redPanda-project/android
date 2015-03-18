@@ -67,7 +67,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 500;
+    public static final int VERSION = 510;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -288,12 +288,14 @@ public class BS extends Service {
                     final Channel spchan = Channel.getChannelById(spchanid);
 
                     final String filePath = mesg.getData().getString("filePath");
+                    //final boolean lowPriority = mesg.getData().getBoolean("lowPriority");
+                    final boolean lowPriority = true;
                     new Thread() {
 
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
-                            Main.sendImageToChannel(spchan, filePath);
+                            Main.sendImageToChannel(spchan, filePath, lowPriority);
                         }
                     }.start();
                     break;
@@ -338,6 +340,7 @@ public class BS extends Service {
 
             @Override
             public void run() {
+
 
                 PRNGFixes.apply();
 
