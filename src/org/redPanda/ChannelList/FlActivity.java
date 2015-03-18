@@ -285,7 +285,7 @@ public class FlActivity extends Activity {
 //                        }
 //
 //                    }
-//                });
+//                });,
 //                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 //
 //                    @Override
@@ -453,73 +453,73 @@ public class FlActivity extends Activity {
             }
 
             if (isImageAction) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Send picture");
                 String str = imageAction.split("/")[imageAction.split("/").length - 1];
-                builder.setMessage("Do you want to send the picture " + str + " to " + clickedChannel.getName() + "?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-
-                    public void onClick(DialogInterface dialog, int which) {
-                        new Thread() {
-
-                            @Override
-                            public void run() {
-                                try {
-                                    Message msg = Message.obtain(null,
-                                            BS.SEND_PICTURE);
-                                    Bundle b = new Bundle();
-                                    b.putInt("chanid", clickedChannel.getId());
-                                    b.putString("filePath", imageAction);
-                                    msg.setData(b);
-                                    msg.replyTo = mMessenger;
-                                    mService.send(msg);
-                                    Intent intent;
-                                    intent = new Intent(FlActivity.this, ChatActivity.class);
-
-                                    intent.putExtra(
-                                            "title", clickedChannel.toString());
-                                    intent.putExtra(
-                                            "Channel", clickedChannel);
-                                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    isImageAction = false;
-                                    startActivity(intent);
-                                } catch (final Throwable e) {
-
-                                    new Thread() {
-
-                                        @Override
-                                        public void run() {
-                                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                                            Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
-
-                                            runOnUiThread(new Runnable() {
-
-                                                public void run() {
-                                                    Toast.makeText(FlActivity.this, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                        }
-
-                                    }.start();
-
-                                }
-
-                                runOnUiThread(new Runnable() {
-
-                                    public void run() {
-                                        Toast.makeText(FlActivity.this, "send", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-
-                                //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
-                            }
-                        }.start();
-                    }
-                });
-                builder.setNegativeButton("No", null);
-                builder.show();
-
+//                builder.setMessage("Do you want to send the picture " + str + " to " + clickedChannel.getName() + "?");
+//                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        new Thread() {
+//
+//                            @Override
+//                            public void run() {
+//                                try {
+//                                    Message msg = Message.obtain(null,
+//                                            BS.SEND_PICTURE);
+//                                    Bundle b = new Bundle();
+//                                    b.putInt("chanid", clickedChannel.getId());
+//                                    b.putString("filePath", imageAction);
+//                                    msg.setData(b);
+//                                    msg.replyTo = mMessenger;
+//                                    mService.send(msg);
+//                                    Intent intent;
+//                                    intent = new Intent(FlActivity.this, ChatActivity.class);
+//
+//                                    intent.putExtra(
+//                                            "title", clickedChannel.toString());
+//                                    intent.putExtra(
+//                                            "Channel", clickedChannel);
+//                                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                    isImageAction = false;
+//                                    startActivity(intent);
+//                                } catch (final Throwable e) {
+//
+//                                    new Thread() {
+//
+//                                        @Override
+//                                        public void run() {
+//                                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+//                                            Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
+//
+//                                            runOnUiThread(new Runnable() {
+//
+//                                                public void run() {
+//                                                    Toast.makeText(FlActivity.this, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
+//                                                }
+//                                            });
+//                                        }
+//
+//                                    }.start();
+//
+//                                }
+//
+//                                runOnUiThread(new Runnable() {
+//
+//                                    public void run() {
+//                                        Toast.makeText(FlActivity.this, "send", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//
+//                                //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+//                            }
+//                        }.start();
+//                    }
+//                });
+//                builder.setNegativeButton("No", null);
+//                builder.show();
+                Toast.makeText(FlActivity.this, str, Toast.LENGTH_SHORT).show();
+                ChatActivity.SendPictureDialog(str, FlActivity.this, clickedChannel, mMessenger, mService, true);
+                isImageAction = false;
             } else if (isTextAction) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle("Send text");

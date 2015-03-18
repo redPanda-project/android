@@ -732,70 +732,82 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
         final String filePath = cursor.getString(columnIndex);
         cursor.close();
+        if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK) {
+            Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
+            SendPictureDialog(filePath, this, chan, mMessenger, mService,false);
+        } else {
+            Toast.makeText(this, "Picture not properly selected.", Toast.LENGTH_SHORT).show();
+        }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    }
+
+    public static void SendPictureDialog(final String filePath, final Activity act, final Channel channel, final Messenger messenger, final Messenger service, final boolean openChannel) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(act);
         builder.setTitle("Send picture");
         String str = filePath.split("/")[filePath.split("/").length - 1];
-        builder.setMessage("Do you want to send the picture " + str + " to " + this.getTitle() + "?");
+        builder.setMessage("Do you want to send the picture " + str + " to " + channel.getName() + "?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-
             public void onClick(DialogInterface dialog, int which) {
                 new Thread() {
 
                     @Override
                     public void run() {
 
-                        switch (requestCode) {
-                            case SELECT_PHOTO:
-                                if (resultCode == RESULT_OK) {
+                        try {
+                            Message msg = Message.obtain(null,
+                                    BS.SEND_PICTURE);
+                            Bundle b = new Bundle();
+                            b.putInt("chanid", channel.getId());
+                            b.putString("filePath", filePath);
+                            msg.setData(b);
+                            msg.replyTo = messenger;
+                            service.send(msg);
+                            if (openChannel) {
+                                Intent intent;
+                                intent = new Intent(act, ChatActivity.class);
 
-                                    try {
-                                        Message msg = Message.obtain(null,
-                                                BS.SEND_PICTURE);
-                                        Bundle b = new Bundle();
-                                        b.putInt("chanid", chan.getId());
-                                        b.putString("filePath", filePath);
-                                        msg.setData(b);
-                                        msg.replyTo = mMessenger;
-                                        mService.send(msg);
-                                    } catch (final Throwable e) {
+                                intent.putExtra(
+                                        "title", channel.toString());
+                                intent.putExtra(
+                                        "Channel", channel);
+                                //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                act.startActivity(intent);
+                            }
+                        } catch (final Throwable e) {
 
-                                        new Thread() {
+                            new Thread() {
 
-                                            @Override
-                                            public void run() {
-                                                String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                                                Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
+                                @Override
+                                public void run() {
+                                    String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                    Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
 
-                                                runOnUiThread(new Runnable() {
-
-                                                    public void run() {
-                                                        Toast.makeText(ChatActivity.this, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-                                            }
-
-                                        }.start();
-
-                                    }
-
-                                    runOnUiThread(new Runnable() {
+                                    act.runOnUiThread(new Runnable() {
 
                                         public void run() {
-                                            Toast.makeText(ChatActivity.this, "send", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(act, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
                                         }
                                     });
-
-                                    //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
                                 }
+
+                            }.start();
+
                         }
 
+                        act.runOnUiThread(new Runnable() {
+
+                            public void run() {
+                                Toast.makeText(act, "send", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
                     }
                 }.start();
             }
         });
         builder.setNegativeButton("No", null);
         builder.show();
-
     }
 }
