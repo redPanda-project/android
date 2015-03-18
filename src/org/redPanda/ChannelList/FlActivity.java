@@ -453,7 +453,7 @@ public class FlActivity extends Activity {
             }
 
             if (isImageAction) {
-                String str = imageAction.split("/")[imageAction.split("/").length - 1];
+                //String str = imageAction.split("/")[imageAction.split("/").length - 1];
 //                builder.setMessage("Do you want to send the picture " + str + " to " + clickedChannel.getName() + "?");
 //                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 //
@@ -517,8 +517,8 @@ public class FlActivity extends Activity {
 //                });
 //                builder.setNegativeButton("No", null);
 //                builder.show();
-                Toast.makeText(FlActivity.this, str, Toast.LENGTH_SHORT).show();
-                ChatActivity.SendPictureDialog(str, FlActivity.this, clickedChannel, mMessenger, mService, true);
+                //Toast.makeText(FlActivity.this, imageAction, Toast.LENGTH_SHORT).show();
+                ChatActivity.sendPictureDialog(imageAction, FlActivity.this, clickedChannel, mMessenger, mService, true);
                 isImageAction = false;
             } else if (isTextAction) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);

@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -27,6 +28,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -41,6 +43,9 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -734,79 +739,96 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         cursor.close();
         if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK) {
             Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
-            SendPictureDialog(filePath, this, chan, mMessenger, mService,false);
+            sendPictureDialog(filePath, this, chan, mMessenger, mService, false);
         } else {
             Toast.makeText(this, "Picture not properly selected.", Toast.LENGTH_SHORT).show();
         }
 
     }
 
-    public static void SendPictureDialog(final String filePath, final Activity act, final Channel channel, final Messenger messenger, final Messenger service, final boolean openChannel) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(act);
-        builder.setTitle("Send picture");
-        String str = filePath.split("/")[filePath.split("/").length - 1];
-        builder.setMessage("Do you want to send the picture " + str + " to " + channel.getName() + "?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                new Thread() {
+    public static void sendPictureDialog(final String filePath, final Activity act, final Channel channel, final Messenger messenger, final Messenger service, final boolean openChannel) {
+        View checkBoxView = View.inflate(act, R.layout.checkboxdialog, null);
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(act);
+        CheckBox checkBox = (CheckBox) checkBoxView.findViewById(R.id.checkbox);
+        checkBox.setChecked( sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
+        checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
-                    @Override
-                    public void run() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                        try {
-                            Message msg = Message.obtain(null,
-                                    BS.SEND_PICTURE);
-                            Bundle b = new Bundle();
-                            b.putInt("chanid", channel.getId());
-                            b.putString("filePath", filePath);
-                            msg.setData(b);
-                            msg.replyTo = messenger;
-                            service.send(msg);
-                            if (openChannel) {
-                                Intent intent;
-                                intent = new Intent(act, ChatActivity.class);
-
-                                intent.putExtra(
-                                        "title", channel.toString());
-                                intent.putExtra(
-                                        "Channel", channel);
-                                //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                act.startActivity(intent);
-                            }
-                        } catch (final Throwable e) {
-
-                            new Thread() {
-
-                                @Override
-                                public void run() {
-                                    String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                                    Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
-
-                                    act.runOnUiThread(new Runnable() {
-
-                                        public void run() {
-                                            Toast.makeText(act, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-
-                            }.start();
-
-                        }
-
-                        act.runOnUiThread(new Runnable() {
-
-                            public void run() {
-                                Toast.makeText(act, "send", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                        //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
-                    }
-                }.start();
+                sharedPref.edit().putBoolean("lastSendImageWithMinPriotiy", isChecked).commit();
             }
         });
+        checkBox.setText("Send with low priority? If checked, the image will only be downloaded from others if they are connected to WiFi.");
+        AlertDialog.Builder builder = new AlertDialog.Builder(act);
+
+        builder.setTitle("Send picture");
+        String str = filePath.split("/")[filePath.split("/").length - 1];
+        builder.setMessage("Do you want to send the picture " + str + " to " + channel.getName() + "?")
+                .setView(checkBoxView)
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Thread() {
+
+                            @Override
+                            public void run() {
+
+                                try {
+                                    Message msg = Message.obtain(null,
+                                            BS.SEND_PICTURE);
+                                    Bundle b = new Bundle();
+                                    b.putInt("chanid", channel.getId());
+                                    b.putString("filePath", filePath);
+                                    b.putBoolean("lowPriority", sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
+                                    msg.setData(b);
+                                    msg.replyTo = messenger;
+                                    service.send(msg);
+                                    if (openChannel) {
+                                        Intent intent;
+                                        intent = new Intent(act, ChatActivity.class);
+
+                                        intent.putExtra(
+                                                "title", channel.toString());
+                                        intent.putExtra(
+                                                "Channel", channel);
+                                        //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        act.startActivity(intent);
+                                    }
+                                } catch (final Throwable e) {
+
+                                    new Thread() {
+
+                                        @Override
+                                        public void run() {
+                                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                            Main.sendBroadCastMsg("could not send picture: \n" + ownStackTrace);
+
+                                            act.runOnUiThread(new Runnable() {
+
+                                                public void run() {
+                                                    Toast.makeText(act, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+
+                                    }.start();
+
+                                }
+
+                                act.runOnUiThread(new Runnable() {
+
+                                    public void run() {
+                                        Toast.makeText(act, "send", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                                //Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+                            }
+                        }.start();
+                    }
+                });
         builder.setNegativeButton("No", null);
         builder.show();
     }

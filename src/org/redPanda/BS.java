@@ -288,8 +288,7 @@ public class BS extends Service {
                     final Channel spchan = Channel.getChannelById(spchanid);
 
                     final String filePath = mesg.getData().getString("filePath");
-                    //final boolean lowPriority = mesg.getData().getBoolean("lowPriority");
-                    final boolean lowPriority = true;
+                    final boolean lowPriority = mesg.getData().getBoolean("lowPriority");
                     new Thread() {
 
                         @Override
