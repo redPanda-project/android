@@ -47,6 +47,8 @@ import org.redPandaLib.core.messages.TextMessageContent;
 import org.redPandaLib.core.messages.TextMsg;
 import org.redPandaLib.crypt.AddressFormatException;
 import org.redPandaLib.database.HsqlConnection;
+import org.redPandaLib.services.MessageDownloader;
+import org.redPandaLib.services.MessageVerifierHsqlDb;
 
 /**
  *
@@ -340,7 +342,6 @@ public class BS extends Service {
             @Override
             public void run() {
 
-
                 PRNGFixes.apply();
 
                 try {
@@ -355,6 +356,8 @@ public class BS extends Service {
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     Settings.REMOVE_OLD_MESSAGES = true;
+                    MessageDownloader.MAX_REQUEST_PER_PEER = 2;
+                    MessageVerifierHsqlDb.USES_UNREAD_STATUS = true;
                     Log.LEVEL = -100;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
