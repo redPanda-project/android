@@ -91,6 +91,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private boolean emojiconKeyboardVisible = false;
     private EmojiconsFragment emojiconsFragment;
     private LinearLayout mainLayoutInputAndSend;
+    private boolean hasUnreadMesDev = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -450,9 +451,9 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             Date date = new Date(tmc.getTimestamp());
             String time = ChatAdapter.formatTime(date, false);
 
-            cM = new ChatMsg(tmc.getText(), time, tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type);
+            cM = new ChatMsg(tmc.getText(), time, tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type,tmc.read,tmc.database_id);
             ChatMsg oCM;
-            if (cA.mMessages.isEmpty()) {
+            if (cA.mMessages.isEmpty()) { // Daydivider
                 TextMessageContent tmptmc = new TextMessageContent();
                 tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
                 tmptmc.message_type = ChatAdapter.daydevider;
@@ -463,10 +464,20 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 String d, oD;
                 d = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
                 oD = ChatAdapter.formatTime(new Date(oCM.getTimestamp()), true);
+                if (tmc.read != oCM.isRead()&&!hasUnreadMesDev) {
+                    hasUnreadMesDev = true;
+                    TextMessageContent tmptmc = new TextMessageContent();
+                    tmptmc.text = "unread messages";
+                    tmptmc.message_type = ChatAdapter.unreadMesDevider;
+                    tmptmc.read = true;
+                    cA.mMessages.add(new ChatMsg(tmptmc));
+
+                }
                 if (!d.equals(oD)) {
                     TextMessageContent tmptmc = new TextMessageContent();
                     tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
                     tmptmc.message_type = ChatAdapter.daydevider;
+                    tmptmc.read = true;
                     cA.mMessages.add(new ChatMsg(tmptmc));
                 }
             }
@@ -750,7 +761,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         View checkBoxView = View.inflate(act, R.layout.checkboxdialog, null);
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(act);
         CheckBox checkBox = (CheckBox) checkBoxView.findViewById(R.id.checkbox);
-        checkBox.setChecked( sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
+        checkBox.setChecked(sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
         checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
             @Override

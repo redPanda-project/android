@@ -139,7 +139,25 @@ public class BS extends Service {
                             Collections.sort(ml, new Comparator<TextMessageContent>() {
 
                                 public int compare(TextMessageContent t, TextMessageContent t1) {
-                                    return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+
+                                    // sort delivered messages to the bottom
+                                    if (t1.message_type == DeliveredMsg.BYTE || t.message_type == DeliveredMsg.BYTE) {
+                                        return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+                                    }
+//                                    return 0;
+
+                                    if (t.read && t1.read) {// both messages have been read
+                                        return 0;
+                                        //   return (t.timestamp > t1.timestamp ? 1 : -1);
+                                    }
+                                    if (!t.read && !t1.read) {// no message has been read
+                                        //   return (t.timestamp > t1.timestamp ? 1 : -1);
+                                        return 0;
+                                    }
+                                    if (t.read) {// only the first message has been read
+                                        return -1;
+                                    }
+                                    return 1;// only the second message has been read
                                 }
                             });
 
