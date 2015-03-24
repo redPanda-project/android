@@ -69,7 +69,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 510;
+    public static final int VERSION = 513;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -405,7 +405,7 @@ public class BS extends Service {
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             }

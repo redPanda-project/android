@@ -980,6 +980,7 @@ public class FlActivity extends Activity {
 
             @Override
             public void run() {
+                setPriority(Thread.MIN_PRIORITY);
                 while (active) {
 
                     if (Test.peerList != null) {

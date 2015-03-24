@@ -80,7 +80,7 @@ import org.redPandaLib.core.messages.TextMessageContent;
 public class ChatActivity extends FragmentActivity implements EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener {
 
     private TextView conversationText;
-    //  private ListView listView;
+    private ListView listView;
     private EditText editText;
     private Channel chan;
     private long lastTouched = 0;
@@ -92,6 +92,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private EmojiconsFragment emojiconsFragment;
     private LinearLayout mainLayoutInputAndSend;
     private boolean hasUnreadMesDev = false;
+    private int jumpTo = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,8 +127,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         messages = new ArrayList<ChatMsg>();
         cA = new ChatAdapter(this, messages);
 
-        ListView lv = (ListView) findViewById(R.id.chatlayout_bubblelist);
-        lv.setAdapter(cA);
+        listView = (ListView) findViewById(R.id.chatlayout_bubblelist);
+        listView.setAdapter(cA);
 
         mainLayoutInputAndSend = (LinearLayout) findViewById(R.id.mainLayoutInputAndSend);
 
@@ -171,6 +172,19 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 tr.commit();
 
                 emojiconKeyboardVisible = !emojiconKeyboardVisible;
+
+            }
+        });
+
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            public void onFocusChange(View v, boolean hasFocus) {
+
+                InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
+
+                if (emojiconKeyboardVisible) {
+                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                }
 
             }
         });
@@ -317,7 +331,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     //merge(al.get(0));
                     //von robin
                     TextMessageContent t = (TextMessageContent) msg.getData().getSerializable("msg");
-                    merge(t);
+                    merge(t, false);
                     //von robin ende
 
                     cA.notifyDataSetChanged();
@@ -332,11 +346,19 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     al = (ArrayList<TextMessageContent>) msg.getData().getSerializable("msgList");
                     Iterator<TextMessageContent> it = al.iterator();
                     while (it.hasNext()) {
-                        merge(it.next());
+                        merge(it.next(), true);
                     }
                     cA.notifyDataSetChanged();
                     //getListView().setSelection(cA.mMessages.size() - 1);
                     //System.out.println("12345 " + cA.mMessages.size());
+                    if (jumpTo != -1) {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                listView.setSelection(jumpTo);
+                            }
+                        });
+
+                    }
                     break;
 
                 default:
@@ -344,7 +366,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             }
         }
 
-        public void merge(final TextMessageContent tmc) {
+        public void merge(final TextMessageContent tmc, boolean initalMessage) {
 //TODO do the merge in Background
             if (tmc.message_type == DeliveredMsg.BYTE) {
 
@@ -451,27 +473,26 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             Date date = new Date(tmc.getTimestamp());
             String time = ChatAdapter.formatTime(date, false);
 
-            cM = new ChatMsg(tmc.getText(), time, tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type,tmc.read,tmc.database_id);
+            cM = new ChatMsg(tmc.getText(), time, tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type, tmc.read, tmc.database_id);
             ChatMsg oCM;
             if (cA.mMessages.isEmpty()) { // Daydivider
                 TextMessageContent tmptmc = new TextMessageContent();
                 tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
                 tmptmc.message_type = ChatAdapter.daydevider;
                 cA.mMessages.add(new ChatMsg(tmptmc));
-
             } else {
                 oCM = cA.mMessages.get(cA.mMessages.size() - 1);
                 String d, oD;
                 d = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
                 oD = ChatAdapter.formatTime(new Date(oCM.getTimestamp()), true);
-                if (tmc.read != oCM.isRead()&&!hasUnreadMesDev) {
+                if (initalMessage && tmc.read != oCM.isRead() && !hasUnreadMesDev) {
                     hasUnreadMesDev = true;
                     TextMessageContent tmptmc = new TextMessageContent();
                     tmptmc.text = "unread messages";
                     tmptmc.message_type = ChatAdapter.unreadMesDevider;
                     tmptmc.read = true;
                     cA.mMessages.add(new ChatMsg(tmptmc));
-
+                    jumpTo = cA.mMessages.size() - 1;
                 }
                 if (!d.equals(oD)) {
                     TextMessageContent tmptmc = new TextMessageContent();
