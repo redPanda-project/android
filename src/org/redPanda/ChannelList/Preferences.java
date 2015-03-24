@@ -350,88 +350,95 @@ public class Preferences extends PreferenceActivity {
                 }
                 final String path = file.getAbsolutePath() + "/redpanda/";
                 file = new File(path);
-                final String[] asd = file.list();
-                builder1.setSingleChoiceItems(asd, 0, null);
-                builder1.setPositiveButton("Import", new DialogInterface.OnClickListener() {
+                if (!file.isDirectory()) {
+                    file.mkdir();
+                }
+                final String[] fileList = file.list();
+                if (fileList.length == 0) {
+                    builder1.setTitle("Error");
+                    builder1.setMessage("No files to import found.\nMove the files to:\n" + file.getAbsolutePath());
+                } else {
+                    builder1.setSingleChoiceItems(fileList, 0, null);
+                    builder1.setPositiveButton("Import", new DialogInterface.OnClickListener() {
 
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-                        final String p = path + asd[position];
-                        AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
-                        builder.setTitle("Password");
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                            final String p = path + fileList[position];
+                            AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
+                            builder.setTitle("Password");
 
 //// Set up the input
-                        final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
+                            final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
 
-                        final EditText name = (EditText) ll.findViewById(R.id.channame);
-                        final EditText key = (EditText) ll.findViewById(R.id.chankey);
-                        name.setHintTextColor(Color.RED);
-                        key.setHintTextColor(Color.CYAN);
-                        key.setText("");
-                        key.setHint("Password");
-                        key.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                        name.setVisibility(View.GONE);
+                            final EditText name = (EditText) ll.findViewById(R.id.channame);
+                            final EditText key = (EditText) ll.findViewById(R.id.chankey);
+                            name.setHintTextColor(Color.RED);
+                            key.setHintTextColor(Color.CYAN);
+                            key.setText("");
+                            key.setHint("Password");
+                            key.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                            name.setVisibility(View.GONE);
 //                final EditText input = new EditText(FlActivity.this);
 //                
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
 //                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-                        builder.setView(ll);
+                            builder.setView(ll);
 
 // Set up the buttons
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
-                                new Thread() {
+                                    new Thread() {
 
-                                    @Override
-                                    public void run() {
-                                        try {
+                                        @Override
+                                        public void run() {
+                                            try {
 
-                                            final boolean asd = Main.restoreBackup(p, key.getText().toString());
+                                                final boolean asd = Main.restoreBackup(p, key.getText().toString());
 
-                                            runOnUiThread(new Runnable() {
+                                                runOnUiThread(new Runnable() {
 
-                                                public void run() {
-                                                    if (asd) {
-                                                        Toast.makeText(Preferences.this, "Imported " + path + " successful", Toast.LENGTH_SHORT).show();
-                                                    } else {
-                                                        Toast.makeText(Preferences.this, "Import failed.", Toast.LENGTH_SHORT).show();
+                                                    public void run() {
+                                                        if (asd) {
+                                                            Toast.makeText(Preferences.this, "Imported " + path + " successful", Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(Preferences.this, "Import failed.", Toast.LENGTH_SHORT).show();
 
+                                                        }
                                                     }
-                                                }
-                                            });
+                                                });
 
-                                        } catch (Exception e) {
-                                            String ownStackTrace = stacktrace2String(e);
-                                            Main.sendBroadCastMsg("Version: " + BS.VERSION + " \n" + ownStackTrace);
+                                            } catch (Exception e) {
+                                                String ownStackTrace = stacktrace2String(e);
+                                                Main.sendBroadCastMsg("Version: " + BS.VERSION + " \n" + ownStackTrace);
+                                            }
+
                                         }
+                                    }.start();
+                                }
+                            });
+                            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
 
-                                    }
-                                }.start();
-                            }
-                        });
-                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
+                            builder.show();
+                        }
+                    });
 
-                        builder.show();
+                    ArrayAdapter<String> ad = new ArrayAdapter<String>(con, android.R.layout.simple_list_item_1, android.R.id.text1, fileList);
+
+                    if (fileList.length != 0) {
+                        Toast.makeText(Preferences.this, "Files: " + fileList.length + "\n" + file.getAbsolutePath() + "\n" + fileList[0], Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(Preferences.this, "Files: " + fileList.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
                     }
-                });
-
-                ArrayAdapter<String> ad = new ArrayAdapter<String>(con, android.R.layout.simple_list_item_1, android.R.id.text1, asd);
-
-                if (asd.length != 0) {
-                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath() + "\n" + asd[0], Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(Preferences.this, "Files: " + asd.length + "\n" + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
                 }
-
                 builder1.show();
                 return true;
             }

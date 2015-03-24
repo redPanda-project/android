@@ -47,6 +47,8 @@ import org.redPandaLib.core.messages.TextMessageContent;
 import org.redPandaLib.core.messages.TextMsg;
 import org.redPandaLib.crypt.AddressFormatException;
 import org.redPandaLib.database.HsqlConnection;
+import org.redPandaLib.services.MessageDownloader;
+import org.redPandaLib.services.MessageVerifierHsqlDb;
 
 /**
  *
@@ -67,7 +69,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 497;
+    public static final int VERSION = 514;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -137,7 +139,25 @@ public class BS extends Service {
                             Collections.sort(ml, new Comparator<TextMessageContent>() {
 
                                 public int compare(TextMessageContent t, TextMessageContent t1) {
-                                    return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+
+                                    // sort delivered messages to the bottom
+                                    if (t1.message_type == DeliveredMsg.BYTE || t.message_type == DeliveredMsg.BYTE) {
+                                        return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+                                    }
+//                                    return 0;
+
+                                    if (t.read && t1.read) {// both messages have been read
+                                        return 0;
+                                        //   return (t.timestamp > t1.timestamp ? 1 : -1);
+                                    }
+                                    if (!t.read && !t1.read) {// no message has been read
+                                        //   return (t.timestamp > t1.timestamp ? 1 : -1);
+                                        return 0;
+                                    }
+                                    if (t.read) {// only the first message has been read
+                                        return -1;
+                                    }
+                                    return 1;// only the second message has been read
                                 }
                             });
 
@@ -288,12 +308,13 @@ public class BS extends Service {
                     final Channel spchan = Channel.getChannelById(spchanid);
 
                     final String filePath = mesg.getData().getString("filePath");
+                    final boolean lowPriority = mesg.getData().getBoolean("lowPriority");
                     new Thread() {
 
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
-                            Main.sendImageToChannel(spchan, filePath);
+                            Main.sendImageToChannel(spchan, filePath, lowPriority);
                         }
                     }.start();
                     break;
@@ -353,6 +374,8 @@ public class BS extends Service {
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     Settings.REMOVE_OLD_MESSAGES = true;
+                    MessageDownloader.MAX_REQUEST_PER_PEER = 2;
+                    MessageVerifierHsqlDb.USES_UNREAD_STATUS = true;
                     Log.LEVEL = -100;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
@@ -382,7 +405,7 @@ public class BS extends Service {
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             }

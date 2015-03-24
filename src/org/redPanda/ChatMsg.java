@@ -18,11 +18,12 @@ public class ChatMsg {
 
     private String text, time, deliverdTo = "";
     private long identity, timestamp;
-    private boolean fromMe;
+    private boolean fromMe, read;
     private int MsgType;
     private int color;
+    private int database_id;
 
-    public ChatMsg(String text, String time, long identity, long timestamp, boolean fromMe, int MsgType) {
+    public ChatMsg(String text, String time, long identity, long timestamp, boolean fromMe, int MsgType, boolean read,int database_id) {
         this.text = text;
         this.time = time;
         this.identity = identity;
@@ -30,6 +31,8 @@ public class ChatMsg {
         this.fromMe = fromMe;
         this.MsgType = MsgType;
         this.color = Lighten((int) identity, 0.2);
+        this.read = read;
+        this.database_id = database_id;
     }
 
     public ChatMsg(TextMessageContent tmc) {
@@ -40,6 +43,8 @@ public class ChatMsg {
         this.fromMe = tmc.fromMe;
         this.MsgType = tmc.message_type;
         this.color = Lighten((int) identity, 0.2);
+        this.read = tmc.read;
+        this.database_id = tmc.database_id;
     }
 
     public static int Lighten(int color, double inAmount) {
@@ -92,6 +97,18 @@ public class ChatMsg {
 
     public void setDeliverdTo(String deliverdTo) {
         this.deliverdTo = deliverdTo;
+    }
+
+    public boolean isRead() {
+        return read;
+    }
+
+    public void setRead(boolean read) {
+        this.read = read;
+    }
+
+    public int getDatabase_id() {
+        return database_id;
     }
 
 }

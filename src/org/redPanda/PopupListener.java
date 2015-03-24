@@ -78,16 +78,12 @@ public class PopupListener implements NewMessageListener {
         intent = new Intent(context, ChatActivity.class);
         intent.putExtra("title", msg.getChannel().toString());
         intent.putExtra("Channel", msg.getChannel());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        //intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         // Set the info for the views that show in the notification panel.
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setContentIntent(contentIntent);
-
-        if (!silent) {
-            mBuilder = mBuilder.setSound(soundUri);
-        }
 
         mBuilder.setAutoCancel(true);
 
@@ -107,10 +103,12 @@ public class PopupListener implements NewMessageListener {
         mBuilder.setPriority(1);
 
         if (!silent) {
-
-            if (System.currentTimeMillis() - lastVibrated > 5000) {
+            if (System.currentTimeMillis() - lastVibrated > 15000) {
                 lastVibrated = System.currentTimeMillis();
                 mBuilder.setVibrate(pattern);
+                mBuilder = mBuilder.setSound(soundUri);
+            } else {
+                mBuilder.setVibrate(null);
             }
         }
 
