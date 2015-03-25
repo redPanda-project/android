@@ -324,7 +324,7 @@ public class BS extends Service {
                         @Override
                         public void run() {
                             String path = "";
-                            if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg")) {
+                            if (filePath.toLowerCase().endsWith(".jpg") || filePath.toLowerCase().endsWith(".jpeg")) {
                                 try {
                                     ExifInterface exif = new ExifInterface(filePath);
                                     int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
