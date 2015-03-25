@@ -10,15 +10,26 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.*;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import static java.lang.Thread.sleep;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,7 +38,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -313,8 +323,28 @@ public class BS extends Service {
 
                         @Override
                         public void run() {
+                            String path = "";
+                            if (filePath.endsWith(".jpg") || filePath.endsWith(".jpeg")) {
+                                try {
+                                    ExifInterface exif = new ExifInterface(filePath);
+                                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                                    path = rotateBitmap(filePath, orientation);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            } else {
+                                String[] tmp = filePath.split("/");
+                                String name = tmp[tmp.length - 1];
+                                File albumStorageDir = getAlbumStorageDir("redPanda");
+                                String newPath = albumStorageDir.getAbsolutePath() + "/" + name;
+                                newPath = renameFile(newPath, name, albumStorageDir.getAbsolutePath());
+                                copyFile(filePath, newPath);
+                                path = newPath;
+
+                            }
+
                             setPriority(Thread.MIN_PRIORITY);
-                            Main.sendImageToChannel(spchan, filePath, lowPriority);
+                            Main.sendImageToChannel(spchan, path, lowPriority);
                         }
                     }.start();
                     break;
@@ -364,6 +394,7 @@ public class BS extends Service {
 
                 try {
                     File albumStorageDir = getAlbumStorageDir("redPanda");
+
                     Main.setImageStoreFolder(albumStorageDir.getAbsolutePath() + "/");
                     Main.setImageInfos(new ImageInfosAndroid());
 
@@ -800,7 +831,7 @@ public class BS extends Service {
 
     }
 
-    public File getAlbumStorageDir(String albumName) {
+    public static File getAlbumStorageDir(String albumName) {
         // Get the directory for the user's public pictures directory.
         File file = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), albumName);
@@ -818,5 +849,146 @@ public class BS extends Service {
             System.out.println("filedir not created...");
         }
         return file;
+    }
+
+    public static String rotateBitmap(String filePath, int orientation) {
+        String[] tmp = filePath.split("/");
+        String name = tmp[tmp.length - 1];
+        File albumStorageDir = getAlbumStorageDir("redPanda");
+        String newPath = albumStorageDir.getAbsolutePath() + "/" + name;
+        boolean dontRotate = false;
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_NORMAL:
+//                newPath = renameFile(newPath, name, albumStorageDir.getAbsolutePath());
+//                copyFile(filePath, newPath);
+//                return newPath;
+                dontRotate = true;
+                break;
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.setScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.setRotate(180);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.setRotate(90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.setRotate(-90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                return null;
+        }
+        Bitmap bm = BitmapFactory.decodeFile(filePath);
+        try {
+            Bitmap bmRotated;
+            if (dontRotate) {
+                bmRotated = bm;
+            } else {
+                bmRotated = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+            }
+            bm.recycle();
+            File f = new File(renameFile(newPath, name, albumStorageDir.getAbsolutePath()));
+            try {
+                f.createNewFile();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bmRotated.compress(CompressFormat.JPEG, 80 /*ignored for PNG*/, bos);
+                byte[] bitmapdata = bos.toByteArray();
+                FileOutputStream fos = new FileOutputStream(f);
+                fos.write(bitmapdata);
+                fos.flush();
+                fos.close();
+                bos.flush();
+                bos.close();
+
+            } catch (IOException ex) {
+                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            return newPath;
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static boolean copyFile(String srcPath, String dstPath) {
+        File src = new File(srcPath);
+        File dst = new File(dstPath);
+        boolean couldCreateFile = false;
+        if (!dst.isFile()) {
+            try {
+                couldCreateFile = dst.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                couldCreateFile = false;
+            }
+            if (!couldCreateFile) {
+                return false;
+            }
+        }
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new FileInputStream(src);
+
+            out = new FileOutputStream(dst);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        try {
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } finally {
+            try {
+                in.close();
+                out.close();
+            } catch (IOException ex) {
+                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return true;
+    }
+
+    public static String renameFile(String path, String name, String albumStorageDir) {
+        File f = new File(path);
+        if (f.isFile()) {
+            String[] tmps = name.split("\\.");
+            name = "";
+            for (int i = 0; i < tmps.length - 1; i++) {
+                name += tmps[i];
+            }
+            int i = (int) Math.ceil(Math.random() * 10);
+            name += "_" + i;
+            File test = new File(albumStorageDir + "/" + name + tmps[tmps.length - 1]);
+            while (test.isFile()) {
+                i = (int) Math.ceil(Math.random() * 10);
+                name += i;
+                test = new File(albumStorageDir + "/" + name + tmps[tmps.length - 1]);
+            }
+            f = test;
+        }
+        return f.getAbsolutePath();
     }
 }
