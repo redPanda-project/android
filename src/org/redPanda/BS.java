@@ -900,7 +900,7 @@ public class BS extends Service {
             } else {
                 bmRotated = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
             }
-            bm.recycle();
+
             File f = new File(renameFile(newPath, name, albumStorageDir.getAbsolutePath()));
             try {
                 f.createNewFile();
@@ -917,7 +917,7 @@ public class BS extends Service {
             } catch (IOException ex) {
                 Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+            bm.recycle();
             return newPath;
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
