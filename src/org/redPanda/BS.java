@@ -859,12 +859,11 @@ public class BS extends Service {
         boolean dontRotate = false;
         Matrix matrix = new Matrix();
         switch (orientation) {
-            case ExifInterface.ORIENTATION_NORMAL:
+            //  case ExifInterface.ORIENTATION_NORMAL:
 //                newPath = renameFile(newPath, name, albumStorageDir.getAbsolutePath());
 //                copyFile(filePath, newPath);
 //                return newPath;
-                dontRotate = true;
-                break;
+
             case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
                 matrix.setScale(-1, 1);
                 break;
@@ -890,7 +889,8 @@ public class BS extends Service {
                 matrix.setRotate(-90);
                 break;
             default:
-                return null;
+                dontRotate = true;
+                break;
         }
         Bitmap bm = BitmapFactory.decodeFile(filePath);
         try {
@@ -981,11 +981,11 @@ public class BS extends Service {
             }
             int i = (int) Math.ceil(Math.random() * 10);
             name += "_" + i;
-            File test = new File(albumStorageDir + "/" + name + tmps[tmps.length - 1]);
+            File test = new File(albumStorageDir + "/" + name + "." + tmps[tmps.length - 1]);
             while (test.isFile()) {
                 i = (int) Math.ceil(Math.random() * 10);
                 name += i;
-                test = new File(albumStorageDir + "/" + name + tmps[tmps.length - 1]);
+                test = new File(albumStorageDir + "/" + name + "." + tmps[tmps.length - 1]);
             }
             f = test;
         }
