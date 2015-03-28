@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.ChannelList.ChanPref;
 import org.redPanda.ChannelList.Preferences;
+import org.redPandaLib.ImageTooLargeException;
 import org.redPandaLib.Main;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.Channel;
@@ -79,7 +80,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 514;
+    public static final int VERSION = 520;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -344,7 +345,11 @@ public class BS extends Service {
                             }
 
                             setPriority(Thread.MIN_PRIORITY);
-                            Main.sendImageToChannel(spchan, path, lowPriority);
+                            try {
+                                Main.sendImageToChannel(spchan, path, lowPriority);
+                            } catch (ImageTooLargeException ex) {
+                                //Toast.makeText(BS.this, "Image too large.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }.start();
                     break;

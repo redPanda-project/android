@@ -990,10 +990,9 @@ public class FlActivity extends Activity {
                         final ArrayList<Peer> list = (ArrayList<Peer>) Test.peerList.clone();
 
                         for (Peer peer : list) {
-                            if (peer.isConnected()) {
+                            if (peer.isConnected() && peer.isAuthed() && peer.isCryptedConnection()) {
                                 actCons++;
-                            }
-                            if (peer.isConnecting) {
+                            } else if (peer.isConnecting || peer.isConnected() || peer.isAuthed()) {
                                 connectingCons++;
                             }
                         }
@@ -1012,10 +1011,13 @@ public class FlActivity extends Activity {
                         if (isFinishing()) {
                             return;
                         }
+
+                        final int messageCount = Test.messageStore.getMessageCount();
+
                         infotext.post(new Runnable() {
 
                             public void run() {
-                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal + ". Msgs: " + Test.messageStore.getMessageCount());
+                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal + ". Msgs: " + messageCount);
                             }
                         });
                     } else {
@@ -1034,7 +1036,7 @@ public class FlActivity extends Activity {
                         });
                     }
                     try {
-                        sleep(100);
+                        sleep(1000);
                     } catch (InterruptedException ex) {
                     }
                 }

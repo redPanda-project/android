@@ -105,10 +105,22 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             intent = new Intent(ChatActivity.this, FlActivity.class);
             startActivity(intent);
             finish();
+            return;
         }
 
         Intent in = getIntent();
-        this.setTitle(in.getExtras().getString("title"));
+        String string = in.getExtras().getString("title");
+
+        if (string == null) {
+            Toast.makeText(ChatActivity.this, "oops, no channel defined...", Toast.LENGTH_LONG).show();
+            Intent intent;
+            intent = new Intent(ChatActivity.this, FlActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        this.setTitle(string);
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
 

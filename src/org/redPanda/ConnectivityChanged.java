@@ -26,6 +26,8 @@ import org.redPandaLib.core.Test;
  */
 public class ConnectivityChanged extends BroadcastReceiver {
 
+    private int lastConnectionType = -1; //-1: unknown, 1: mobile, 2: wlan
+
     @Override
     public void onReceive(Context context, Intent intent) {
 
@@ -33,7 +35,6 @@ public class ConnectivityChanged extends BroadcastReceiver {
 //        if (Test.localSettings == null) {
 //            return;
 //        }
-
         new ExceptionLogger(context);
 
         final ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -43,9 +44,13 @@ public class ConnectivityChanged extends BroadcastReceiver {
         final android.net.NetworkInfo mobile = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
         if (wifi.isConnected()) {
-            
+
+            if (lastConnectionType == 1) {
+                Main.internetConnectionInterrupted();
+            }
+
             Settings.REDUCE_TRAFFIC = false;
-            
+
             Settings.connectToNewClientsTill = Long.MAX_VALUE;
 
             IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
@@ -64,15 +69,20 @@ public class ConnectivityChanged extends BroadcastReceiver {
                     Settings.MIN_CONNECTIONS = 3;
                 }
             } else {
-
                 Main.sendBroadCastMsg("batteryStatus was null...");//ToDo: remove
-
             }
+
+            lastConnectionType = 2;
+
         } else if (mobile != null && mobile.isConnected()) {
 
             Settings.REDUCE_TRAFFIC = true;
-            
+
             Settings.MIN_CONNECTIONS = 2;
+
+            if (lastConnectionType == 2) {
+                Main.internetConnectionInterrupted();
+            }
 
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
             boolean saveInternet = sharedPref.getBoolean(Preferences.KEY_SAVE_MOBILE_INTERNET, false);
@@ -96,8 +106,12 @@ public class ConnectivityChanged extends BroadcastReceiver {
             } else {
                 Settings.connectToNewClientsTill = Long.MAX_VALUE;
             }
+
+            lastConnectionType = 1;
+
         } else {
             Settings.connectToNewClientsTill = Long.MIN_VALUE;
+            //lastConnectionType = -1;
         }
 
     }
