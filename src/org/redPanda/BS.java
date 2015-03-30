@@ -80,7 +80,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 520;
+    public static final int VERSION = 521;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -463,29 +463,29 @@ public class BS extends Service {
             }
         }.start();
 
-        new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    sleep(30000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                try {
-                    Channel importChannelFromHuman = Main.importChannelFromHuman("prAZqUNKAu9D4Xtrpiv7yLHL3Pc4gUV6bQ86t86sgrJQ3SkDLn6E1ffez", "All Android Users");
-                    if (importChannelFromHuman != null) {
-                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
-                        //if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
-                        sharedPref.edit().putBoolean(ChanPref.CHAN_NOTIFICATIONS + importChannelFromHuman.getId(), false).commit();
-                        //}
-                    }
-
-                } catch (Throwable ex) {
-                }
-            }
-        }.start();
+////        new Thread() {
+////
+////            @Override
+////            public void run() {
+////                try {
+////                    sleep(30000);
+////                } catch (InterruptedException ex) {
+////                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+////                }
+////
+////                try {
+////                    Channel importChannelFromHuman = Main.importChannelFromHuman("prAZqUNKAu9D4Xtrpiv7yLHL3Pc4gUV6bQ86t86sgrJQ3SkDLn6E1ffez", "All Android Users");
+////                    if (importChannelFromHuman != null) {
+////                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+////                        //if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
+////                        sharedPref.edit().putBoolean(ChanPref.CHAN_NOTIFICATIONS + importChannelFromHuman.getId(), false).commit();
+////                        //}
+////                    }
+////
+////                } catch (Throwable ex) {
+////                }
+////            }
+////        }.start();
 
 //        Intent intent = new Intent(this, FlActivity.class);
 //        final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);

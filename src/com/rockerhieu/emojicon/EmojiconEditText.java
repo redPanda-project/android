@@ -27,11 +27,13 @@ import org.redPanda.R;
  */
 public class EmojiconEditText extends EditText {
     private int mEmojiconSize;
+    private int mEmojiconTextSize;
+    private boolean mUseSystemDefault = false;
 
     public EmojiconEditText(Context context) {
         super(context);
         mEmojiconSize = (int) getTextSize();
-
+        mEmojiconTextSize = (int) getTextSize();
     }
 
     public EmojiconEditText(Context context, AttributeSet attrs) {
@@ -47,13 +49,15 @@ public class EmojiconEditText extends EditText {
     private void init(AttributeSet attrs) {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.Emojicon);
         mEmojiconSize = (int) a.getDimension(R.styleable.Emojicon_emojiconSize, getTextSize());
+        mUseSystemDefault = a.getBoolean(R.styleable.Emojicon_emojiconUseSystemDefault, false);
         a.recycle();
+        mEmojiconTextSize = (int) getTextSize();
         setText(getText());
     }
 
     @Override
     protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-        EmojiconHandler.addEmojis(getContext(), getText(), mEmojiconSize);
+        updateText();
     }
 
     /**
@@ -61,5 +65,18 @@ public class EmojiconEditText extends EditText {
      */
     public void setEmojiconSize(int pixels) {
         mEmojiconSize = pixels;
+
+        updateText();
+    }
+
+    private void updateText() {
+        EmojiconHandler.addEmojis(getContext(), getText(), mEmojiconSize, mEmojiconTextSize, mUseSystemDefault);
+    }
+
+    /**
+     * Set whether to use system default emojicon
+     */
+    public void setUseSystemDefault(boolean useSystemDefault) {
+        mUseSystemDefault = useSystemDefault;
     }
 }

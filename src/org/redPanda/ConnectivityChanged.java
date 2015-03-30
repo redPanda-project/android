@@ -26,7 +26,8 @@ import org.redPandaLib.core.Test;
  */
 public class ConnectivityChanged extends BroadcastReceiver {
 
-    private int lastConnectionType = -1; //-1: unknown, 1: mobile, 2: wlan
+    //private int lastConnectionType = -1; //-1: unknown, 1: mobile, 2: wlan
+    private boolean lastNoInternet = false;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -43,11 +44,7 @@ public class ConnectivityChanged extends BroadcastReceiver {
 
         final android.net.NetworkInfo mobile = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-        if (wifi.isConnected()) {
-
-            if (lastConnectionType == 1) {
-                Main.internetConnectionInterrupted();
-            }
+        if (wifi != null && wifi.isConnected()) {
 
             Settings.REDUCE_TRAFFIC = false;
 
@@ -72,17 +69,17 @@ public class ConnectivityChanged extends BroadcastReceiver {
                 Main.sendBroadCastMsg("batteryStatus was null...");//ToDo: remove
             }
 
-            lastConnectionType = 2;
+            if (lastNoInternet) {
+                Main.internetConnectionInterrupted();
+            }
+            lastNoInternet = false;
+//            lastConnectionType = 2;
 
         } else if (mobile != null && mobile.isConnected()) {
 
             Settings.REDUCE_TRAFFIC = true;
 
             Settings.MIN_CONNECTIONS = 2;
-
-            if (lastConnectionType == 2) {
-                Main.internetConnectionInterrupted();
-            }
 
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
             boolean saveInternet = sharedPref.getBoolean(Preferences.KEY_SAVE_MOBILE_INTERNET, false);
@@ -99,7 +96,7 @@ public class ConnectivityChanged extends BroadcastReceiver {
 
                     ArrayList<Peer> clonedPeerList = (ArrayList<Peer>) Test.peerList.clone();
                     for (Peer peer : clonedPeerList) {
-                        peer.disconnect("no internet");
+                        peer.disconnect("reducing traffic...");
                     }
                 }
 
@@ -107,11 +104,16 @@ public class ConnectivityChanged extends BroadcastReceiver {
                 Settings.connectToNewClientsTill = Long.MAX_VALUE;
             }
 
-            lastConnectionType = 1;
+            if (lastNoInternet) {
+                Main.internetConnectionInterrupted();
+            }
+            lastNoInternet = false;
 
+            //lastConnectionType = 1;
         } else {
             Settings.connectToNewClientsTill = Long.MIN_VALUE;
             //lastConnectionType = -1;
+            lastNoInternet = true;
         }
 
     }
