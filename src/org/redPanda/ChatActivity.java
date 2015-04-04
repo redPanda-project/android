@@ -7,19 +7,18 @@ package org.redPanda;
 import android.app.Activity;
 import static android.app.Activity.RESULT_OK;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
+import static android.content.Context.CLIPBOARD_SERVICE;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,15 +31,12 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
-import android.util.Xml;
+import android.text.ClipboardManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -57,13 +53,13 @@ import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 import static java.lang.Thread.sleep;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import org.redPanda.ChannelList.ChanPref;
 import org.redPanda.ChannelList.FlActivity;
-import org.redPanda.ListMessage.Mes;
+import org.redPanda.ChannelList.QRCodeActivity;
 
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
@@ -734,6 +730,80 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 photoPickerIntent.setType("image/*");
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 return true;
+            case R.id.cm_settings:
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        openOptionsMenu();
+                    }
+                }, 0);
+                return true;
+
+            case R.id.cm_QR://Share by QR
+                Intent inte;
+                inte
+                        = new Intent(ChatActivity.this, QRCodeActivity.class
+                        );
+                inte.putExtra(
+                        "title", chan.getName());
+                inte.putExtra(
+                        "Key", chan.exportForHumans());
+                startActivity(inte);
+                return true;
+            case R.id.cm_Share://Share
+                ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+
+                cm.setText(chan.exportForHumans());
+                Toast.makeText(ChatActivity.this,
+                        "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.cm_Ed://edit
+                Intent intent2 = new Intent(this, ChanPref.class);
+                Bundle b = new Bundle();
+
+                b.putSerializable(
+                        "Channel", chan);
+                intent2.putExtras(b);
+
+                startActivity(intent2);
+                return true;
+            case R.id.cm_Del://Delete Messages
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setTitle("Confirm");
+                builder.setMessage("Do you really want to delete all messages in this channel?");
+
+                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        new Runnable() {
+
+                            public void run() {
+                                Main.removeMessagesForChannel(chan);
+                            }
+                        }.run();
+
+                        cA.mMessages.clear();
+                        cA.notifyDataSetChanged();
+                        //cA.notifyDataSetInvalidated();
+
+                        dialog.dismiss();
+                    }
+
+                });
+
+                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog alert = builder.create();
+                alert.show();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -876,4 +946,19 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         builder.setNegativeButton("No", null);
         builder.show();
     }
+
+//    @Override
+//    public void openOptionsMenu() {
+//        super.openOptionsMenu();
+//        Configuration config = getResources().getConfiguration();
+//        if ((config.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) > Configuration.SCREENLAYOUT_SIZE_LARGE) {
+//            int originalScreenLayout = config.screenLayout;
+//            config.screenLayout = Configuration.SCREENLAYOUT_SIZE_LARGE;
+//            super.openOptionsMenu();
+//            config.screenLayout = originalScreenLayout;
+//        } else {
+//            
+//            super.openOptionsMenu();
+//        }
+//    }
 }

@@ -620,7 +620,7 @@ public class FlActivity extends Activity {
         // String[] menuItems = {"Open", "Share", "Delete"};
         //String menuItemName = menuItems[menuItemIndex];
         switch (menuItemIndex) {
-            case 0:
+            case 0://open
                 Intent intent;
                 intent
                         = new Intent(FlActivity.this, ChatActivity.class
@@ -632,7 +632,7 @@ public class FlActivity extends Activity {
                         "Channel", adapter.objects.get(pos));
                 startActivity(intent);
                 break;
-            case 3:
+            case 3://edit
                 Intent intent2 = new Intent(this, ChanPref.class);
                 Bundle b = new Bundle();
 
@@ -642,7 +642,7 @@ public class FlActivity extends Activity {
 
                 startActivity(intent2);
                 break;
-            case 1:
+            case 1://Share
 //                Message msg = Message.obtain(null,
 //                        BS.Send_MM);
 //                Bundle bs = new Bundle();
@@ -661,7 +661,7 @@ public class FlActivity extends Activity {
                         "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
 
                 break;
-            case 4:
+            case 4://Delete
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -689,7 +689,7 @@ public class FlActivity extends Activity {
                 builder.show();
 
                 break;
-            case 2:
+            case 2://Share by QR
                 Intent inte;
                 inte
                         = new Intent(FlActivity.this, QRCodeActivity.class
