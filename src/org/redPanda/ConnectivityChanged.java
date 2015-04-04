@@ -69,10 +69,10 @@ public class ConnectivityChanged extends BroadcastReceiver {
                 Main.sendBroadCastMsg("batteryStatus was null...");//ToDo: remove
             }
 
-            if (lastNoInternet) {
-                Main.internetConnectionInterrupted();
-            }
-            lastNoInternet = false;
+//            if (lastNoInternet) {
+//                Main.internetConnectionInterrupted();
+//            }
+//            lastNoInternet = false;
 //            lastConnectionType = 2;
 
         } else if (mobile != null && mobile.isConnected()) {
@@ -104,16 +104,17 @@ public class ConnectivityChanged extends BroadcastReceiver {
                 Settings.connectToNewClientsTill = Long.MAX_VALUE;
             }
 
-            if (lastNoInternet) {
-                Main.internetConnectionInterrupted();
-            }
-            lastNoInternet = false;
+//            if (lastNoInternet) {
+//                Main.internetConnectionInterrupted();
+//            }
+//            lastNoInternet = false;
 
             //lastConnectionType = 1;
         } else {
             Settings.connectToNewClientsTill = Long.MIN_VALUE;
             //lastConnectionType = -1;
-            lastNoInternet = true;
+//            lastNoInternet = true;
+            Main.internetConnectionInterrupted();
         }
 
     }
