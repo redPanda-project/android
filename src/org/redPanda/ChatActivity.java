@@ -16,7 +16,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -776,17 +775,21 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
+                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ChatActivity.this);
+                        SharedPreferences.Editor edit = sharedPref.edit();
+                        edit.putString("lastMessageTextForChannelid" + chan.getId(), "0");
+                        edit.commit();
+
                         new Runnable() {
 
                             public void run() {
+                                cA.mMessages.clear();
+                                cA.notifyDataSetChanged();
                                 Main.removeMessagesForChannel(chan);
                             }
                         }.run();
 
-                        cA.mMessages.clear();
-                        cA.notifyDataSetChanged();
                         //cA.notifyDataSetInvalidated();
-
                         dialog.dismiss();
                     }
 
