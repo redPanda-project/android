@@ -30,7 +30,9 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.RemoteInput;
 import android.text.ClipboardManager;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -88,21 +90,21 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private LinearLayout mainLayoutInputAndSend;
     private boolean hasUnreadMesDev = false;
     private int jumpTo = -1;
+    private Message toSendMessage = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new ExceptionLogger(this);
 
-        if (savedInstanceState != null) {
-            Toast.makeText(ChatActivity.this, "savedInstanceState was not null", Toast.LENGTH_LONG).show();
-            Intent intent;
-            intent = new Intent(ChatActivity.this, FlActivity.class);
-            startActivity(intent);
-            finish();
-            return;
-        }
-
+//        if (savedInstanceState != null) {
+//            Toast.makeText(ChatActivity.this, "savedInstanceState was not null", Toast.LENGTH_LONG).show();
+//            Intent intent;
+//            intent = new Intent(ChatActivity.this, FlActivity.class);
+//            startActivity(intent);
+//            finish();
+//            return;
+//        }
         Intent in = getIntent();
         String string = in.getExtras().getString("title");
 
@@ -224,50 +226,71 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
             public void onClick(View arg0) {
 
-                final String text = editText.getText().toString();
-                Runnable runnable = new Runnable() {
-
-                    public void run() {
-                        editText.setText("");
-                    }
-                };
-
-                editText.post(runnable);
-
-                try {
-                    Message msg = Message.obtain(null,
-                            BS.SEND_MSG);
-                    Bundle b = new Bundle();
-                    b.putInt("chanid", chan.getId());
-                    b.putString("msg", text);
-                    msg.setData(b);
-                    msg.replyTo = mMessenger;
-                    mService.send(msg);
-                } catch (final Throwable e) {
-
-                    new Thread() {
-
-                        @Override
-                        public void run() {
-                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                            Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
-
-                            runOnUiThread(new Runnable() {
-
-                                public void run() {
-                                    Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-
-                    }.start();
-
-                }
+                sendMessageFromTextView();
 
             }
+
         });
 
+        lookForVoiceToTextMessage();
+
+    }
+
+    private void lookForVoiceToTextMessage() {
         //getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+        //look for voice-to-text message from wearable...
+        CharSequence messageText = getMessageText(getIntent());
+        if (messageText != null) {
+
+            try {
+                Message msg = Message.obtain(null,
+                        BS.SEND_MSG);
+                Bundle b = new Bundle();
+                b.putInt("chanid", chan.getId());
+                b.putString("msg", messageText.toString());
+                msg.setData(b);
+                msg.replyTo = mMessenger;
+                toSendMessage = msg;
+            } catch (final Throwable e) {
+
+                new Thread() {
+
+                    @Override
+                    public void run() {
+                        String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                        Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
+
+                        runOnUiThread(new Runnable() {
+
+                            public void run() {
+                                Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                }.start();
+
+            }
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        //we need the old channel for unbind!
+        doUnbindService();
+
+        this.setIntent(intent);
+        this.setTitle(intent.getExtras().getString("title"));
+        chan = (Channel) intent.getExtras().get("Channel");
+        InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+
+        lookForVoiceToTextMessage();
+
+        //we can binde again to the service
+        doBindService();
     }
 
     @Override
@@ -289,7 +312,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         Intent intent;
         intent = new Intent(ChatActivity.this, FlActivity.class);
         //TODO look at flags
-        //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         startActivity(intent);
     }
@@ -545,12 +568,19 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     msg.replyTo = mMessenger;
                     try {
                         mService.send(msg);
-
                     } catch (RemoteException e) {
                         // In this case the service has crashed before we could even
                         // do anything with it; we can count on soon being
                         // disconnected (and then reconnected if it can be restarted)
                         // so there is no need to do anything here.
+                    }
+
+                    if (toSendMessage != null) {
+                        try {
+                            mService.send(toSendMessage);
+                            toSendMessage = null;
+                        } catch (RemoteException e) {
+                        }
                     }
 
                 }
@@ -677,11 +707,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         BS.currentViewedChannel = -100;
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-    }
-
     //    @Override
     //    public boolean onKeyDown(int keyCode, KeyEvent event) {
     //        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
@@ -723,6 +748,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         switch (item.getItemId()) {
             case android.R.id.home:
                 backToFlActivity();
+                finish();
                 return true;
             case R.id.imageSendButtonFromChat:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
@@ -964,4 +990,75 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 //            super.openOptionsMenu();
 //        }
 //    }
+    /**
+     * Obtain the intent that started this activity by calling
+     * Activity.getIntent() and pass it into this method to get the associated
+     * voice input string.
+     */
+    private static CharSequence getMessageText(Intent intent) {
+        Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
+        if (remoteInput != null) {
+            return remoteInput.getCharSequence(PopupListener.EXTRA_VOICE_REPLY);
+        }
+        return null;
+    }
+
+    private void sendMessageFromTextView() {
+        final String text = editText.getText().toString();
+        Runnable runnable = new Runnable() {
+
+            public void run() {
+                editText.setText("");
+                editText.requestFocus();
+            }
+        };
+
+        editText.post(runnable);
+
+        try {
+            Message msg = Message.obtain(null,
+                    BS.SEND_MSG);
+            Bundle b = new Bundle();
+            b.putInt("chanid", chan.getId());
+            b.putString("msg", text);
+            msg.setData(b);
+            msg.replyTo = mMessenger;
+            mService.send(msg);
+        } catch (final Throwable e) {
+
+            new Thread() {
+
+                @Override
+                public void run() {
+                    String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                    Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
+
+                    runOnUiThread(new Runnable() {
+
+                        public void run() {
+                            Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+            }.start();
+
+        }
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_ENTER:
+                if (event.isCtrlPressed()) {
+                    sendMessageFromTextView();
+                    return true;
+                }
+
+            default:
+                return super.onKeyUp(keyCode, event);
+        }
+
+    }
 }

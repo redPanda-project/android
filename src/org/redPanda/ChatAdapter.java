@@ -214,7 +214,11 @@ public class ChatAdapter extends BaseAdapter {
 //            }
             } else if (cM.getMsgType() == ImageMsg.BYTE) {
                 holder.bubbleDeliverd.setTextColor(Color.WHITE);
-                holder.bubbleDeliverd.setBackground(new ColorDrawable(0x80000000));
+                if (android.os.Build.VERSION.SDK_INT >= 16) {
+                    holder.bubbleDeliverd.setBackground(new ColorDrawable(0x80000000));
+                } else {
+                    holder.bubbleDeliverd.setBackgroundDrawable(new ColorDrawable(0x80000000));
+                }
             // holder.bubbleTime.setPadding(0, 0, 0, 40);
 //            if (holder.bubbleImage == null) {
 //                //holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));

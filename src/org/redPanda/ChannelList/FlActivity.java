@@ -1069,6 +1069,11 @@ public class FlActivity extends Activity {
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
+
+        if (android.os.Build.BRAND.equals("chromium") || android.os.Build.MANUFACTURER.equals(context)) {
+            return;
+        }
+
         Intent startMain = new Intent(Intent.ACTION_MAIN);
         startMain.addCategory(Intent.CATEGORY_HOME);
         startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
