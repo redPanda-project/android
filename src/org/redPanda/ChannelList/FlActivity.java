@@ -527,53 +527,42 @@ public class FlActivity extends Activity {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
-                        new Thread() {
 
-                            @Override
-                            public void run() {
-                                try {
-                                    Message msg = Message.obtain(null,
-                                            BS.SEND_MSG);
-                                    Bundle b = new Bundle();
-                                    b.putInt("chanid", clickedChannel.getId());
-                                    b.putString("msg", textAction);
-                                    msg.setData(b);
-                                    msg.replyTo = mMessenger;
-                                    mService.send(msg);
-                                    Intent intent;
-                                    intent = new Intent(FlActivity.this, ChatActivity.class);
+                        try {
 
-                                    intent.putExtra(
-                                            "title", clickedChannel.toString());
-                                    intent.putExtra(
-                                            "Channel", clickedChannel);
-                                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    isTextAction = false;
-                                    startActivity(intent);
-                                } catch (final Throwable e) {
+                            Intent intent;
+                            intent = new Intent(FlActivity.this, ChatActivity.class);
 
-                                    new Thread() {
+                            intent.putExtra(
+                                    "title", clickedChannel.toString());
+                            intent.putExtra(
+                                    "Channel", clickedChannel);
+                            intent.putExtra("textMsg", textAction);
+                            //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            isTextAction = false;
+                            startActivity(intent);
+                        } catch (final Throwable e) {
 
-                                        @Override
+                            new Thread() {
+
+                                @Override
+                                public void run() {
+                                    String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                    Main.sendBroadCastMsg("could not send text: \n" + ownStackTrace);
+
+                                    runOnUiThread(new Runnable() {
+
                                         public void run() {
-                                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                                            Main.sendBroadCastMsg("could not send text: \n" + ownStackTrace);
-
-                                            runOnUiThread(new Runnable() {
-
-                                                public void run() {
-                                                    Toast.makeText(FlActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
+                                            Toast.makeText(FlActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
                                         }
-
-                                    }.start();
-
+                                    });
                                 }
 
-                            }
-                        }.start();
+                            }.start();
+
+                        }
+
                     }
                 });
                 builder.setNegativeButton("No", null);

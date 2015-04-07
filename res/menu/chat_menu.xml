@@ -4,11 +4,8 @@
     <item android:id="@+id/imageSendButtonFromChat"
           android:icon="@drawable/ic_action_new_attachment"
           android:showAsAction="ifRoom"/>
-    
-    <item android:id="@+id/cm_settings" android:orderInCategory="100"   
-           android:showAsAction="ifRoom" android:icon="@drawable/ic_action_overflow"/>
     <item android:id="@+id/cm_Share" android:title="Share"></item>
     <item android:id="@+id/cm_QR" android:title="Share by QR"></item>
-    <item android:id="@+id/cm_Ed" android:title="Edit"></item>
+    <item android:id="@+id/cm_Ed" android:title="Settings"></item>
     <item android:id="@+id/cm_Del" android:title="Delete messages"></item>
 </menu>
