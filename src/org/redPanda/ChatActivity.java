@@ -287,27 +287,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             b.putBoolean("lowPriority", lowPriority);
             msg.setData(b);
             msg.replyTo = mMessenger;
-            try {
-                mService.send(msg);
-            } catch (final RemoteException e) {
 
-                new Thread() {
-
-                    @Override
-                    public void run() {
-                        String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                        Main.sendBroadCastMsg("could not send text: \n" + ownStackTrace);
-
-                        runOnUiThread(new Runnable() {
-
-                            public void run() {
-                                Toast.makeText(ChatActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-
-                }.start();
-            }
+            toSendMessage = msg;
 
         }
         String textMsg = intent.getExtras().getString("textMsg");
@@ -319,27 +300,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             b.putString("msg", textMsg);
             msg.setData(b);
             msg.replyTo = mMessenger;
-            try {
-                mService.send(msg);
-            } catch (final RemoteException e) {
 
-                new Thread() {
-
-                    @Override
-                    public void run() {
-                        String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                        Main.sendBroadCastMsg("could not send text: \n" + ownStackTrace);
-
-                        runOnUiThread(new Runnable() {
-
-                            public void run() {
-                                Toast.makeText(ChatActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-
-                }.start();
-            }
+            toSendMessage = msg;
 
         }
 
