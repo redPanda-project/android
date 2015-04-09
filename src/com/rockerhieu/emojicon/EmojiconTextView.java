@@ -29,7 +29,6 @@ import org.redPanda.R;
  */
 public class EmojiconTextView extends TextView {
     private int mEmojiconSize;
-    private int mEmojiconTextSize;
     private int mTextStart = 0;
     private int mTextLength = -1;
     private boolean mUseSystemDefault = false;
@@ -50,7 +49,6 @@ public class EmojiconTextView extends TextView {
     }
 
     private void init(AttributeSet attrs) {
-        mEmojiconTextSize = (int) getTextSize();
         if (attrs == null) {
             mEmojiconSize = (int) getTextSize();
         } else {
@@ -68,7 +66,7 @@ public class EmojiconTextView extends TextView {
     public void setText(CharSequence text, BufferType type) {
         if (!TextUtils.isEmpty(text)) {
             SpannableStringBuilder builder = new SpannableStringBuilder(text);
-            EmojiconHandler.addEmojis(getContext(), builder, mEmojiconSize, mEmojiconTextSize, mTextStart, mTextLength, mUseSystemDefault);
+            EmojiconHandler.addEmojis(getContext(), builder, mEmojiconSize, mTextStart, mTextLength, mUseSystemDefault);
             text = builder;
         }
         super.setText(text, type);
@@ -79,6 +77,7 @@ public class EmojiconTextView extends TextView {
      */
     public void setEmojiconSize(int pixels) {
         mEmojiconSize = pixels;
+
         super.setText(getText());
     }
 

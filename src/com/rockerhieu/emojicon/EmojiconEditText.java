@@ -27,13 +27,12 @@ import org.redPanda.R;
  */
 public class EmojiconEditText extends EditText {
     private int mEmojiconSize;
-    private int mEmojiconTextSize;
     private boolean mUseSystemDefault = false;
 
     public EmojiconEditText(Context context) {
         super(context);
         mEmojiconSize = (int) getTextSize();
-        mEmojiconTextSize = (int) getTextSize();
+
     }
 
     public EmojiconEditText(Context context, AttributeSet attrs) {
@@ -51,7 +50,6 @@ public class EmojiconEditText extends EditText {
         mEmojiconSize = (int) a.getDimension(R.styleable.Emojicon_emojiconSize, getTextSize());
         mUseSystemDefault = a.getBoolean(R.styleable.Emojicon_emojiconUseSystemDefault, false);
         a.recycle();
-        mEmojiconTextSize = (int) getTextSize();
         setText(getText());
     }
 
@@ -70,7 +68,7 @@ public class EmojiconEditText extends EditText {
     }
 
     private void updateText() {
-        EmojiconHandler.addEmojis(getContext(), getText(), mEmojiconSize, mEmojiconTextSize, mUseSystemDefault);
+        EmojiconHandler.addEmojis(getContext(), getText(), mEmojiconSize, mUseSystemDefault);
     }
 
     /**

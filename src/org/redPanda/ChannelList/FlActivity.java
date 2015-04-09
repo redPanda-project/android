@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -115,7 +116,8 @@ public class FlActivity extends Activity {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        String[] str = new String[]{"Create new channel", "Import channel", "Scan QR-code", "Settings"};
+        Resources res = getResources();
+        String[] str = new String[]{res.getString(R.string.create_new_channel), res.getString(R.string.import_channel), res.getString(R.string.scan_qr_code), res.getString(R.string.settings)};
         // Set the adapter for the list view
         mDrawerList.setBackgroundColor(Color.WHITE);
         mDrawerList.setAdapter(new MenuAdapter(context, str));
@@ -128,12 +130,12 @@ public class FlActivity extends Activity {
                 switch (position) {
                     case 0: // Create new Channel
                         builder = new AlertDialog.Builder(FlActivity.this);
-                        builder.setTitle("Create new Channel");
+                        builder.setTitle(getResources().getString(R.string.create_new_channel));
 
                         //// Set up the input
                         final EditText input = new EditText(FlActivity.this);
                         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
-                        input.setHint("New channel name");
+                        input.setHint(getResources().getString(R.string.new_channel_name));
                         input.setHintTextColor(Color.RED);
 
                         builder.setView(input);
