@@ -7,19 +7,17 @@ package org.redPanda;
 import android.app.Activity;
 import static android.app.Activity.RESULT_OK;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
+import static android.content.Context.CLIPBOARD_SERVICE;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,15 +30,14 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
-import android.util.Xml;
+import android.support.v4.app.RemoteInput;
+import android.text.ClipboardManager;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -57,13 +54,15 @@ import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 import static java.lang.Thread.sleep;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.redPanda.ChannelList.ChanPref;
 import org.redPanda.ChannelList.FlActivity;
-import org.redPanda.ListMessage.Mes;
+import org.redPanda.ChannelList.QRCodeActivity;
 
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Channel;
@@ -93,22 +92,34 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private LinearLayout mainLayoutInputAndSend;
     private boolean hasUnreadMesDev = false;
     private int jumpTo = -1;
+    private Message toSendMessage = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new ExceptionLogger(this);
 
-        if (savedInstanceState != null) {
-            Toast.makeText(ChatActivity.this, "savedInstanceState was not null", Toast.LENGTH_LONG).show();
+//        if (savedInstanceState != null) {
+//            Toast.makeText(ChatActivity.this, "savedInstanceState was not null", Toast.LENGTH_LONG).show();
+//            Intent intent;
+//            intent = new Intent(ChatActivity.this, FlActivity.class);
+//            startActivity(intent);
+//            finish();
+//            return;
+//        }
+        Intent in = getIntent();
+        String string = in.getExtras().getString("title");
+
+        if (string == null) {
+            Toast.makeText(ChatActivity.this, "oops, no channel defined...", Toast.LENGTH_LONG).show();
             Intent intent;
             intent = new Intent(ChatActivity.this, FlActivity.class);
             startActivity(intent);
             finish();
+            return;
         }
 
-        Intent in = getIntent();
-        this.setTitle(in.getExtras().getString("title"));
+        this.setTitle(string);
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
 
@@ -217,50 +228,103 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
             public void onClick(View arg0) {
 
-                final String text = editText.getText().toString();
-                Runnable runnable = new Runnable() {
-
-                    public void run() {
-                        editText.setText("");
-                    }
-                };
-
-                editText.post(runnable);
-
-                try {
-                    Message msg = Message.obtain(null,
-                            BS.SEND_MSG);
-                    Bundle b = new Bundle();
-                    b.putInt("chanid", chan.getId());
-                    b.putString("msg", text);
-                    msg.setData(b);
-                    msg.replyTo = mMessenger;
-                    mService.send(msg);
-                } catch (final Throwable e) {
-
-                    new Thread() {
-
-                        @Override
-                        public void run() {
-                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                            Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
-
-                            runOnUiThread(new Runnable() {
-
-                                public void run() {
-                                    Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-
-                    }.start();
-
-                }
+                sendMessageFromTextView();
 
             }
+
         });
 
+        lookForMessageToSend();
+
+    }
+
+    private void lookForMessageToSend() {
         //getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+        //look for voice-to-text message from wearable...
+        CharSequence messageText = getMessageText(getIntent());
+        if (messageText != null) {
+
+            try {
+                Message msg = Message.obtain(null,
+                        BS.SEND_MSG);
+                Bundle b = new Bundle();
+                b.putInt("chanid", chan.getId());
+                b.putString("msg", messageText.toString());
+                msg.setData(b);
+                msg.replyTo = mMessenger;
+                toSendMessage = msg;
+            } catch (final Throwable e) {
+
+                new Thread() {
+
+                    @Override
+                    public void run() {
+                        String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                        Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
+
+                        runOnUiThread(new Runnable() {
+
+                            public void run() {
+                                Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                }.start();
+
+            }
+            return;
+        }
+        Intent intent = getIntent();
+        String filePath = intent.getExtras().getString("filePath");
+        if (filePath != null) {// picture to send
+            boolean lowPriority = intent.getExtras().getBoolean("lowPriority");
+            Message msg = Message.obtain(null,
+                    BS.SEND_PICTURE);
+            Bundle b = new Bundle();
+            b.putInt("chanid", chan.getId());
+            b.putString("filePath", filePath);
+            b.putBoolean("lowPriority", lowPriority);
+            msg.setData(b);
+            msg.replyTo = mMessenger;
+
+            toSendMessage = msg;
+
+        }
+        String textMsg = intent.getExtras().getString("textMsg");
+        if (textMsg != null) {
+            Message msg = Message.obtain(null,
+                    BS.SEND_MSG);
+            Bundle b = new Bundle();
+            b.putInt("chanid", chan.getId());
+            b.putString("msg", textMsg);
+            msg.setData(b);
+            msg.replyTo = mMessenger;
+
+            toSendMessage = msg;
+
+        }
+
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        //we need the old channel for unbind!
+        doUnbindService();
+        cA.mMessages.clear();
+        cA.notifyDataSetChanged();
+        this.setIntent(intent);
+        this.setTitle(intent.getExtras().getString("title"));
+        chan = (Channel) intent.getExtras().get("Channel");
+        InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+
+        lookForMessageToSend();
+
+        //we can binde again to the service
+        doBindService();
     }
 
     @Override
@@ -282,7 +346,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         Intent intent;
         intent = new Intent(ChatActivity.this, FlActivity.class);
         //TODO look at flags
-        //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         startActivity(intent);
     }
@@ -538,12 +602,19 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     msg.replyTo = mMessenger;
                     try {
                         mService.send(msg);
-
                     } catch (RemoteException e) {
                         // In this case the service has crashed before we could even
                         // do anything with it; we can count on soon being
                         // disconnected (and then reconnected if it can be restarted)
                         // so there is no need to do anything here.
+                    }
+
+                    if (toSendMessage != null) {
+                        try {
+                            mService.send(toSendMessage);
+                            toSendMessage = null;
+                        } catch (RemoteException e) {
+                        }
                     }
 
                 }
@@ -670,11 +741,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         BS.currentViewedChannel = -100;
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-    }
-
     //    @Override
     //    public boolean onKeyDown(int keyCode, KeyEvent event) {
     //        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
@@ -716,11 +782,83 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         switch (item.getItemId()) {
             case android.R.id.home:
                 backToFlActivity();
+                finish();
                 return true;
             case R.id.imageSendButtonFromChat:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+                return true;
+
+            case R.id.cm_QR://Share by QR
+                Intent inte;
+                inte
+                        = new Intent(ChatActivity.this, QRCodeActivity.class
+                        );
+                inte.putExtra(
+                        "title", chan.getName());
+                inte.putExtra(
+                        "Key", chan.exportForHumans());
+                startActivity(inte);
+                return true;
+            case R.id.cm_Share://Share
+                ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+
+                cm.setText(chan.exportForHumans());
+                Toast.makeText(ChatActivity.this,
+                        "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.cm_Ed://edit
+                Intent intent2 = new Intent(this, ChanPref.class);
+                Bundle b = new Bundle();
+
+                b.putSerializable(
+                        "Channel", chan);
+                intent2.putExtras(b);
+
+                startActivity(intent2);
+                return true;
+            case R.id.cm_Del://Delete Messages
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setTitle("Confirm");
+                builder.setMessage("Are you sure you want to delete all messages in this channel?");
+
+                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ChatActivity.this);
+                        SharedPreferences.Editor edit = sharedPref.edit();
+                        edit.putString("lastMessageTextForChannelid" + chan.getId(), "0");
+                        edit.commit();
+
+                        new Runnable() {
+
+                            public void run() {
+                                cA.mMessages.clear();
+                                cA.notifyDataSetChanged();
+                                Main.removeMessagesForChannel(chan);
+                            }
+                        }.run();
+
+                        //cA.notifyDataSetInvalidated();
+                        dialog.dismiss();
+                    }
+
+                });
+
+                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog alert = builder.create();
+                alert.show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -807,15 +945,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                             public void run() {
 
                                 try {
-                                    Message msg = Message.obtain(null,
-                                            BS.SEND_PICTURE);
-                                    Bundle b = new Bundle();
-                                    b.putInt("chanid", channel.getId());
-                                    b.putString("filePath", filePath);
-                                    b.putBoolean("lowPriority", sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
-                                    msg.setData(b);
-                                    msg.replyTo = messenger;
-                                    service.send(msg);
                                     if (openChannel) {
                                         Intent intent;
                                         intent = new Intent(act, ChatActivity.class);
@@ -824,9 +953,21 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                                 "title", channel.toString());
                                         intent.putExtra(
                                                 "Channel", channel);
+                                        intent.putExtra("filePath", filePath);
+                                        intent.putExtra("lowPriority", sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
                                         //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         act.startActivity(intent);
+                                    } else {
+                                        Message msg = Message.obtain(null,
+                                                BS.SEND_PICTURE);
+                                        Bundle b = new Bundle();
+                                        b.putInt("chanid", channel.getId());
+                                        b.putString("filePath", filePath);
+                                        b.putBoolean("lowPriority", sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
+                                        msg.setData(b);
+                                        msg.replyTo = messenger;
+                                        service.send(msg);
                                     }
                                 } catch (final Throwable e) {
 
@@ -863,5 +1004,91 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 });
         builder.setNegativeButton("No", null);
         builder.show();
+    }
+
+//    @Override
+//    public void openOptionsMenu() {
+//        super.openOptionsMenu();
+//        Configuration config = getResources().getConfiguration();
+//        if ((config.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) > Configuration.SCREENLAYOUT_SIZE_LARGE) {
+//            int originalScreenLayout = config.screenLayout;
+//            config.screenLayout = Configuration.SCREENLAYOUT_SIZE_LARGE;
+//            super.openOptionsMenu();
+//            config.screenLayout = originalScreenLayout;
+//        } else {
+//            
+//            super.openOptionsMenu();
+//        }
+//    }
+    /**
+     * Obtain the intent that started this activity by calling
+     * Activity.getIntent() and pass it into this method to get the associated
+     * voice input string.
+     */
+    private static CharSequence getMessageText(Intent intent) {
+        Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
+        if (remoteInput != null) {
+            return remoteInput.getCharSequence(PopupListener.EXTRA_VOICE_REPLY);
+        }
+        return null;
+    }
+
+    private void sendMessageFromTextView() {
+        final String text = editText.getText().toString();
+        Runnable runnable = new Runnable() {
+
+            public void run() {
+                editText.setText("");
+                editText.requestFocus();
+            }
+        };
+
+        editText.post(runnable);
+
+        try {
+            Message msg = Message.obtain(null,
+                    BS.SEND_MSG);
+            Bundle b = new Bundle();
+            b.putInt("chanid", chan.getId());
+            b.putString("msg", text);
+            msg.setData(b);
+            msg.replyTo = mMessenger;
+            mService.send(msg);
+        } catch (final Throwable e) {
+
+            new Thread() {
+
+                @Override
+                public void run() {
+                    String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                    Main.sendBroadCastMsg("could not send message: \n" + ownStackTrace);
+
+                    runOnUiThread(new Runnable() {
+
+                        public void run() {
+                            Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+            }.start();
+
+        }
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_ENTER:
+                if (event.isCtrlPressed()) {
+                    sendMessageFromTextView();
+                    return true;
+                }
+
+            default:
+                return super.onKeyUp(keyCode, event);
+        }
+
     }
 }

@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -115,7 +116,8 @@ public class FlActivity extends Activity {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        String[] str = new String[]{"Create new channel", "Import channel", "Scan QR-code", "Settings"};
+        Resources res = getResources();
+        String[] str = new String[]{res.getString(R.string.create_new_channel), res.getString(R.string.import_channel), res.getString(R.string.scan_qr_code), res.getString(R.string.settings)};
         // Set the adapter for the list view
         mDrawerList.setBackgroundColor(Color.WHITE);
         mDrawerList.setAdapter(new MenuAdapter(context, str));
@@ -128,12 +130,12 @@ public class FlActivity extends Activity {
                 switch (position) {
                     case 0: // Create new Channel
                         builder = new AlertDialog.Builder(FlActivity.this);
-                        builder.setTitle("Create new Channel");
+                        builder.setTitle(getResources().getString(R.string.create_new_channel));
 
                         //// Set up the input
                         final EditText input = new EditText(FlActivity.this);
                         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
-                        input.setHint("New channel name");
+                        input.setHint(getResources().getString(R.string.new_channel_name));
                         input.setHintTextColor(Color.RED);
 
                         builder.setView(input);
@@ -527,53 +529,42 @@ public class FlActivity extends Activity {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
-                        new Thread() {
 
-                            @Override
-                            public void run() {
-                                try {
-                                    Message msg = Message.obtain(null,
-                                            BS.SEND_MSG);
-                                    Bundle b = new Bundle();
-                                    b.putInt("chanid", clickedChannel.getId());
-                                    b.putString("msg", textAction);
-                                    msg.setData(b);
-                                    msg.replyTo = mMessenger;
-                                    mService.send(msg);
-                                    Intent intent;
-                                    intent = new Intent(FlActivity.this, ChatActivity.class);
+                        try {
 
-                                    intent.putExtra(
-                                            "title", clickedChannel.toString());
-                                    intent.putExtra(
-                                            "Channel", clickedChannel);
-                                    //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    isTextAction = false;
-                                    startActivity(intent);
-                                } catch (final Throwable e) {
+                            Intent intent;
+                            intent = new Intent(FlActivity.this, ChatActivity.class);
 
-                                    new Thread() {
+                            intent.putExtra(
+                                    "title", clickedChannel.toString());
+                            intent.putExtra(
+                                    "Channel", clickedChannel);
+                            intent.putExtra("textMsg", textAction);
+                            //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            isTextAction = false;
+                            startActivity(intent);
+                        } catch (final Throwable e) {
 
-                                        @Override
+                            new Thread() {
+
+                                @Override
+                                public void run() {
+                                    String ownStackTrace = ExceptionLogger.stacktrace2String(e);
+                                    Main.sendBroadCastMsg("could not send text: \n" + ownStackTrace);
+
+                                    runOnUiThread(new Runnable() {
+
                                         public void run() {
-                                            String ownStackTrace = ExceptionLogger.stacktrace2String(e);
-                                            Main.sendBroadCastMsg("could not send text: \n" + ownStackTrace);
-
-                                            runOnUiThread(new Runnable() {
-
-                                                public void run() {
-                                                    Toast.makeText(FlActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
+                                            Toast.makeText(FlActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
                                         }
-
-                                    }.start();
-
+                                    });
                                 }
 
-                            }
-                        }.start();
+                            }.start();
+
+                        }
+
                     }
                 });
                 builder.setNegativeButton("No", null);
@@ -620,7 +611,7 @@ public class FlActivity extends Activity {
         // String[] menuItems = {"Open", "Share", "Delete"};
         //String menuItemName = menuItems[menuItemIndex];
         switch (menuItemIndex) {
-            case 0:
+            case 0://open
                 Intent intent;
                 intent
                         = new Intent(FlActivity.this, ChatActivity.class
@@ -632,7 +623,7 @@ public class FlActivity extends Activity {
                         "Channel", adapter.objects.get(pos));
                 startActivity(intent);
                 break;
-            case 3:
+            case 3://edit
                 Intent intent2 = new Intent(this, ChanPref.class);
                 Bundle b = new Bundle();
 
@@ -642,7 +633,7 @@ public class FlActivity extends Activity {
 
                 startActivity(intent2);
                 break;
-            case 1:
+            case 1://Share
 //                Message msg = Message.obtain(null,
 //                        BS.Send_MM);
 //                Bundle bs = new Bundle();
@@ -661,7 +652,7 @@ public class FlActivity extends Activity {
                         "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
 
                 break;
-            case 4:
+            case 4://Delete
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -689,7 +680,7 @@ public class FlActivity extends Activity {
                 builder.show();
 
                 break;
-            case 2:
+            case 2://Share by QR
                 Intent inte;
                 inte
                         = new Intent(FlActivity.this, QRCodeActivity.class
@@ -990,10 +981,9 @@ public class FlActivity extends Activity {
                         final ArrayList<Peer> list = (ArrayList<Peer>) Test.peerList.clone();
 
                         for (Peer peer : list) {
-                            if (peer.isConnected()) {
+                            if (peer.isConnected() && peer.isAuthed() && peer.isCryptedConnection()) {
                                 actCons++;
-                            }
-                            if (peer.isConnecting) {
+                            } else if (peer.isConnecting || peer.isConnected() || peer.isAuthed()) {
                                 connectingCons++;
                             }
                         }
@@ -1012,10 +1002,13 @@ public class FlActivity extends Activity {
                         if (isFinishing()) {
                             return;
                         }
+
+                        final int messageCount = Test.messageStore.getMessageCount();
+
                         infotext.post(new Runnable() {
 
                             public void run() {
-                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal + ". Msgs: " + Test.messageStore.getMessageCount());
+                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal + ". Msgs: " + messageCount);
                             }
                         });
                     } else {
@@ -1034,7 +1027,7 @@ public class FlActivity extends Activity {
                         });
                     }
                     try {
-                        sleep(100);
+                        sleep(1000);
                     } catch (InterruptedException ex) {
                     }
                 }
@@ -1067,6 +1060,11 @@ public class FlActivity extends Activity {
     @Override
     public void onBackPressed() {
         //super.onBackPressed();
+
+        if (android.os.Build.BRAND.equals("chromium") || android.os.Build.MANUFACTURER.equals(context)) {
+            return;
+        }
+
         Intent startMain = new Intent(Intent.ACTION_MAIN);
         startMain.addCategory(Intent.CATEGORY_HOME);
         startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
