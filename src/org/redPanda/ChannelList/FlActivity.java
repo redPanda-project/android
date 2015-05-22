@@ -120,7 +120,29 @@ public class FlActivity extends Activity {
         // Set the adapter for the list view
         mDrawerList.setBackgroundColor(Color.WHITE);
         mDrawerList.setAdapter(new MenuAdapter(context, str));
-        // Set the list's onClickListeners
+        //Set drawer listener TO DO HACK!!!!
+        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+
+            public void onDrawerSlide(View view, float f) {
+                if (!Test.STARTED_UP_SUCCESSFUL) {
+                    mDrawerLayout.closeDrawers();
+                }
+            }
+
+            public void onDrawerOpened(View view) {
+
+            }
+
+            public void onDrawerClosed(View view) {
+
+            }
+
+            public void onDrawerStateChanged(int i) {
+
+            }
+        });
+
+        // Set the list's onClickListeners       
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
 
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -714,7 +736,6 @@ public class FlActivity extends Activity {
                     if (isFinishing()) {
                         return;
                     }
-
                     //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 //                    new ExceptionLogger(FlActivity.this);
 //                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
@@ -926,7 +947,9 @@ public class FlActivity extends Activity {
 //                i.setData(Uri.parse(url));
 //                startActivity(i);
                 if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
-                    mDrawerLayout.openDrawer(mDrawerList);
+                    if (Test.STARTED_UP_SUCCESSFUL) {
+                        mDrawerLayout.openDrawer(mDrawerList);
+                    }
                 } else {
                     mDrawerLayout.closeDrawers();
                 }
@@ -1183,7 +1206,9 @@ public class FlActivity extends Activity {
             // your action...
 
             if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
-                mDrawerLayout.openDrawer(mDrawerList);
+                if (Test.STARTED_UP_SUCCESSFUL) {
+                    mDrawerLayout.openDrawer(mDrawerList);
+                }
             } else {
                 mDrawerLayout.closeDrawers();
             }
