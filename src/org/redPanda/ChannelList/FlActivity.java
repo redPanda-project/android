@@ -547,7 +547,7 @@ public class FlActivity extends Activity {
             } else if (isTextAction) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle(context.getString(R.string.send_text));
-                builder.setMessage("Do you want to share the text with " + clickedChannel.getName() + "?");
+                builder.setMessage(getString(R.string.do_you_want_to_share_the_text_with, clickedChannel.getName()));
                 builder.setPositiveButton(context.getString(R.string.yes), new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
@@ -578,7 +578,8 @@ public class FlActivity extends Activity {
                                     runOnUiThread(new Runnable() {
 
                                         public void run() {
-                                            Toast.makeText(FlActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(FlActivity.this,
+                                                    getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                 }
@@ -679,7 +680,7 @@ public class FlActivity extends Activity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
                 builder.setTitle(
-                        "Delete Channel");
+                        getString(R.string.delete_channel));
                 builder.setMessage(this.getString(R.string.do_you_realy_want_to_delete_the_channel, adapter.objects.get(pos).toString()));
                 builder.setPositiveButton(this.getString(R.string.yes), new DialogInterface.OnClickListener() {
 
@@ -1116,7 +1117,7 @@ public class FlActivity extends Activity {
                     String keystr = intent1.getExtras().getString("ChannelKey");
                     String namestr = intent1.getExtras().getString("ChannelName");
                     AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
-                    builder.setTitle("Import Channel");
+                    builder.setTitle(getString(R.string.import_channel));
 
 //// Set up the input
                     final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
@@ -1135,7 +1136,7 @@ public class FlActivity extends Activity {
                     builder.setView(ll);
 
 // Set up the buttons
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -1165,7 +1166,7 @@ public class FlActivity extends Activity {
                             }
                         }
                     });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.cancel();

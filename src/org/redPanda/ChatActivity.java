@@ -265,7 +265,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                         runOnUiThread(new Runnable() {
 
                             public void run() {
-                                Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ChatActivity.this, getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -554,7 +554,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 if (initalMessage && tmc.read != oCM.isRead() && !hasUnreadMesDev) {
                     hasUnreadMesDev = true;
                     TextMessageContent tmptmc = new TextMessageContent();
-                    tmptmc.text = "unread messages";
+                    tmptmc.text = getString(R.string.unread_messages);
                     tmptmc.message_type = ChatAdapter.unreadMesDevider;
                     tmptmc.read = true;
                     cA.mMessages.add(new ChatMsg(tmptmc));
@@ -808,7 +808,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
                 cm.setText(chan.exportForHumans());
                 Toast.makeText(ChatActivity.this,
-                        "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
+                        getString(R.string.copied_privatekey_to_clipboard), Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.cm_Ed://edit
                 Intent intent2 = new Intent(this, ChanPref.class);
@@ -824,10 +824,10 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-                builder.setTitle("Confirm");
-                builder.setMessage("Are you sure you want to delete all messages in this channel?");
+                builder.setTitle(getString(R.string.confirm));
+                builder.setMessage(getString(R.string.are_you_sure_you_want_to_delete_all_messages_in_this_channel));
 
-                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
                         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ChatActivity.this);
@@ -850,7 +850,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
                 });
 
-                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -893,7 +893,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             runOnUiThread(new Runnable() {
 
                 public void run() {
-                    Toast.makeText(ChatActivity.this, "No image selected.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ChatActivity.this, getString(R.string.no_image_selected), Toast.LENGTH_SHORT).show();
                 }
             });
             return;
@@ -913,7 +913,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
             sendPictureDialog(filePath, this, chan, mMessenger, mService, false);
         } else {
-            Toast.makeText(this, "Picture not properly selected.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.picture_not_properly_selected), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -931,15 +931,15 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 sharedPref.edit().putBoolean("lastSendImageWithMinPriotiy", isChecked).commit();
             }
         });
-        checkBox.setText("Send with low priority? If checked, the image will only be downloaded from others if they are connected to WiFi.");
+        checkBox.setText(act.getString(R.string.send_with_low_priority_if_checked_the_image_will_only_be_downloaded_from_others_if_they_are_connected_to_wifi));
         AlertDialog.Builder builder = new AlertDialog.Builder(act);
 
-        builder.setTitle("Send picture");
+        builder.setTitle(act.getString(R.string.send_picture));
         String str = filePath.split("/")[filePath.split("/").length - 1];
-        builder.setMessage("Do you want to send the picture " + str + " to " + channel.getName() + "?")
+        builder.setMessage(act.getString(R.string.do_you_want_to_send_the_picture_to, str, channel.getName()))
                 .setView(checkBoxView)
                 .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton(act.getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         new Thread() {
 
@@ -983,7 +983,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                             act.runOnUiThread(new Runnable() {
 
                                                 public void run() {
-                                                    Toast.makeText(act, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(act, act.getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                         }
@@ -1004,7 +1004,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                         }.start();
                     }
                 });
-        builder.setNegativeButton("No", null);
+        builder.setNegativeButton(act.getString(R.string.no), null);
         builder.show();
     }
 
@@ -1068,7 +1068,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     runOnUiThread(new Runnable() {
 
                         public void run() {
-                            Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChatActivity.this,getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

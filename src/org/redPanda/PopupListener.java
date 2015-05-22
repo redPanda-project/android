@@ -101,7 +101,7 @@ public class PopupListener implements NewMessageListener {
         }
 
         bigTextStyle.setBigContentTitle(msg.getChannel().toString());
-        bigTextStyle.setSummaryText("message from redPanda");
+        bigTextStyle.setSummaryText(context.getString(R.string.message_from_redpanda));
         mBuilder.setStyle(bigTextStyle);
 
         mBuilder.setLights(0x88ff0000, 300, 5000);
@@ -155,7 +155,7 @@ public class PopupListener implements NewMessageListener {
 ////                PendingIntent.FLAG_UPDATE_CURRENT);
 ////        mBuilder.setContentIntent(resultPendingIntent);
 // mId allows you to update the notification later on.
-        String[] replyChoices = new String[]{"Yes", "No", "Okay", "I'm currently busy and answer you later."};
+        String[] replyChoices = context.getResources().getStringArray(R.array.replyChoices_array);
 
         RemoteInput remoteInput = new RemoteInput.Builder(EXTRA_VOICE_REPLY)
                 .setLabel("reply")
