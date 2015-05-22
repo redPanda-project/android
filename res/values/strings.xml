@@ -65,7 +65,8 @@
     <string name="redpanda_is_distributed_over_gpl_30_license">redPanda is distributed over GPL 3.0 license.</string>  
     <!--end pref -->  
     <!--ChannelViewElement doesnt work yet --> 
-
+    <string name="me_">Me: %1$s</string>
+    <string name="unkown">unkown</string>
     <!--end CVE -->    
     
     <!--ChatActivity --> 
@@ -89,11 +90,13 @@
         <item>I\'m currently busy and answer you later.</item>
     </string-array>
     
-    <string name="confirm2">Confirm</string>
+    <string name="picture...">%1$s: Picture...</string>
 
-    <!--end PL-->       
-
-
+    <!--end PL-->     
+    <!--BS-->     
+    <string name="picture">Picture</string>
+    <string name="click_to_download">Click to download.</string>  
+    <!--end BS-->   
     <string name="unread_messages">unread messages</string>
                             
     <string name="do_you_realy_want_to_delete_the_channel">Do you realy want to delete the Channel %1$s?</string>

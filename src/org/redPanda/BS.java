@@ -486,7 +486,6 @@ public class BS extends Service {
 ////                }
 ////            }
 ////        }.start();
-
 //        Intent intent = new Intent(this, FlActivity.class);
 //        final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 //        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.icon).setContentTitle("redPanda").setContentText("service working..").setContentIntent(contentIntent);
@@ -660,19 +659,20 @@ public class BS extends Service {
                 //Set shared Pref for FLActivity
                 int id = msg.getChannel().getId();
                 long time = msg.getTimestamp();
-                String from;
-                if (msg.fromMe) {
-                    from = "Me";
-                } else {
-                    from = msg.getName();
-                }
+//                String from;
+//                if (msg.fromMe) {
+//                    from = "Me";
+//                    
+//                } else {
+//                    from = msg.getName();
+//                }
                 String text = "";
                 if (msg.message_type == TextMsg.BYTE) {
                     //text = from + ": " + msg.getText();
                     text = msg.getText();
                 } else if (msg.message_type == ImageMsg.BYTE) {
                     // text = from + ": " + "Picture";
-                    text = "Picture";
+                    text = getResources().getString(R.string.picture);
                 }
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
                 SharedPreferences.Editor edit = sharedPref.edit();
@@ -802,9 +802,10 @@ public class BS extends Service {
         i.setData(Uri.parse(url2));
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
         // Set the info for the views that show in the notification panel.
-        Notification notification = new Notification(R.drawable.icon, "Update found.", System.currentTimeMillis());
+        String update = getResources().getString(R.string.update_found);
+        Notification notification = new Notification(R.drawable.icon, update, System.currentTimeMillis());
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
-        notification.setLatestEventInfo(getApplicationContext(), "Update found.", "Click to download.", contentIntent);
+        notification.setLatestEventInfo(getApplicationContext(),update, getResources().getString(R.string.click_to_download), contentIntent);
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
         notification.flags = Notification.FLAG_AUTO_CANCEL;
         //notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "6");

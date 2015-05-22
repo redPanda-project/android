@@ -95,7 +95,7 @@ public class PopupListener implements NewMessageListener {
         BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
 
         if (msg.message_type == ImageMsg.BYTE) {
-            bigTextStyle.bigText(msg.getName() + ": bild...");
+            bigTextStyle.bigText(context.getString(R.string.picture___, msg.getName()));
         } else {
             bigTextStyle.bigText(msg.getName() + ": " + msg.getText());
         }
