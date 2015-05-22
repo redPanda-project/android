@@ -100,7 +100,7 @@
         
         
         <activity android:name="com.jwetherell.quick_response_code.CaptureActivity" 
-                  android:label="@string/capture_name" 
+                  android:label="capture" 
                   android:icon="@drawable/icon" 
                   android:windowSoftInputMode="stateAlwaysHidden" 
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen" 
@@ -111,7 +111,7 @@
 
 
         <activity android:name="com.jwetherell.quick_response_code.DecoderActivity" 
-                  android:label="@string/decoder_name" 
+                  android:label="decoder" 
                   android:icon="@drawable/icon" 
                   android:windowSoftInputMode="stateAlwaysHidden" 
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen" 
@@ -122,7 +122,7 @@
         </activity>
 
         <activity android:name="com.jwetherell.quick_response_code.EncoderActivity" 
-                  android:label="@string/encoder_name" 
+                  android:label="encoder" 
                   android:icon="@drawable/icon" 
                   android:windowSoftInputMode="stateAlwaysHidden" 
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen" 

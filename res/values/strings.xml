@@ -8,8 +8,48 @@
     <string name="settings">Settings</string>
     
     <string name="new_channel_name">New channel name</string>
+    <string name="send_text">Send text</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    
+    <string name="open">Open</string>
+    <string name="share">Share</string>
+    <string name="share_by_qr">Share by QR</string>
+    <string name="delete">Delete</string>
+    
+    <string name="do_you_realy_want_to_delete_the_channel">Do you realy want to delete the Channel %1$s?</string>
+    
 
-
+    <string name="set_name_for">Set name for: </string>
+    
+    <string name="name">Name</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    
+    
+    
+    <string name="change_language">Change language</string>
+    <string name="change_the_language_of_the_app">Change the language of the app.</string>
+    
+    <string-array name="language_array">
+        <item>English</item>
+        <item>German</item>
+    </string-array>
+    
+    
+    
+    <string name="copied_message_to_clipboard">Copied message to Clipboard</string>
+    <string name="copied_privatekey_to_clipboard">Copied PrivateKey to Clipboard</string>
+        
+    <string name="channel_name">Channel Name</string>
+    <string name="the_name_of_the_channel_visible_only_for_you">The name of the channel. Visible only for you.</string>
+        
+    <string name="silent_mode">Silent Mode</string>    
+    <string name="if_activated_the_notification_will_not_make_any_sound_or_will_vibrate">If activated, the notification will not make any sound or will vibrate.</string>
+  
+    <string name="notifications">Notifications</string>    
+    <string name="if_disabled_you_will_not_get_any_notifications_for_new_messages">If disabled, you will not get any notifications for new messages.</string>
+        
 
 
   

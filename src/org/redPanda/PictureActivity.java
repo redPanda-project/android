@@ -63,6 +63,7 @@ public class PictureActivity extends Activity {
             private String path;
             private PictureActivity pa;
             private PhotoViewAttacher attacher;
+            private boolean isgif = false;
 
             public PictureAsyncTask(ImageView imageView, PhotoViewAttacher attacher, String path) {
                 // Use a WeakReference to ensure the ImageView can be garbage collected
@@ -74,7 +75,7 @@ public class PictureActivity extends Activity {
             @Override
             protected Drawable doInBackground(Integer... params) {
                 Drawable picture = null;
-                boolean isgif = false;
+                isgif = false;
                 if (true) {//(path.endsWith(".gif")) { // HACK because all pictures are saved as .jpg
 
                     //Try to load gif in GifImageView
@@ -101,6 +102,7 @@ public class PictureActivity extends Activity {
             protected void onPostExecute(Drawable picture) {
                 ImageView iv = imageViewReference.get();
                 iv.setImageDrawable(picture);
+                attacher.setZoomable(!isgif);
                 attacher.update();
 
             }

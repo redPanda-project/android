@@ -313,8 +313,10 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
         //we need the old channel for unbind!
         doUnbindService();
-        cA.mMessages.clear();
-        cA.notifyDataSetChanged();
+        if (cA != null && cA.mMessages != null) {
+            cA.mMessages.clear();
+            cA.notifyDataSetChanged();
+        }
         this.setIntent(intent);
         this.setTitle(intent.getExtras().getString("title"));
         chan = (Channel) intent.getExtras().get("Channel");

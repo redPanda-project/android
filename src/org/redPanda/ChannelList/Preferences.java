@@ -4,28 +4,22 @@
  */
 package org.redPanda.ChannelList;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Message;
-import android.os.RemoteException;
 import android.preference.*;
 import android.text.InputType;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,8 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Locale;
 import org.redPanda.BS;
 import org.redPanda.ExceptionLogger;
 import static org.redPanda.ExceptionLogger.stacktrace2String;
@@ -56,6 +49,7 @@ public class Preferences extends PreferenceActivity {
     public static final String KEY_SAVE_MOBILE_INTERNET = "b";
     public static final String KEY_START_AFTER_BOOTING = "c";
     public static final String KEY_SEARCH_DEVELOPER_UPDATES = "d";
+    public int result = Activity.RESULT_CANCELED;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -398,6 +392,9 @@ public class Preferences extends PreferenceActivity {
                                             try {
 
                                                 final boolean asd = Main.restoreBackup(p, key.getText().toString());
+                                                if (asd) {
+                                                    result = Activity.RESULT_OK;
+                                                }
 
                                                 runOnUiThread(new Runnable() {
 
@@ -460,6 +457,45 @@ public class Preferences extends PreferenceActivity {
         });
         mainc.addPreference(lanSearchButton);
 
+        Preference changeLangButton = new Preference(this);
+        changeLangButton.setTitle(this.getString(R.string.change_language));
+        changeLangButton.setSummary(this.getString(R.string.change_the_language_of_the_app));
+
+        changeLangButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(Preferences.this);
+                builder1.setTitle(getString(R.string.change_language));
+                String[] lNames = getResources().getStringArray(R.array.language_array);
+                final String[] lan = {"en", "de"};
+                Locale current = getResources().getConfiguration().locale;
+                int currentLang = 0;
+                if (current.getLanguage().equals("de")) {
+                    currentLang = 1;
+                }
+                builder1.setSingleChoiceItems(lNames, currentLang, null);
+                builder1.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                        String langPref = "Language";
+                        SharedPreferences prefs = getSharedPreferences("CommonPrefs", Activity.MODE_PRIVATE);
+                        
+                        prefs.edit().putString(langPref, lan[position]).commit();
+                        
+                        result = Activity.RESULT_OK;
+                        setResult(result, new Intent());
+                        finish();
+                    }
+                });
+                builder1.setNegativeButton(getString(R.string.cancel), null);
+                builder1.show();
+                return true;
+            }
+        });
+        mainc.addPreference(changeLangButton);
+
         Preference licenseButton = new Preference(this);
         licenseButton.setTitle("Show license.");
         licenseButton.setSummary("redPanda is distributed over GPL 3.0 license.");
@@ -492,6 +528,14 @@ public class Preferences extends PreferenceActivity {
     }
 
     @Override
+    public void onBackPressed() {
+
+        setResult(result, new Intent());
+        finish();
+    }
+
+    @Override
+
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;

@@ -666,7 +666,7 @@ public class ChatAdapter extends BaseAdapter {
                 android.content.ClipData clip = android.content.ClipData.newPlainText("text label", cM.getText());
                 clipboard.setPrimaryClip(clip);
             }
-            Toast.makeText(mContext, "Copied message to Clipboard", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, mResources.getString(R.string.copied_message_to_clipboard), Toast.LENGTH_SHORT).show();
 
             return true;
 
@@ -684,22 +684,22 @@ public class ChatAdapter extends BaseAdapter {
         }
 
         public boolean onLongClick(View arg0) {
-
+            
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Name setzen fuer: " + cM.getIdentity());
+            builder.setTitle(mResources.getString(R.string.set_name_for) + cM.getIdentity());
 
 //// Set up the input
             final EditText input = new EditText(mContext);
 //                
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
-            input.setHint("Name");
+            input.setHint(mResources.getString(R.string.name));
             input.setHintTextColor(Color.RED);
 
             builder.setView(input);
 
 // Set up the buttons
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(mResources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Test.localSettings.identity2Name.remove(cM.getIdentity());
@@ -724,7 +724,7 @@ public class ChatAdapter extends BaseAdapter {
 
                 }
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton(mResources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
