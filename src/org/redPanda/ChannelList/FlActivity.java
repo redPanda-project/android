@@ -1242,7 +1242,9 @@ public class FlActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data); //To change body of generated methods, choose Tools | Templates.
         if (requestCode == PREF_REQ_CODE && resultCode == Activity.RESULT_OK) {
-            this.recreate();
+            Intent i = new Intent(this, FlActivity.class);
+            finish();
+            startActivity(i);
 
         }
     }

@@ -37,6 +37,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -93,6 +94,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private boolean hasUnreadMesDev = false;
     private int jumpTo = -1;
     private Message toSendMessage = null;
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -878,9 +880,22 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.chat_menu, menu);
         return true;
+    }
+
+//    @Override
+//    public boolean onPrepareOptionsMenu(Menu menu) {
+//        MenuItem it = menu.getItem(1);
+//
+//        return super.onPrepareOptionsMenu(menu); //To change body of generated methods, choose Tools | Templates.
+//    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+        return super.dispatchGenericMotionEvent(ev); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -1068,7 +1083,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     runOnUiThread(new Runnable() {
 
                         public void run() {
-                            Toast.makeText(ChatActivity.this,getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChatActivity.this, getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

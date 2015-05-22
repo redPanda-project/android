@@ -35,8 +35,8 @@ import org.redPandaLib.Main;
 public class QRCaptureActivity extends DecoderActivity {
 
     private boolean inScanMode = false;
- //   private TextView statusView = null;
-  //  private View resultView = null;
+    //   private TextView statusView = null;
+    //  private View resultView = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,8 +49,8 @@ public class QRCaptureActivity extends DecoderActivity {
         //   Toast.makeText(QRCaptureActivity.this, "start oncreate", Toast.LENGTH_SHORT).show();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.capture);
-       // resultView = findViewById(R.id.result_view);
-    //    statusView = (TextView) findViewById(R.id.status_view);
+        // resultView = findViewById(R.id.result_view);
+        //    statusView = (TextView) findViewById(R.id.status_view);
         inScanMode = false;
         //     Toast.makeText(QRCaptureActivity.this, "end oncreate", Toast.LENGTH_SHORT).show();
     }
@@ -70,21 +70,24 @@ public class QRCaptureActivity extends DecoderActivity {
 
     @Override
     public void handleDecode(Result rawResult, Bitmap barcode) {
+        drawResultPoints(barcode, rawResult);
+        handleDecodeInternally(rawResult, barcode);
 
     }
 
     @Override
     protected void showScanner() {
         inScanMode = true;
-       // resultView.setVisibility(View.GONE);
-      //  statusView.setText(R.string.msg_default_status);
+        // resultView.setVisibility(View.GONE);
+        //  statusView.setText(R.string.msg_default_status);
         //statusView.setVisibility(View.GONE);
         viewfinderView.setVisibility(View.VISIBLE);
     }
 
-    private void handleDecodeInternally(Result rawResult, ResultHandler resultHandler, Bitmap barcode) {
+    private void handleDecodeInternally(Result rawResult, Bitmap barcode) {
         onPause();
-        CharSequence res = resultHandler.getDisplayContents();
+
+        CharSequence res = rawResult.getText();
 
         Intent intent;
         intent = new Intent(QRCaptureActivity.this, FlActivity.class);
