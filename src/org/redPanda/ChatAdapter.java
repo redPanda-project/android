@@ -686,7 +686,7 @@ public class ChatAdapter extends BaseAdapter {
         public boolean onLongClick(View arg0) {
             
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle(mResources.getString(R.string.set_name_for) + cM.getIdentity());
+            builder.setTitle(mResources.getString(R.string.set_name_for,cM.getIdentity()));
 
 //// Set up the input
             final EditText input = new EditText(mContext);

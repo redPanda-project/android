@@ -20,7 +20,7 @@
     <string name="do_you_realy_want_to_delete_the_channel">Do you realy want to delete the Channel %1$s?</string>
     
 
-    <string name="set_name_for">Set name for: </string>
+    <string name="set_name_for">Set name for:\n%1$s</string>
     
     <string name="name">Name</string>
     <string name="ok">OK</string>
