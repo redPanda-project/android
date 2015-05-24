@@ -87,7 +87,7 @@
         <item>Yes</item>
         <item>No</item>
         <item>Okay</item>
-        <item>I\'m currently busy and answer you later.</item>
+        <item>I\'m currently busy and will answer you later.</item>
     </string-array>
     
     <string name="picture...">%1$s: Picture...</string>

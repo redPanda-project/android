@@ -101,14 +101,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         super.onCreate(savedInstanceState);
         new ExceptionLogger(this);
 
-//        if (savedInstanceState != null) {
-//            Toast.makeText(ChatActivity.this, "savedInstanceState was not null", Toast.LENGTH_LONG).show();
-//            Intent intent;
-//            intent = new Intent(ChatActivity.this, FlActivity.class);
-//            startActivity(intent);
-//            finish();
-//            return;
-//        }
         Intent in = getIntent();
         String string = in.getExtras().getString("title");
 
@@ -237,7 +229,13 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         });
 
         lookForMessageToSend();
-
+        if (savedInstanceState != null) {
+            hasPhotoToSend = savedInstanceState.getBoolean("hasPhotoToSend");
+            if (hasPhotoToSend) {
+                photoToSend = savedInstanceState.getString("photoToSend");
+                sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+            }
+        }
     }
 
     private void lookForMessageToSend() {
@@ -788,6 +786,12 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 backToFlActivity();
                 finish();
                 return true;
+            case R.id.openCameraButtonFromChat:
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT,
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI.getPath());
+                startActivityForResult(intent, SELECT_PHOTO);
+                return true;
             case R.id.imageSendButtonFromChat:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
@@ -868,6 +872,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 return super.onOptionsItemSelected(item);
         }
     }
+
 //
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
@@ -877,7 +882,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 //
 //        return true;
 //    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
@@ -892,45 +896,61 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 //
 //        return super.onPrepareOptionsMenu(menu); //To change body of generated methods, choose Tools | Templates.
 //    }
-
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent ev) {
         return super.dispatchGenericMotionEvent(ev); //To change body of generated methods, choose Tools | Templates.
     }
 
+    public static boolean hasPhotoToSend = false;
+    public static String photoToSend = "";
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("hasPhotoToSend", hasPhotoToSend);
+        if (hasPhotoToSend) {
+            outState.putString("photoToSend", photoToSend);
+        }
+    }
+
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode,
             final Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        if (requestCode == SELECT_PHOTO) {
 
-        if (imageReturnedIntent == null) {
-            //no image selected...
-            runOnUiThread(new Runnable() {
+            if (imageReturnedIntent == null) {
+                //no image selected...
+                runOnUiThread(new Runnable() {
 
-                public void run() {
-                    Toast.makeText(ChatActivity.this, getString(R.string.no_image_selected), Toast.LENGTH_SHORT).show();
-                }
-            });
-            return;
-        }
+                    public void run() {
+                        Toast.makeText(ChatActivity.this, getString(R.string.no_image_selected), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return;
+            }
 
-        Uri selectedImage = imageReturnedIntent.getData();
-        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+            Uri selectedImage = imageReturnedIntent.getData();
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-        Cursor cursor = getContentResolver().query(
-                selectedImage, filePathColumn, null, null, null);
-        cursor.moveToFirst();
+            Cursor cursor = getContentResolver().query(
+                    selectedImage, filePathColumn, null, null, null);
+            cursor.moveToFirst();
 
-        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        final String filePath = cursor.getString(columnIndex);
-        cursor.close();
-        if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK) {
-            Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
-            sendPictureDialog(filePath, this, chan, mMessenger, mService, false);
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            final String filePath = cursor.getString(columnIndex);
+            cursor.close();
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
+                photoToSend = filePath;
+                hasPhotoToSend = true;
+                sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+
+            } else {
+                Toast.makeText(this, getString(R.string.picture_not_properly_selected), Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(this, getString(R.string.picture_not_properly_selected), Toast.LENGTH_SHORT).show();
+            super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
         }
-
     }
 
     public static void sendPictureDialog(final String filePath, final Activity act, final Channel channel, final Messenger messenger, final Messenger service, final boolean openChannel) {
@@ -956,6 +976,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 .setCancelable(false)
                 .setPositiveButton(act.getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        hasPhotoToSend = false;
+                        photoToSend = "";
                         new Thread() {
 
                             @Override
@@ -1019,7 +1041,13 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                         }.start();
                     }
                 });
-        builder.setNegativeButton(act.getString(R.string.no), null);
+        builder.setNegativeButton(act.getString(R.string.no), new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                hasPhotoToSend = false;
+                photoToSend = "";
+            }
+        });
         builder.show();
     }
 
