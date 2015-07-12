@@ -10,15 +10,26 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.*;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import static java.lang.Thread.sleep;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,13 +38,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.ChannelList.ChanPref;
 import org.redPanda.ChannelList.Preferences;
+import org.redPandaLib.ImageTooLargeException;
 import org.redPandaLib.Main;
 import org.redPandaLib.NewMessageListener;
 import org.redPandaLib.core.Channel;
@@ -47,6 +58,8 @@ import org.redPandaLib.core.messages.TextMessageContent;
 import org.redPandaLib.core.messages.TextMsg;
 import org.redPandaLib.crypt.AddressFormatException;
 import org.redPandaLib.database.HsqlConnection;
+import org.redPandaLib.services.MessageDownloader;
+import org.redPandaLib.services.MessageVerifierHsqlDb;
 
 /**
  *
@@ -67,7 +80,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 510;
+    public static final int VERSION = 530;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -137,7 +150,25 @@ public class BS extends Service {
                             Collections.sort(ml, new Comparator<TextMessageContent>() {
 
                                 public int compare(TextMessageContent t, TextMessageContent t1) {
-                                    return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+
+                                    // sort delivered messages to the bottom
+                                    if (t1.message_type == DeliveredMsg.BYTE || t.message_type == DeliveredMsg.BYTE) {
+                                        return (t1.message_type == DeliveredMsg.BYTE ? 0 : 1) - (t.message_type == DeliveredMsg.BYTE ? 0 : 1);
+                                    }
+//                                    return 0;
+
+                                    if (t.read && t1.read) {// both messages have been read
+                                        return 0;
+                                        //   return (t.timestamp > t1.timestamp ? 1 : -1);
+                                    }
+                                    if (!t.read && !t1.read) {// no message has been read
+                                        //   return (t.timestamp > t1.timestamp ? 1 : -1);
+                                        return 0;
+                                    }
+                                    if (t.read) {// only the first message has been read
+                                        return -1;
+                                    }
+                                    return 1;// only the second message has been read
                                 }
                             });
 
@@ -293,8 +324,32 @@ public class BS extends Service {
 
                         @Override
                         public void run() {
+                            String path = "";
+                            if (filePath.toLowerCase().endsWith(".jpg") || filePath.toLowerCase().endsWith(".jpeg")) {
+                                try {
+                                    ExifInterface exif = new ExifInterface(filePath);
+                                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                                    path = rotateBitmap(filePath, orientation);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            } else {
+                                String[] tmp = filePath.split("/");
+                                String name = tmp[tmp.length - 1];
+                                File albumStorageDir = getAlbumStorageDir("redPanda");
+                                String newPath = albumStorageDir.getAbsolutePath() + "/" + name;
+                                newPath = renameFile(newPath, name, albumStorageDir.getAbsolutePath());
+                                copyFile(filePath, newPath);
+                                path = newPath;
+
+                            }
+
                             setPriority(Thread.MIN_PRIORITY);
-                            Main.sendImageToChannel(spchan, filePath, lowPriority);
+                            try {
+                                Main.sendImageToChannel(spchan, path, lowPriority);
+                            } catch (ImageTooLargeException ex) {
+                                //Toast.makeText(BS.this, "Image too large.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }.start();
                     break;
@@ -340,11 +395,11 @@ public class BS extends Service {
             @Override
             public void run() {
 
-
                 PRNGFixes.apply();
 
                 try {
                     File albumStorageDir = getAlbumStorageDir("redPanda");
+
                     Main.setImageStoreFolder(albumStorageDir.getAbsolutePath() + "/");
                     Main.setImageInfos(new ImageInfosAndroid());
 
@@ -355,6 +410,8 @@ public class BS extends Service {
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     Settings.REMOVE_OLD_MESSAGES = true;
+                    MessageDownloader.MAX_REQUEST_PER_PEER = 2;
+                    MessageVerifierHsqlDb.USES_UNREAD_STATUS = true;
                     Log.LEVEL = -100;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
@@ -384,7 +441,7 @@ public class BS extends Service {
                 } catch (SQLException ex) {
                     Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             }
@@ -406,30 +463,29 @@ public class BS extends Service {
             }
         }.start();
 
-        new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    sleep(30000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                try {
-                    Channel importChannelFromHuman = Main.importChannelFromHuman("prAZqUNKAu9D4Xtrpiv7yLHL3Pc4gUV6bQ86t86sgrJQ3SkDLn6E1ffez", "All Android Users");
-                    if (importChannelFromHuman != null) {
-                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
-                        //if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
-                        sharedPref.edit().putBoolean(ChanPref.CHAN_NOTIFICATIONS + importChannelFromHuman.getId(), false).commit();
-                        //}
-                    }
-
-                } catch (Throwable ex) {
-                }
-            }
-        }.start();
-
+////        new Thread() {
+////
+////            @Override
+////            public void run() {
+////                try {
+////                    sleep(30000);
+////                } catch (InterruptedException ex) {
+////                    Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+////                }
+////
+////                try {
+////                    Channel importChannelFromHuman = Main.importChannelFromHuman("prAZqUNKAu9D4Xtrpiv7yLHL3Pc4gUV6bQ86t86sgrJQ3SkDLn6E1ffez", "All Android Users");
+////                    if (importChannelFromHuman != null) {
+////                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+////                        //if (!sharedPref.contains(ChanPref.CHAN_SILENT + importChannelFromHuman.getId())) {
+////                        sharedPref.edit().putBoolean(ChanPref.CHAN_NOTIFICATIONS + importChannelFromHuman.getId(), false).commit();
+////                        //}
+////                    }
+////
+////                } catch (Throwable ex) {
+////                }
+////            }
+////        }.start();
 //        Intent intent = new Intent(this, FlActivity.class);
 //        final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 //        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.icon).setContentTitle("redPanda").setContentText("service working..").setContentIntent(contentIntent);
@@ -603,19 +659,20 @@ public class BS extends Service {
                 //Set shared Pref for FLActivity
                 int id = msg.getChannel().getId();
                 long time = msg.getTimestamp();
-                String from;
-                if (msg.fromMe) {
-                    from = "Me";
-                } else {
-                    from = msg.getName();
-                }
+//                String from;
+//                if (msg.fromMe) {
+//                    from = "Me";
+//                    
+//                } else {
+//                    from = msg.getName();
+//                }
                 String text = "";
                 if (msg.message_type == TextMsg.BYTE) {
                     //text = from + ": " + msg.getText();
                     text = msg.getText();
                 } else if (msg.message_type == ImageMsg.BYTE) {
                     // text = from + ": " + "Picture";
-                    text = "Picture";
+                    text = getResources().getString(R.string.picture);
                 }
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
                 SharedPreferences.Editor edit = sharedPref.edit();
@@ -745,9 +802,10 @@ public class BS extends Service {
         i.setData(Uri.parse(url2));
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
         // Set the info for the views that show in the notification panel.
-        Notification notification = new Notification(R.drawable.icon, "Update found.", System.currentTimeMillis());
+        String update = getResources().getString(R.string.update_found);
+        Notification notification = new Notification(R.drawable.icon, update, System.currentTimeMillis());
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
-        notification.setLatestEventInfo(getApplicationContext(), "Update found.", "Click to download.", contentIntent);
+        notification.setLatestEventInfo(getApplicationContext(),update, getResources().getString(R.string.click_to_download), contentIntent);
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
         notification.flags = Notification.FLAG_AUTO_CANCEL;
         //notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "6");
@@ -779,7 +837,7 @@ public class BS extends Service {
 
     }
 
-    public File getAlbumStorageDir(String albumName) {
+    public static File getAlbumStorageDir(String albumName) {
         // Get the directory for the user's public pictures directory.
         File file = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), albumName);
@@ -797,5 +855,146 @@ public class BS extends Service {
             System.out.println("filedir not created...");
         }
         return file;
+    }
+
+    public static String rotateBitmap(String filePath, int orientation) {
+        String[] tmp = filePath.split("/");
+        String name = tmp[tmp.length - 1];
+        File albumStorageDir = getAlbumStorageDir("redPanda");
+        String newPath = albumStorageDir.getAbsolutePath() + "/" + name;
+        boolean dontRotate = false;
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            //  case ExifInterface.ORIENTATION_NORMAL:
+//                newPath = renameFile(newPath, name, albumStorageDir.getAbsolutePath());
+//                copyFile(filePath, newPath);
+//                return newPath;
+
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.setScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.setRotate(180);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.setRotate(90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.setRotate(-90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                dontRotate = true;
+                break;
+        }
+        Bitmap bm = BitmapFactory.decodeFile(filePath);
+        try {
+            Bitmap bmRotated;
+            if (dontRotate) {
+                bmRotated = bm;
+            } else {
+                bmRotated = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+            }
+
+            File f = new File(renameFile(newPath, name, albumStorageDir.getAbsolutePath()));
+            try {
+                f.createNewFile();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bmRotated.compress(CompressFormat.JPEG, 80 /*ignored for PNG*/, bos);
+                byte[] bitmapdata = bos.toByteArray();
+                FileOutputStream fos = new FileOutputStream(f);
+                fos.write(bitmapdata);
+                fos.flush();
+                fos.close();
+                bos.flush();
+                bos.close();
+
+            } catch (IOException ex) {
+                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            bm.recycle();
+            return newPath;
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static boolean copyFile(String srcPath, String dstPath) {
+        File src = new File(srcPath);
+        File dst = new File(dstPath);
+        boolean couldCreateFile = false;
+        if (!dst.isFile()) {
+            try {
+                couldCreateFile = dst.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+                couldCreateFile = false;
+            }
+            if (!couldCreateFile) {
+                return false;
+            }
+        }
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new FileInputStream(src);
+
+            out = new FileOutputStream(dst);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        try {
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } finally {
+            try {
+                in.close();
+                out.close();
+            } catch (IOException ex) {
+                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return true;
+    }
+
+    public static String renameFile(String path, String name, String albumStorageDir) {
+        File f = new File(path);
+        if (f.isFile()) {
+            String[] tmps = name.split("\\.");
+            name = "";
+            for (int i = 0; i < tmps.length - 1; i++) {
+                name += tmps[i];
+            }
+            int i = (int) Math.ceil(Math.random() * 10);
+            name += "_" + i;
+            File test = new File(albumStorageDir + "/" + name + "." + tmps[tmps.length - 1]);
+            while (test.isFile()) {
+                i = (int) Math.ceil(Math.random() * 10);
+                name += i;
+                test = new File(albumStorageDir + "/" + name + "." + tmps[tmps.length - 1]);
+            }
+            f = test;
+        }
+        return f.getAbsolutePath();
     }
 }

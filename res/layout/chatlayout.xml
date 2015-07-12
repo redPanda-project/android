@@ -61,6 +61,7 @@
             android:padding="5sp"
             android:text=""
             emojicon:emojiconSize="28sp"
+            android:inputType="textMultiLine"
         />
             
         <Button

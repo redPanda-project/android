@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -41,6 +42,8 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.Main;
@@ -54,7 +57,9 @@ import org.redPandaLib.core.messages.TextMsg;
  */
 public class ChatAdapter extends BaseAdapter {
 
+    static ExecutorService newThreadPool = Executors.newCachedThreadPool();
     final static int daydevider = 5;
+    final static int unreadMesDevider = 6;
     public final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
@@ -82,7 +87,7 @@ public class ChatAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 3; //To change body of generated methods, choose Tools | Templates.
+        return 4; //To change body of generated methods, choose Tools | Templates.
     }
 
     public static int getImageMaxSize() {
@@ -97,7 +102,9 @@ public class ChatAdapter extends BaseAdapter {
         if (mMessages.get(position).getMsgType() == daydevider) {
             return 2;
         }
-
+        if (mMessages.get(position).getMsgType() == unreadMesDevider) {
+            return 3;
+        }
         return 1;
     }
 
@@ -105,12 +112,25 @@ public class ChatAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         ChatMsg cM = (ChatMsg) this.getItem(position);
-
         ViewHolder holder;
+        boolean tmpread = true;
+        if (!cM.isRead()) {
+            tmpread = false;
 
+            final int id = cM.getDatabase_id();
+            // Toast.makeText(mContext, "" + id, Toast.LENGTH_SHORT).show();
+            Runnable runnable = new Runnable() {
+
+                public void run() {
+                    Main.markAsRead(id);
+                }
+            };
+            newThreadPool.submit(runnable);
+            cM.setRead(true);
+        }
         if (convertView == null) {
             holder = new ViewHolder();
-            if (cM.getMsgType() != daydevider) {
+            if (cM.getMsgType() != daydevider && cM.getMsgType() != unreadMesDevider) {
 
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
                 holder.big = (LinearLayout) convertView.findViewById(R.id.chatrow);
@@ -130,9 +150,17 @@ public class ChatAdapter extends BaseAdapter {
                 convertView.setTag(holder);
                 // holder.bubble.setPadding(0, 0, 0, 0);
             } else {
-                convertView = LayoutInflater.from(mContext).inflate(R.layout.daydivider, parent, false);
-                holder.bubbleText = (TextView) convertView.findViewById(R.id.ddText);
-                convertView.setTag(holder);
+                if (cM.getMsgType() == unreadMesDevider) {
+                    convertView = LayoutInflater.from(mContext).inflate(R.layout.unreadmesdev, parent, false);
+                    holder.bubbleText = (TextView) convertView.findViewById(R.id.umdText);
+                    convertView.setTag(holder);
+                } else {
+                    if (cM.getMsgType() == daydevider) {
+                        convertView = LayoutInflater.from(mContext).inflate(R.layout.daydivider, parent, false);
+                        holder.bubbleText = (TextView) convertView.findViewById(R.id.ddText);
+                        convertView.setTag(holder);
+                    }
+                }
             }
         } else {
 
@@ -157,7 +185,7 @@ public class ChatAdapter extends BaseAdapter {
         //inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
         // bub += "<small>" + time + "</small> " + content + readText;
         //holder.bubbleText.setText(Html.fromHtml(bub));
-        if (cM.getMsgType() == daydevider) {
+        if (cM.getMsgType() == daydevider || cM.getMsgType() == unreadMesDevider) {
             holder.bubbleText.setText(cM.getText());
             holder.bubbleText.setGravity(Gravity.CENTER);
             return convertView;
@@ -168,6 +196,11 @@ public class ChatAdapter extends BaseAdapter {
                 //   holder.bubbleText.setVisibility(View.VISIBLE);
                 holder.bubbleText.setText(content);
                 holder.bubbleText.setOnLongClickListener(new BubbleOnClickListener(cM));
+//                if (!tmpread) {
+//                    holder.bubbleText.setTextColor(Color.RED);
+//                } else {
+//                    holder.bubbleText.setTextColor(Color.BLACK);
+//                }
 //            if (holder.bubbleImage != null) {
 //                //holder.bubbleImage.get().setVisibility(View.GONE);
 //                holder.bubbleImage.setVisibility(View.GONE);
@@ -181,7 +214,11 @@ public class ChatAdapter extends BaseAdapter {
 //            }
             } else if (cM.getMsgType() == ImageMsg.BYTE) {
                 holder.bubbleDeliverd.setTextColor(Color.WHITE);
-                holder.bubbleDeliverd.setBackground(new ColorDrawable(0x80000000));
+                if (android.os.Build.VERSION.SDK_INT >= 16) {
+                    holder.bubbleDeliverd.setBackground(new ColorDrawable(0x80000000));
+                } else {
+                    holder.bubbleDeliverd.setBackgroundDrawable(new ColorDrawable(0x80000000));
+                }
             // holder.bubbleTime.setPadding(0, 0, 0, 40);
 //            if (holder.bubbleImage == null) {
 //                //holder.bubbleImage = new WeakReference<ImageView>((ImageView) convertView.findViewById(R.id.bubbleImage));
@@ -629,7 +666,7 @@ public class ChatAdapter extends BaseAdapter {
                 android.content.ClipData clip = android.content.ClipData.newPlainText("text label", cM.getText());
                 clipboard.setPrimaryClip(clip);
             }
-            Toast.makeText(mContext, "Copied message to Clipboard", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, mResources.getString(R.string.copied_message_to_clipboard), Toast.LENGTH_SHORT).show();
 
             return true;
 
@@ -647,22 +684,22 @@ public class ChatAdapter extends BaseAdapter {
         }
 
         public boolean onLongClick(View arg0) {
-
+            
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Name setzen fuer: " + cM.getIdentity());
+            builder.setTitle(mResources.getString(R.string.set_name_for,cM.getIdentity()));
 
 //// Set up the input
             final EditText input = new EditText(mContext);
 //                
 //// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
-            input.setHint("Name");
+            input.setHint(mResources.getString(R.string.name));
             input.setHintTextColor(Color.RED);
 
             builder.setView(input);
 
 // Set up the buttons
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(mResources.getString(R.string.ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     Test.localSettings.identity2Name.remove(cM.getIdentity());
@@ -670,22 +707,24 @@ public class ChatAdapter extends BaseAdapter {
                     Test.localSettings.save();
                     cA.notifyDataSetChanged();
                     final FlActivity fl = (FlActivity) FlActivity.context;
-                    fl.lv.invalidateViews();
-                    ChannelViewElement cve = fl.channels.get(fl.channels.size() - 1);
-                    fl.channels.remove(fl.channels.size() - 1);
-                    fl.adapter.notifyDataSetChanged();
-                    fl.channels.add(cve);
+                    if (fl != null) {
+                        fl.lv.invalidateViews();
+                        ChannelViewElement cve = fl.channels.get(fl.channels.size() - 1);
+                        fl.channels.remove(fl.channels.size() - 1);
+                        fl.adapter.notifyDataSetChanged();
+                        fl.channels.add(cve);
 
-                    fl.runOnUiThread(new Runnable() {
+                        fl.runOnUiThread(new Runnable() {
 
-                        public void run() {
-                            fl.adapter.notifyDataSetChanged();
-                        }
-                    });
+                            public void run() {
+                                fl.adapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
 
                 }
             });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton(mResources.getString(R.string.cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();

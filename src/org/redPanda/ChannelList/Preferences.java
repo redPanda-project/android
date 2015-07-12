@@ -4,28 +4,22 @@
  */
 package org.redPanda.ChannelList;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Message;
-import android.os.RemoteException;
 import android.preference.*;
 import android.text.InputType;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,8 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Locale;
 import org.redPanda.BS;
 import org.redPanda.ExceptionLogger;
 import static org.redPanda.ExceptionLogger.stacktrace2String;
@@ -56,6 +49,7 @@ public class Preferences extends PreferenceActivity {
     public static final String KEY_SAVE_MOBILE_INTERNET = "b";
     public static final String KEY_START_AFTER_BOOTING = "c";
     public static final String KEY_SEARCH_DEVELOPER_UPDATES = "d";
+    public int result = Activity.RESULT_CANCELED;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,13 +64,13 @@ public class Preferences extends PreferenceActivity {
         PreferenceScreen root = getPreferenceManager().createPreferenceScreen(this);
 
         PreferenceCategory mainc = new PreferenceCategory(this);
-        mainc.setTitle("General");
+        mainc.setTitle(getString(R.string.general));
         root.addPreference(mainc);
 
         if (BS.updateAbleViaWeb) {
             Preference updateButton = new Preference(this);
-            updateButton.setTitle("Search for update.");
-            updateButton.setSummary("Current version " + BS.VERSION + ".");
+            updateButton.setTitle(getString(R.string.search_for_update));
+            updateButton.setSummary(getString(R.string.current_version, BS.VERSION));
 
             updateButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
@@ -110,7 +104,7 @@ public class Preferences extends PreferenceActivity {
 
                                         runOnUiThread(new Runnable() {
                                             public void run() {
-                                                Toast.makeText(Preferences.this, "Update found.", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(Preferences.this, getString(R.string.update_found), Toast.LENGTH_SHORT).show();
 
                                                 String url2 = "http://files.redpanda.im/android/redPanda" + (developerUpdates ? "-developer" : "") + ".apk";
                                                 Intent i = new Intent(Intent.ACTION_VIEW);
@@ -140,7 +134,7 @@ public class Preferences extends PreferenceActivity {
 
                                         runOnUiThread(new Runnable() {
                                             public void run() {
-                                                Toast.makeText(Preferences.this, "Latest version installed.", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(Preferences.this, getString(R.string.latest_version_installed), Toast.LENGTH_SHORT).show();
                                             }
                                         });
 
@@ -166,8 +160,8 @@ public class Preferences extends PreferenceActivity {
         } else {
 
             Preference updateButton = new Preference(this);
-            updateButton.setTitle("Search for update.");
-            updateButton.setSummary("Current version " + BS.VERSION + ".");
+            updateButton.setTitle(getString(R.string.search_for_update));
+            updateButton.setSummary(getString(R.string.current_version, BS.VERSION));
 
             updateButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
@@ -198,8 +192,8 @@ public class Preferences extends PreferenceActivity {
 //        });
 //        mainc.addPreference(activePref);
         Preference fullSyncInit = new Preference(this);
-        fullSyncInit.setTitle("Init new network discovery.");
-        fullSyncInit.setSummary("Initializes a full network discovery, may cause huge traffic.");
+        fullSyncInit.setTitle(getString(R.string.init_new_network_discovery));
+        fullSyncInit.setSummary(getString(R.string.initializes_a_full_network_discovery_may_cause_huge_traffic));
         fullSyncInit.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference pref) {
                 Intent i = new Intent(Preferences.this, BS.class);
@@ -212,8 +206,8 @@ public class Preferences extends PreferenceActivity {
         mainc.addPreference(fullSyncInit);
 
         Preference removeOldMessages = new Preference(this);
-        removeOldMessages.setTitle("Remove old messages.");
-        removeOldMessages.setSummary("Removes messages older than one week.");
+        removeOldMessages.setTitle(getString(R.string.remove_old_messages));
+        removeOldMessages.setSummary(getString(R.string.removes_messages_older_than_one_week));
         removeOldMessages.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference pref) {
                 Intent i = new Intent(Preferences.this, BS.class);
@@ -228,28 +222,27 @@ public class Preferences extends PreferenceActivity {
         CheckBoxPreference saveMobileInternet = new CheckBoxPreference(this);
         saveMobileInternet.setDefaultValue(false);
         saveMobileInternet.setKey(KEY_SAVE_MOBILE_INTERNET);
-        saveMobileInternet.setTitle("Reduce traffic over 2G/3G/4G.");
-        saveMobileInternet.setSummary("Doesn't stay connected over mobile internet. Messages may be delayed,"
-                + " but saves your mobile traffic.");
+        saveMobileInternet.setTitle(getString(R.string.reduce_traffic_over_2G_3G_4G));
+        saveMobileInternet.setSummary(getString(R.string.doesnt_stay_connected_over_mobile_internet_messages_may_be_delayed_but_saves_your_mobile_traffic));
         mainc.addPreference(saveMobileInternet);
 
         CheckBoxPreference startAfterBoot = new CheckBoxPreference(this);
         startAfterBoot.setDefaultValue(true);
         startAfterBoot.setKey(KEY_START_AFTER_BOOTING);
-        startAfterBoot.setTitle("Autostart.");
-        startAfterBoot.setSummary("If checked, this app will start after the system booted. (Recommended)");
+        startAfterBoot.setTitle(getString(R.string.autostart));
+        startAfterBoot.setSummary(getString(R.string.if_checked_this_app_will_start_after_the_system_booted_recommended));
         mainc.addPreference(startAfterBoot);
 
         CheckBoxPreference searchDeveloperUpdates = new CheckBoxPreference(this);
         searchDeveloperUpdates.setDefaultValue(false);
         searchDeveloperUpdates.setKey(KEY_SEARCH_DEVELOPER_UPDATES);
-        searchDeveloperUpdates.setTitle("Developer updates.");
-        searchDeveloperUpdates.setSummary("If checked, all available updates will be displayed. May be annoying.");
+        searchDeveloperUpdates.setTitle(getString(R.string.developer_updates));
+        searchDeveloperUpdates.setSummary(getString(R.string.if_checked_all_available_updates_will_be_displayed_maybe_annoying));
         mainc.addPreference(searchDeveloperUpdates);
 
         Preference button = new Preference(this);
-        button.setTitle("Add Main Channel");
-        button.setSummary("Adds the Main Channel to your channel list.");
+        button.setTitle(getString(R.string.add_main_channel));
+        button.setSummary(getString(R.string.adds_the_main_channel_to_your_channel_list));
 
         button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -261,14 +254,14 @@ public class Preferences extends PreferenceActivity {
         mainc.addPreference(button);
 
         Preference expbutton = new Preference(this);
-        expbutton.setTitle("Export");
-        expbutton.setSummary("Export channels and IDs to SD-card.");
+        expbutton.setTitle(getString(R.string.export));
+        expbutton.setSummary(getString(R.string.export_channels_and_ids_to_sdcard));
 
         expbutton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference arg0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
-                builder.setTitle("Password");
+                builder.setTitle(getString(R.string.password));
 
 //// Set up the input
                 final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
@@ -278,7 +271,7 @@ public class Preferences extends PreferenceActivity {
                 name.setHintTextColor(Color.RED);
                 key.setHintTextColor(Color.CYAN);
                 key.setText("");
-                key.setHint("Password");
+                key.setHint(getString(R.string.password));
                 key.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 name.setVisibility(View.GONE);
 //                final EditText input = new EditText(FlActivity.this);
@@ -289,7 +282,7 @@ public class Preferences extends PreferenceActivity {
                 builder.setView(ll);
 
 // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy_hh-mm-ss");
@@ -317,7 +310,7 @@ public class Preferences extends PreferenceActivity {
                         }
                     }
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -332,14 +325,14 @@ public class Preferences extends PreferenceActivity {
 
         final Context con = this;
         Preference impbutton = new Preference(this);
-        impbutton.setTitle("Import");
-        impbutton.setSummary("Import channels and IDs from SD-card.");
+        impbutton.setTitle(getString(R.string.import_));
+        impbutton.setSummary(getString(R.string.import_channels_and_ids_from_sdcard));
 
         impbutton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference arg0) {
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(Preferences.this);
-                builder1.setTitle("Path");
+                builder1.setTitle(getString(R.string.path));
 
                 boolean mounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
                 File file;
@@ -355,18 +348,18 @@ public class Preferences extends PreferenceActivity {
                 }
                 final String[] fileList = file.list();
                 if (fileList.length == 0) {
-                    builder1.setTitle("Error");
-                    builder1.setMessage("No files to import found.\nMove the files to:\n" + file.getAbsolutePath());
+                    builder1.setTitle(getString(R.string.error));
+                    builder1.setMessage(getString(R.string.no_files_to_import_found_move_the_files_to, file.getAbsolutePath()));
                 } else {
                     builder1.setSingleChoiceItems(fileList, 0, null);
-                    builder1.setPositiveButton("Import", new DialogInterface.OnClickListener() {
+                    builder1.setPositiveButton(getString(R.string.import_), new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                             int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                             final String p = path + fileList[position];
                             AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
-                            builder.setTitle("Password");
+                            builder.setTitle(getString(R.string.password));
 
 //// Set up the input
                             final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
@@ -376,7 +369,7 @@ public class Preferences extends PreferenceActivity {
                             name.setHintTextColor(Color.RED);
                             key.setHintTextColor(Color.CYAN);
                             key.setText("");
-                            key.setHint("Password");
+                            key.setHint(getString(R.string.password));
                             key.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                             name.setVisibility(View.GONE);
 //                final EditText input = new EditText(FlActivity.this);
@@ -387,7 +380,7 @@ public class Preferences extends PreferenceActivity {
                             builder.setView(ll);
 
 // Set up the buttons
-                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
 
@@ -398,6 +391,9 @@ public class Preferences extends PreferenceActivity {
                                             try {
 
                                                 final boolean asd = Main.restoreBackup(p, key.getText().toString());
+                                                if (asd) {
+                                                    result = Activity.RESULT_OK;
+                                                }
 
                                                 runOnUiThread(new Runnable() {
 
@@ -420,7 +416,7 @@ public class Preferences extends PreferenceActivity {
                                     }.start();
                                 }
                             });
-                            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.cancel();
@@ -446,8 +442,8 @@ public class Preferences extends PreferenceActivity {
         mainc.addPreference(impbutton);
 
         Preference lanSearchButton = new Preference(this);
-        lanSearchButton.setTitle("Search nodes on the local area network.");
-        lanSearchButton.setSummary("Adds all local addresses and set MIN_CON to 100");
+        lanSearchButton.setTitle(getString(R.string.search_nodes_on_the_local_area_network));
+        lanSearchButton.setSummary(getString(R.string.adds_all_local_addresses_and_set_min_con_to_100));
 
         lanSearchButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -460,9 +456,48 @@ public class Preferences extends PreferenceActivity {
         });
         mainc.addPreference(lanSearchButton);
 
+        Preference changeLangButton = new Preference(this);
+        changeLangButton.setTitle(this.getString(R.string.change_language));
+        changeLangButton.setSummary(this.getString(R.string.change_the_language_of_the_app));
+
+        changeLangButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(Preferences.this);
+                builder1.setTitle(getString(R.string.change_language));
+                String[] lNames = getResources().getStringArray(R.array.language_array);
+                final String[] lan = {"en", "de"};
+                Locale current = getResources().getConfiguration().locale;
+                int currentLang = 0;
+                if (current.getLanguage().equals("de")) {
+                    currentLang = 1;
+                }
+                builder1.setSingleChoiceItems(lNames, currentLang, null);
+                builder1.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                        String langPref = "Language";
+                        SharedPreferences prefs = getSharedPreferences("CommonPrefs", Activity.MODE_PRIVATE);
+
+                        prefs.edit().putString(langPref, lan[position]).commit();
+
+                        result = Activity.RESULT_OK;
+                        setResult(result, new Intent());
+                        finish();
+                    }
+                });
+                builder1.setNegativeButton(getString(R.string.cancel), null);
+                builder1.show();
+                return true;
+            }
+        });
+        mainc.addPreference(changeLangButton);
+
         Preference licenseButton = new Preference(this);
-        licenseButton.setTitle("Show license.");
-        licenseButton.setSummary("redPanda is distributed over GPL 3.0 license.");
+        licenseButton.setTitle(getString(R.string.show_license));
+        licenseButton.setSummary(getString(R.string.redpanda_is_distributed_over_gpl_30_license));
 
         licenseButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -492,6 +527,14 @@ public class Preferences extends PreferenceActivity {
     }
 
     @Override
+    public void onBackPressed() {
+
+        setResult(result, new Intent());
+        finish();
+    }
+
+    @Override
+
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;

@@ -15,6 +15,8 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.RemoteInput;
 import android.support.v4.app.TaskStackBuilder;
 import org.redPanda.ChannelList.ChanPref;
 import org.redPanda.ChannelList.FlActivity;
@@ -28,6 +30,8 @@ import org.redPandaLib.core.messages.TextMessageContent;
  * @author robin
  */
 public class PopupListener implements NewMessageListener {
+
+    public static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
 
     Context context;
     int dot = 50;      // Length of a Morse Code "dot" in milliseconds
@@ -80,7 +84,8 @@ public class PopupListener implements NewMessageListener {
         intent.putExtra("Channel", msg.getChannel());
         //intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        intent.setAction(Long.toString(System.currentTimeMillis()));//hack so the intents arent the same in the eyes of android
+        PendingIntent contentIntent = PendingIntent.getActivity(context, msg.getChannel().getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
         // Set the info for the views that show in the notification panel.
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setContentIntent(contentIntent);
@@ -90,13 +95,13 @@ public class PopupListener implements NewMessageListener {
         BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
 
         if (msg.message_type == ImageMsg.BYTE) {
-            bigTextStyle.bigText(msg.getName() + ": bild...");
+            bigTextStyle.bigText(context.getString(R.string.picture___, msg.getName()));
         } else {
             bigTextStyle.bigText(msg.getName() + ": " + msg.getText());
         }
 
         bigTextStyle.setBigContentTitle(msg.getChannel().toString());
-        bigTextStyle.setSummaryText("message from redPanda");
+        bigTextStyle.setSummaryText(context.getString(R.string.message_from_redpanda));
         mBuilder.setStyle(bigTextStyle);
 
         mBuilder.setLights(0x88ff0000, 300, 5000);
@@ -149,14 +154,32 @@ public class PopupListener implements NewMessageListener {
 ////                0,
 ////                PendingIntent.FLAG_UPDATE_CURRENT);
 ////        mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager
-                = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 // mId allows you to update the notification later on.
+        String[] replyChoices = context.getResources().getStringArray(R.array.replyChoices_array);
+
+        RemoteInput remoteInput = new RemoteInput.Builder(EXTRA_VOICE_REPLY)
+                .setLabel("reply")
+                .setChoices(replyChoices)
+                .build();
+
+// Create the reply action and add the remote input
+        NotificationCompat.Action action
+                = new NotificationCompat.Action.Builder(R.drawable.emoji_1f4ac,
+                        "reply", contentIntent)
+                .addRemoteInput(remoteInput)
+                .build();
+
+        mBuilder.extend(new NotificationCompat.WearableExtender().addAction(action));
 
         Notification build = mBuilder.build();
         //build.flags = Notification.FLAG_AUTO_CANCEL;
 
-        mNotificationManager.notify(msg.getChannel().getId(), build);
+        // Get an instance of the NotificationManager service
+        NotificationManagerCompat notificationManager
+                = NotificationManagerCompat.from(context);
+
+// Issue the notification with notification manager.
+        notificationManager.notify(msg.getChannel().getId(), build);
 
     }
 }

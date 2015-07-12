@@ -87,7 +87,7 @@ public class ChannelViewElement extends Channel {
         return lastMessage;
     }
 
-    public String getLastMessageText() {
+    public String getLastMessageText(Context con) {
 
         if (lastMessageText == null) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(FlActivity.context);
@@ -97,9 +97,10 @@ public class ChannelViewElement extends Channel {
                 lastMessageText = "-";
             } else {
                 if (Test.localSettings.identity == identity) {
-                    lastMessageText = "Me: " + sharedPref.getString("lastMessageTextForChannel" + id, "-");
+                    lastMessageText = con.getString(R.string.me_, sharedPref.getString("lastMessageTextForChannel" + id, "-"));
+
                 } else {
-                    String from = "unknown";
+                    String from = con.getString(R.string.unkown);
                     if (Test.localSettings.identity2Name.containsKey(identity)) {
                         from = Test.localSettings.identity2Name.get(identity);
                     }

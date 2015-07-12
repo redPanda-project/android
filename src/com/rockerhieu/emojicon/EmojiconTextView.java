@@ -19,6 +19,7 @@ package com.rockerhieu.emojicon;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import org.redPanda.R;
@@ -28,6 +29,9 @@ import org.redPanda.R;
  */
 public class EmojiconTextView extends TextView {
     private int mEmojiconSize;
+    private int mTextStart = 0;
+    private int mTextLength = -1;
+    private boolean mUseSystemDefault = false;
 
     public EmojiconTextView(Context context) {
         super(context);
@@ -50,6 +54,9 @@ public class EmojiconTextView extends TextView {
         } else {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.Emojicon);
             mEmojiconSize = (int) a.getDimension(R.styleable.Emojicon_emojiconSize, getTextSize());
+            mTextStart = a.getInteger(R.styleable.Emojicon_emojiconTextStart, 0);
+            mTextLength = a.getInteger(R.styleable.Emojicon_emojiconTextLength, -1);
+            mUseSystemDefault = a.getBoolean(R.styleable.Emojicon_emojiconUseSystemDefault, false);
             a.recycle();
         }
         setText(getText());
@@ -57,9 +64,12 @@ public class EmojiconTextView extends TextView {
 
     @Override
     public void setText(CharSequence text, BufferType type) {
-        SpannableStringBuilder builder = new SpannableStringBuilder(text);
-        EmojiconHandler.addEmojis(getContext(), builder, mEmojiconSize);
-        super.setText(builder, type);
+        if (!TextUtils.isEmpty(text)) {
+            SpannableStringBuilder builder = new SpannableStringBuilder(text);
+            EmojiconHandler.addEmojis(getContext(), builder, mEmojiconSize, mTextStart, mTextLength, mUseSystemDefault);
+            text = builder;
+        }
+        super.setText(text, type);
     }
 
     /**
@@ -67,5 +77,14 @@ public class EmojiconTextView extends TextView {
      */
     public void setEmojiconSize(int pixels) {
         mEmojiconSize = pixels;
+
+        super.setText(getText());
+    }
+
+    /**
+     * Set whether to use system default emojicon
+     */
+    public void setUseSystemDefault(boolean useSystemDefault) {
+        mUseSystemDefault = useSystemDefault;
     }
 }

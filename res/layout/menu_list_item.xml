@@ -5,7 +5,8 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:paddingLeft="10dip"
-              android:paddingTop="20dip"
+              android:paddingTop="8dip"
+              android:paddingBottom="8dip"
 >
     
     <ImageView
@@ -13,7 +14,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:textSize="25dip"
-        android:paddingTop="4dip"
         android:adjustViewBounds="true"
         android:maxWidth="60dp"  
         android:maxHeight="60dp"  
@@ -25,7 +25,7 @@
              android:id="@+id/menu_list_text"
              android:layout_width="match_parent"
              android:layout_height="wrap_content" 
-             android:textSize="22sp"
+             android:textSize="18sp"
              android:paddingBottom="4dip"
              android:paddingTop="4dip"
              android:paddingLeft="10dip"
