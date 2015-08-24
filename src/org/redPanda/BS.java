@@ -80,7 +80,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 532;
+    public static final int VERSION = 535;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -145,7 +145,7 @@ public class BS extends Service {
 
                         @Override
                         public void run() {
-                            ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
+                            ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 30L * 24L * 60L * 60L * 1000L, Long.MAX_VALUE);
 
                             Collections.sort(ml, new Comparator<TextMessageContent>() {
 
@@ -805,7 +805,7 @@ public class BS extends Service {
         String update = getResources().getString(R.string.update_found);
         Notification notification = new Notification(R.drawable.icon, update, System.currentTimeMillis());
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
-        notification.setLatestEventInfo(getApplicationContext(),update, getResources().getString(R.string.click_to_download), contentIntent);
+        notification.setLatestEventInfo(getApplicationContext(), update, getResources().getString(R.string.click_to_download), contentIntent);
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
         notification.flags = Notification.FLAG_AUTO_CANCEL;
         //notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "6");

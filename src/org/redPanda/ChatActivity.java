@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import static android.content.Context.CLIPBOARD_SERVICE;
 import android.content.DialogInterface;
@@ -95,6 +96,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private int jumpTo = -1;
     private Message toSendMessage = null;
     private Menu menu;
+    private ContentResolver contentResolver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -233,9 +235,13 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             hasPhotoToSend = savedInstanceState.getBoolean("hasPhotoToSend");
             if (hasPhotoToSend) {
                 photoToSend = savedInstanceState.getString("photoToSend");
-                sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+                if (mService != null) {
+                    sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+                }
             }
         }
+
+        contentResolver = getContentResolver();
     }
 
     private void lookForMessageToSend() {
@@ -589,6 +595,9 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             // service through an IDL interface, so get a client-side
             // representation of that from the raw service object.
             mService = new Messenger(service);
+            if (hasPhotoToSend) {
+                sendPictureDialog(photoToSend, ChatActivity.this, chan, mMessenger, mService, false);
+            }
 
             // We want to monitor the service for as long as we are
             // connected to it.
@@ -932,7 +941,11 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             Uri selectedImage = imageReturnedIntent.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-            Cursor cursor = getContentResolver().query(
+            if (contentResolver == null) {
+                Main.sendBroadCastMsg("contentResolver is null ?!?");
+            }
+
+            Cursor cursor = contentResolver.query(
                     selectedImage, filePathColumn, null, null, null);
             cursor.moveToFirst();
 
@@ -944,7 +957,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 photoToSend = filePath;
                 hasPhotoToSend = true;
                 sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
-
             } else {
                 Toast.makeText(this, getString(R.string.picture_not_properly_selected), Toast.LENGTH_SHORT).show();
             }

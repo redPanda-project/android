@@ -48,6 +48,7 @@ import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ListMessage.Mes;
 import org.redPandaLib.Main;
 import org.redPandaLib.core.Test;
+import org.redPandaLib.core.messages.BlockMsg;
 import org.redPandaLib.core.messages.DeliveredMsg;
 import org.redPandaLib.core.messages.ImageMsg;
 import org.redPandaLib.core.messages.TextMsg;
@@ -190,7 +191,7 @@ public class ChatAdapter extends BaseAdapter {
             holder.bubbleText.setGravity(Gravity.CENTER);
             return convertView;
         } else {
-            if (cM.getMsgType() == TextMsg.BYTE) {
+            if (cM.getMsgType() == TextMsg.BYTE || cM.getMsgType() == BlockMsg.BYTE) {
                 //  holder.bubbleTime.setPadding(0, 0, 0, 0);
                 holder.bubbleDeliverd.setTextColor(Color.BLACK);
                 //   holder.bubbleText.setVisibility(View.VISIBLE);
@@ -684,9 +685,9 @@ public class ChatAdapter extends BaseAdapter {
         }
 
         public boolean onLongClick(View arg0) {
-            
+
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle(mResources.getString(R.string.set_name_for,cM.getIdentity()));
+            builder.setTitle(mResources.getString(R.string.set_name_for, cM.getIdentity()));
 
 //// Set up the input
             final EditText input = new EditText(mContext);
