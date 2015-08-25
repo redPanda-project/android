@@ -73,7 +73,6 @@
     <string name="confirm">Confirm</string>
     <string name="are_you_sure_you_want_to_delete_all_messages_in_this_channel">Are you sure you want to delete all messages in this channel?</string>
     <string name="no_image_selected">No image selected.</string>
-    <string name="picture_not_properly_selected">Picture not properly selected.</string>
     <string name="send_with_low_priority_if_checked_the_image_will_only_be_downloaded_from_others_if_they_are_connected_to_wifi">
         Send with low priority? If checked, the image will only be downloaded from others if they are connected to WiFi.</string>
     <string name="send_picture">Send picture</string>
