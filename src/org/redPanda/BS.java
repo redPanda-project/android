@@ -857,7 +857,7 @@ public class BS extends Service {
         return file;
     }
 
-    public static String rotateBitmap(String filePath, int orientation) {
+    public String rotateBitmap(String filePath, int orientation) {
         String[] tmp = filePath.split("/");
         String name = tmp[tmp.length - 1];
         File albumStorageDir = getAlbumStorageDir("redPanda");
@@ -911,7 +911,10 @@ public class BS extends Service {
             try {
                 f.createNewFile();
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                bmRotated.compress(CompressFormat.JPEG, 80 /*ignored for PNG*/, bos);
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                int picQual = sharedPref.getInt(Preferences.KEY_PICTURE_QUALITY, 80);
+
+                bmRotated.compress(CompressFormat.JPEG, picQual /*ignored for PNG*/, bos);
                 byte[] bitmapdata = bos.toByteArray();
                 FileOutputStream fos = new FileOutputStream(f);
                 fos.write(bitmapdata);

@@ -61,9 +61,12 @@
 
     <string name="search_nodes_on_the_local_area_network">Search nodes on the local area network.</string>
     <string name="adds_all_local_addresses_and_set_min_con_to_100">Adds all local addresses and set MIN_CON to 100</string>
+    <string name="picture_quality">Picture quality</string>
+    <string name="percentage_to_scale_down_pictures">Percentage to scale down pictures.</string>    
     <string name="show_license">Show license.</string>
     <string name="redpanda_is_distributed_over_gpl_30_license">redPanda is distributed over GPL 3.0 license.</string>  
     <!--end pref -->  
+    
     <!--ChannelViewElement doesnt work yet --> 
     <string name="me_">Me: %1$s</string>
     <string name="unkown">unkown</string>

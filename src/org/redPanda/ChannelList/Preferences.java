@@ -20,6 +20,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,6 +32,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import org.hsqldb.lib.LineReader;
 import org.redPanda.BS;
 import org.redPanda.ExceptionLogger;
 import static org.redPanda.ExceptionLogger.stacktrace2String;
@@ -49,7 +52,9 @@ public class Preferences extends PreferenceActivity {
     public static final String KEY_SAVE_MOBILE_INTERNET = "b";
     public static final String KEY_START_AFTER_BOOTING = "c";
     public static final String KEY_SEARCH_DEVELOPER_UPDATES = "d";
+    public static final String KEY_PICTURE_QUALITY = "e";
     public int result = Activity.RESULT_CANCELED;
+    private int picQual = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -495,15 +500,102 @@ public class Preferences extends PreferenceActivity {
         });
         mainc.addPreference(changeLangButton);
 
+        Preference JPGQualityButton = new Preference(this);
+        JPGQualityButton.setTitle(this.getString(R.string.picture_quality));
+        JPGQualityButton.setSummary(this.getString(R.string.percentage_to_scale_down_pictures));
+
+        JPGQualityButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                AlertDialog.Builder percent = new AlertDialog.Builder(con);
+                percent.setTitle(con.getString(R.string.picture_quality));
+                LinearLayout linear = new LinearLayout(con);
+                linear.setOrientation(LinearLayout.VERTICAL);
+                TextView text = new TextView(con);
+                text.setText(con.getString(R.string.percentage_to_scale_down_pictures));
+                text.setPadding(10, 10, 10, 10);
+                TextView progress = new TextView(con);
+                progress.setPadding(10, 10, 10, 10);
+
+                SeekBar seek = new SeekBar(con);
+                seek.setMax(100);
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(Preferences.this);
+                picQual = sharedPref.getInt(Preferences.KEY_PICTURE_QUALITY, 80);
+                progress.setText(picQual + "/100");
+                seek.setProgress(picQual);
+
+                seek.setOnSeekBarChangeListener(
+                        new SeekBar.OnSeekBarChangeListener() {
+                            int prog;
+                            TextView text;
+
+                            public SeekBar.OnSeekBarChangeListener setParams(int prog, TextView text) {
+                                this.prog = prog;
+                                this.text = text;
+                                return this;
+                            }
+
+                            public SeekBar.OnSeekBarChangeListener setText(TextView text) {
+                                this.text = text;
+                                return this;
+                            }
+
+                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                prog = progress;
+                                text.setText(prog + "/100");
+                            }
+
+                            public void onStartTrackingTouch(SeekBar seekBar) {
+
+                            }
+
+                            public void onStopTrackingTouch(SeekBar seekBar) {
+                                setPicQual(prog);
+//                                prog = round(prog);
+//                                seekBar.setProgress(prog);
+                            }
+
+                            public int round(int pr) {
+                                if (pr % 5 == 1) {
+                                    pr -= 1;
+                                }
+                                if (pr % 5 == 4) {
+                                    pr += 1;
+                                }
+                                return pr;
+                            }
+                        }.setParams(picQual, progress));
+                linear.addView(text);
+                linear.addView(seek);
+                linear.addView(progress);
+                percent.setView(linear);
+                percent.setPositiveButton(con.getString(R.string.ok), new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(Preferences.this);
+                        prefs.edit().putInt(KEY_PICTURE_QUALITY, getPicQual()).commit();
+                    }
+                });
+                percent.setNegativeButton(con.getString(R.string.cancel), null);
+
+                percent.show();
+                return true;
+            }
+        }
+        );
+        mainc.addPreference(JPGQualityButton);
+
         Preference licenseButton = new Preference(this);
         licenseButton.setTitle(getString(R.string.show_license));
         licenseButton.setSummary(getString(R.string.redpanda_is_distributed_over_gpl_30_license));
 
         licenseButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
-            public boolean onPreferenceClick(Preference arg0) {
+            public
+                    boolean onPreferenceClick(Preference arg0) {
 
-                startActivity(new Intent(Preferences.this, License.class));
+                startActivity(new Intent(Preferences.this, License.class
+                ));
 
                 return true;
             }
@@ -524,6 +616,14 @@ public class Preferences extends PreferenceActivity {
 //        });
 //        mainc.addPreference(shutdownButton);
         return root;
+    }
+
+    public int getPicQual() {
+        return picQual;
+    }
+
+    public void setPicQual(int picQual) {
+        this.picQual = picQual;
     }
 
     @Override
