@@ -80,7 +80,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 535;
+    public static final int VERSION = 536;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -412,6 +412,7 @@ public class BS extends Service {
                     Settings.REMOVE_OLD_MESSAGES = true;
                     MessageDownloader.MAX_REQUEST_PER_PEER = 2;
                     MessageVerifierHsqlDb.USES_UNREAD_STATUS = true;
+                    MessageDownloader.WAIT_FOR_OTHER_NODES_TO_INTRODUCE = 400;
                     Log.LEVEL = -100;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;

@@ -43,8 +43,6 @@ public class AndroidSaver implements SaverInterface {
 
             File file = new File(context.getFilesDir(), SAVE_DIR + "/msgs" + getPrefix() + ".dat");
 
-
-
             file.createNewFile();
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
@@ -117,8 +115,6 @@ public class AndroidSaver implements SaverInterface {
             Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-
-
     }
 
     public ArrayList<Peer> loadPeers() {
@@ -134,14 +130,11 @@ public class AndroidSaver implements SaverInterface {
             ArrayList<PeerSaveable> pp = (ArrayList<PeerSaveable>) readObject;
             ArrayList<Peer> arrayList = new ArrayList<Peer>();
 
-
             for (PeerSaveable p : pp) {
                 arrayList.add(p.toPeer());
             }
 
-
             return arrayList;
-
 
         } catch (ClassNotFoundException ex) {
         } catch (IOException ex) {
@@ -184,7 +177,6 @@ public class AndroidSaver implements SaverInterface {
 
             return (ArrayList<Channel>) readObject;
 
-
         } catch (ClassNotFoundException ex) {
         } catch (IOException ex) {
         }
@@ -225,7 +217,6 @@ public class AndroidSaver implements SaverInterface {
             fileInputStream.close();
 
             return (LocalSettings) readObject;
-
 
         } catch (ClassNotFoundException ex) {
         } catch (IOException ex) {
@@ -339,5 +330,10 @@ public class AndroidSaver implements SaverInterface {
         }
         System.out.println("[DRSM] could not load trustData.dat");
         return new ArrayList<PeerTrustData>();
+    }
+
+    @Override
+    public String getPath() {
+        return context.getFilesDir() + "/" + SAVE_DIR;
     }
 }
