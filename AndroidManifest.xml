@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.redPanda"
-          android:versionCode="538"
-          android:versionName="0.1.538 beta">
+          android:versionCode="539"
+          android:versionName="0.1.539 beta">
           
     <uses-sdk android:minSdkVersion="10"
               android:targetSdkVersion="11" />
