@@ -10,6 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -91,8 +96,47 @@ public class PictureActivity extends Activity {
                 if (!isgif) {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                    Bitmap bitmap = BitmapFactory.decodeFile(path, options);
-                    picture = new BitmapDrawable(getResources(), bitmap);
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = BitmapFactory.decodeFile(path, options);
+                    } catch (Exception ex) {
+                        Logger.getLogger(PictureActivity.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    if (bitmap != null) {
+                        picture = new BitmapDrawable(getResources(), bitmap);
+                    } else {
+
+                        picture = new Drawable() {
+                            Paint paint = new Paint();
+
+                            @Override
+                            public void draw(Canvas canvas) {
+                                paint.setColor(Color.WHITE);
+                                paint.setTextSize(30f);
+                                paint.setAntiAlias(true);
+                                paint.setFakeBoldText(true);
+                                paint.setShadowLayer(6f, 0, 0, Color.BLACK);
+                                paint.setStyle(Paint.Style.FILL);
+                                paint.setTextAlign(Paint.Align.CENTER);
+                                canvas.drawText(getString(R.string.error_could_not_load_image), canvas.getWidth() / 2, canvas.getHeight() / 2, paint);
+                            }
+
+                            @Override
+                            public void setAlpha(int alpha) {
+                                paint.setAlpha(alpha);
+                            }
+
+                            @Override
+                            public void setColorFilter(ColorFilter cf) {
+                                paint.setColorFilter(cf);
+                            }
+
+                            @Override
+                            public int getOpacity() {
+                                return PixelFormat.TRANSLUCENT;
+                            }
+                        };
+                    }
 
                 }
                 return picture;
@@ -102,9 +146,8 @@ public class PictureActivity extends Activity {
             protected void onPostExecute(Drawable picture) {
                 ImageView iv = imageViewReference.get();
                 iv.setImageDrawable(picture);
-                attacher.setZoomable(!isgif);
+                attacher.setZoomable(!isgif);              
                 attacher.update();
-
             }
 
         }

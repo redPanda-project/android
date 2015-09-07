@@ -134,7 +134,9 @@
     <string name="notifications">Notifications</string>    
     <string name="if_disabled_you_will_not_get_any_notifications_for_new_messages">If disabled, you will not get any notifications for new messages.</string>
         
-
-
+    
+    <!--PictureActivity-->   
+    <string name="error_could_not_load_image">Error: Could not load image.</string>        
+    <!--end PA-->     
   
 </resources>
