@@ -68,6 +68,7 @@ import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ChannelList.QRCodeActivity;
 
 import org.redPandaLib.Main;
+import org.redPandaLib.core.Blocks;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
@@ -840,6 +841,9 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 intent2.putExtras(b);
 
                 startActivity(intent2);
+                return true;
+            case R.id.cm_generateBlock:
+                Blocks.generate(chan);
                 return true;
             case R.id.cm_Del://Delete Messages
 
