@@ -99,8 +99,8 @@ public class PictureActivity extends Activity {
                     Bitmap bitmap = null;
                     try {
                         bitmap = BitmapFactory.decodeFile(path, options);
-                    } catch (Exception ex) {
-                        Logger.getLogger(PictureActivity.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (Throwable th) {
+                        Logger.getLogger(PictureActivity.class.getName()).log(Level.SEVERE, null, th);
                     }
                     if (bitmap != null) {
                         picture = new BitmapDrawable(getResources(), bitmap);
