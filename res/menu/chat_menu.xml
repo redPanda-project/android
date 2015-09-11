@@ -4,8 +4,12 @@
     <item android:id="@+id/imageSendButtonFromChat"
           android:icon="@drawable/ic_action_new_attachment"
           android:showAsAction="ifRoom"/>
+    <item android:id="@+id/openCameraButtonFromChat"
+              android:icon="@drawable/ic_action_camera"
+              android:showAsAction="ifRoom"/>
     <item android:id="@+id/cm_Share" android:title="Share"></item>
     <item android:id="@+id/cm_QR" android:title="Share by QR"></item>
     <item android:id="@+id/cm_Ed" android:title="Settings"></item>
+    <item android:id="@+id/cm_generateBlock" android:title="Generate block (beta)"></item>
     <item android:id="@+id/cm_Del" android:title="Delete messages"></item>
 </menu>

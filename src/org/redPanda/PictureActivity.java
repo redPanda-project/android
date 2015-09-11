@@ -10,6 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -63,6 +68,7 @@ public class PictureActivity extends Activity {
             private String path;
             private PictureActivity pa;
             private PhotoViewAttacher attacher;
+            private boolean isgif = false;
 
             public PictureAsyncTask(ImageView imageView, PhotoViewAttacher attacher, String path) {
                 // Use a WeakReference to ensure the ImageView can be garbage collected
@@ -74,7 +80,7 @@ public class PictureActivity extends Activity {
             @Override
             protected Drawable doInBackground(Integer... params) {
                 Drawable picture = null;
-                boolean isgif = false;
+                isgif = false;
                 if (true) {//(path.endsWith(".gif")) { // HACK because all pictures are saved as .jpg
 
                     //Try to load gif in GifImageView
@@ -90,8 +96,47 @@ public class PictureActivity extends Activity {
                 if (!isgif) {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                    Bitmap bitmap = BitmapFactory.decodeFile(path, options);
-                    picture = new BitmapDrawable(getResources(), bitmap);
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = BitmapFactory.decodeFile(path, options);
+                    } catch (Throwable th) {
+                        Logger.getLogger(PictureActivity.class.getName()).log(Level.SEVERE, null, th);
+                    }
+                    if (bitmap != null) {
+                        picture = new BitmapDrawable(getResources(), bitmap);
+                    } else {
+
+                        picture = new Drawable() {
+                            Paint paint = new Paint();
+
+                            @Override
+                            public void draw(Canvas canvas) {
+                                paint.setColor(Color.WHITE);
+                                paint.setTextSize(30f);
+                                paint.setAntiAlias(true);
+                                paint.setFakeBoldText(true);
+                                paint.setShadowLayer(6f, 0, 0, Color.BLACK);
+                                paint.setStyle(Paint.Style.FILL);
+                                paint.setTextAlign(Paint.Align.CENTER);
+                                canvas.drawText(getString(R.string.error_could_not_load_image), canvas.getWidth() / 2, canvas.getHeight() / 2, paint);
+                            }
+
+                            @Override
+                            public void setAlpha(int alpha) {
+                                paint.setAlpha(alpha);
+                            }
+
+                            @Override
+                            public void setColorFilter(ColorFilter cf) {
+                                paint.setColorFilter(cf);
+                            }
+
+                            @Override
+                            public int getOpacity() {
+                                return PixelFormat.TRANSLUCENT;
+                            }
+                        };
+                    }
 
                 }
                 return picture;
@@ -101,8 +146,8 @@ public class PictureActivity extends Activity {
             protected void onPostExecute(Drawable picture) {
                 ImageView iv = imageViewReference.get();
                 iv.setImageDrawable(picture);
+                attacher.setZoomable(!isgif);              
                 attacher.update();
-
             }
 
         }

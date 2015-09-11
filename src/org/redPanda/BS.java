@@ -80,7 +80,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 530;
+    public static final int VERSION = 542;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -145,7 +145,7 @@ public class BS extends Service {
 
                         @Override
                         public void run() {
-                            ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 48 * 60 * 60 * 1000, Long.MAX_VALUE);
+                            ArrayList<TextMessageContent> ml = Main.getMessages(chan, System.currentTimeMillis() - 30L * 24L * 60L * 60L * 1000L, Long.MAX_VALUE);
 
                             Collections.sort(ml, new Comparator<TextMessageContent>() {
 
@@ -406,12 +406,15 @@ public class BS extends Service {
                     //            Toast.makeText(this, "Init bitchatj.", Toast.LENGTH_SHORT).show();
                     AndroidSaver androidSaver = new AndroidSaver(BS.this);
                     //Settings.STD_PORT += 2;
+                    Settings.pingTimeout = 180;
+                    Settings.pingTimeout = 120;
                     Settings.SEND_DELIVERED_MSG = true;
                     Settings.lightClient = true;
                     Settings.MIN_CONNECTIONS = 2;
                     Settings.REMOVE_OLD_MESSAGES = true;
                     MessageDownloader.MAX_REQUEST_PER_PEER = 2;
                     MessageVerifierHsqlDb.USES_UNREAD_STATUS = true;
+                    MessageDownloader.WAIT_FOR_OTHER_NODES_TO_INTRODUCE = 400;
                     Log.LEVEL = -100;
                     //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;
                     //Settings.till = System.currentTimeMillis() - 1000 * 60 * 60 * 12;
@@ -486,7 +489,6 @@ public class BS extends Service {
 ////                }
 ////            }
 ////        }.start();
-
 //        Intent intent = new Intent(this, FlActivity.class);
 //        final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 //        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.icon).setContentTitle("redPanda").setContentText("service working..").setContentIntent(contentIntent);
@@ -660,19 +662,20 @@ public class BS extends Service {
                 //Set shared Pref for FLActivity
                 int id = msg.getChannel().getId();
                 long time = msg.getTimestamp();
-                String from;
-                if (msg.fromMe) {
-                    from = "Me";
-                } else {
-                    from = msg.getName();
-                }
+//                String from;
+//                if (msg.fromMe) {
+//                    from = "Me";
+//                    
+//                } else {
+//                    from = msg.getName();
+//                }
                 String text = "";
                 if (msg.message_type == TextMsg.BYTE) {
                     //text = from + ": " + msg.getText();
                     text = msg.getText();
                 } else if (msg.message_type == ImageMsg.BYTE) {
                     // text = from + ": " + "Picture";
-                    text = "Picture";
+                    text = getResources().getString(R.string.picture);
                 }
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
                 SharedPreferences.Editor edit = sharedPref.edit();
@@ -802,9 +805,10 @@ public class BS extends Service {
         i.setData(Uri.parse(url2));
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
         // Set the info for the views that show in the notification panel.
-        Notification notification = new Notification(R.drawable.icon, "Update found.", System.currentTimeMillis());
+        String update = getResources().getString(R.string.update_found);
+        Notification notification = new Notification(R.drawable.icon, update, System.currentTimeMillis());
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
-        notification.setLatestEventInfo(getApplicationContext(), "Update found.", "Click to download.", contentIntent);
+        notification.setLatestEventInfo(getApplicationContext(), update, getResources().getString(R.string.click_to_download), contentIntent);
         //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
         notification.flags = Notification.FLAG_AUTO_CANCEL;
         //notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "6");
@@ -856,7 +860,7 @@ public class BS extends Service {
         return file;
     }
 
-    public static String rotateBitmap(String filePath, int orientation) {
+    public String rotateBitmap(String filePath, int orientation) {
         String[] tmp = filePath.split("/");
         String name = tmp[tmp.length - 1];
         File albumStorageDir = getAlbumStorageDir("redPanda");
@@ -910,7 +914,10 @@ public class BS extends Service {
             try {
                 f.createNewFile();
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                bmRotated.compress(CompressFormat.JPEG, 80 /*ignored for PNG*/, bos);
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                int picQual = sharedPref.getInt(Preferences.KEY_PICTURE_QUALITY, 80);
+
+                bmRotated.compress(CompressFormat.JPEG, picQual /*ignored for PNG*/, bos);
                 byte[] bitmapdata = bos.toByteArray();
                 FileOutputStream fos = new FileOutputStream(f);
                 fos.write(bitmapdata);

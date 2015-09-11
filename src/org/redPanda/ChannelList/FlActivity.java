@@ -5,14 +5,13 @@
 package org.redPanda.ChannelList;
 
 import android.app.Activity;
-import static android.app.Activity.RESULT_OK;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.Resources;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -30,12 +29,10 @@ import android.text.InputType;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -43,7 +40,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.BS;
@@ -59,7 +55,7 @@ import org.redPandaLib.core.Test;
 import android.support.v4.util.LruCache;
 import android.support.v4.widget.DrawerLayout;
 import android.view.KeyEvent;
-import android.widget.ArrayAdapter;
+import java.util.Locale;
 import org.redPanda.MenuAdapter;
 import org.redPandaLib.core.PeerTrustData;
 
@@ -82,9 +78,11 @@ public class FlActivity extends Activity {
     private boolean isImageAction = false, isTextAction = false;
     private String textAction = "", imageAction = "";
     private final String[] imageFileExtensions = new String[]{"jpg", "png", "gif", "jpeg"};
+    private final int PREF_REQ_CODE = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        loadLocale();
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
 
         // Use 1/8th of the available memory for this memory cache.
@@ -116,12 +114,35 @@ public class FlActivity extends Activity {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        Resources res = getResources();
-        String[] str = new String[]{res.getString(R.string.create_new_channel), res.getString(R.string.import_channel), res.getString(R.string.scan_qr_code), res.getString(R.string.settings)};
+
+        String[] str = new String[]{this.getString(R.string.create_new_channel),
+            this.getString(R.string.import_channel), this.getString(R.string.scan_qr_code), this.getString(R.string.settings)};
         // Set the adapter for the list view
         mDrawerList.setBackgroundColor(Color.WHITE);
         mDrawerList.setAdapter(new MenuAdapter(context, str));
-        // Set the list's onClickListeners
+        //Set drawer listener TO DO HACK!!!!
+        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+
+            public void onDrawerSlide(View view, float f) {
+                if (!Test.STARTED_UP_SUCCESSFUL) {
+                    mDrawerLayout.closeDrawers();
+                }
+            }
+
+            public void onDrawerOpened(View view) {
+
+            }
+
+            public void onDrawerClosed(View view) {
+
+            }
+
+            public void onDrawerStateChanged(int i) {
+
+            }
+        });
+
+        // Set the list's onClickListeners       
         mDrawerList.setOnItemClickListener(new OnItemClickListener() {
 
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -140,7 +161,7 @@ public class FlActivity extends Activity {
 
                         builder.setView(input);
 
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        builder.setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -158,7 +179,7 @@ public class FlActivity extends Activity {
 
                             }
                         });
-                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        builder.setNegativeButton(context.getString(R.string.cancel), new DialogInterface.OnClickListener() {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -172,7 +193,7 @@ public class FlActivity extends Activity {
                     case 1: // import channel
 
                         builder = new AlertDialog.Builder(FlActivity.this);
-                        builder.setTitle("Import Channel");
+                        builder.setTitle(context.getString(R.string.import_channel));
 
 //// Set up the input
                         final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
@@ -190,7 +211,7 @@ public class FlActivity extends Activity {
                         builder.setView(ll);
 
 // Set up the buttons
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        builder.setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -217,7 +238,7 @@ public class FlActivity extends Activity {
                                 }
                             }
                         });
-                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        builder.setNegativeButton(context.getString(R.string.cancel), new DialogInterface.OnClickListener() {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -234,8 +255,9 @@ public class FlActivity extends Activity {
                         startActivity(is);
                         break;
                     case 3: //settings
-                        Intent intent2 = new Intent(context, Preferences.class);
-                        startActivity(intent2);
+                        Intent intent2 = new Intent(FlActivity.this, Preferences.class);
+
+                        startActivityForResult(intent2, PREF_REQ_CODE);
                         break;
 
                 }
@@ -524,9 +546,9 @@ public class FlActivity extends Activity {
                 isImageAction = false;
             } else if (isTextAction) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Send text");
-                builder.setMessage("Do you want to share the text with " + clickedChannel.getName() + "?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setTitle(context.getString(R.string.send_text));
+                builder.setMessage(getString(R.string.do_you_want_to_share_the_text_with, clickedChannel.getName()));
+                builder.setPositiveButton(context.getString(R.string.yes), new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -556,7 +578,8 @@ public class FlActivity extends Activity {
                                     runOnUiThread(new Runnable() {
 
                                         public void run() {
-                                            Toast.makeText(FlActivity.this, "Could not send text. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(FlActivity.this,
+                                                    getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                 }
@@ -567,7 +590,7 @@ public class FlActivity extends Activity {
 
                     }
                 });
-                builder.setNegativeButton("No", null);
+                builder.setNegativeButton(context.getString(R.string.no), null);
                 builder.show();
 
             } else {
@@ -596,7 +619,8 @@ public class FlActivity extends Activity {
         if (v.getId() == R.id.chanlist) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             menu.setHeaderTitle(adapter.objects.get(info.position).toString());
-            String[] menuItems = {"Open", "Share", "Share by QR", "Edit", "Delete"};
+            String[] menuItems = {this.getString(R.string.open), this.getString(R.string.share),
+                this.getString(R.string.share_by_qr), this.getString(R.string.settings), this.getString(R.string.delete)};
             for (int i = 0; i < menuItems.length; i++) {
                 menu.add(Menu.NONE, i, i, menuItems[i]);
             }
@@ -648,8 +672,7 @@ public class FlActivity extends Activity {
                 ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 
                 cm.setText(adapter.objects.get(pos).exportForHumans());
-                Toast.makeText(FlActivity.this,
-                        "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FlActivity.this, this.getString(R.string.copied_privatekey_to_clipboard), Toast.LENGTH_SHORT).show();
 
                 break;
             case 4://Delete
@@ -657,10 +680,9 @@ public class FlActivity extends Activity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
                 builder.setTitle(
-                        "Delete Channel");
-                builder.setMessage(
-                        "Do you realy want to delete the Channel " + adapter.objects.get(pos).toString() + "?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        getString(R.string.delete_channel));
+                builder.setMessage(this.getString(R.string.do_you_realy_want_to_delete_the_channel, adapter.objects.get(pos).toString()));
+                builder.setPositiveButton(this.getString(R.string.yes), new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
                         Main.removeChannel(adapter.objects.get(pos));
@@ -676,7 +698,7 @@ public class FlActivity extends Activity {
                     }
                 }
                 );
-                builder.setNegativeButton("No", null);
+                builder.setNegativeButton(this.getString(R.string.no), null);
                 builder.show();
 
                 break;
@@ -715,7 +737,6 @@ public class FlActivity extends Activity {
                     if (isFinishing()) {
                         return;
                     }
-
                     //Toast.makeText(FlActivity.this, "Channels sind da.", Toast.LENGTH_SHORT).show();
 //                    new ExceptionLogger(FlActivity.this);
 //                    Toast.makeText(FlActivity.this, "Channels sind da: " + channels.size(), Toast.LENGTH_SHORT).show();
@@ -927,7 +948,9 @@ public class FlActivity extends Activity {
 //                i.setData(Uri.parse(url));
 //                startActivity(i);
                 if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
-                    mDrawerLayout.openDrawer(mDrawerList);
+                    if (Test.STARTED_UP_SUCCESSFUL) {
+                        mDrawerLayout.openDrawer(mDrawerList);
+                    }
                 } else {
                     mDrawerLayout.closeDrawers();
                 }
@@ -1094,7 +1117,7 @@ public class FlActivity extends Activity {
                     String keystr = intent1.getExtras().getString("ChannelKey");
                     String namestr = intent1.getExtras().getString("ChannelName");
                     AlertDialog.Builder builder = new AlertDialog.Builder(FlActivity.this);
-                    builder.setTitle("Import Channel");
+                    builder.setTitle(getString(R.string.import_channel));
 
 //// Set up the input
                     final LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.ippchandiag, null);
@@ -1113,7 +1136,7 @@ public class FlActivity extends Activity {
                     builder.setView(ll);
 
 // Set up the buttons
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -1143,7 +1166,7 @@ public class FlActivity extends Activity {
                             }
                         }
                     });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.cancel();
@@ -1184,7 +1207,9 @@ public class FlActivity extends Activity {
             // your action...
 
             if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
-                mDrawerLayout.openDrawer(mDrawerList);
+                if (Test.STARTED_UP_SUCCESSFUL) {
+                    mDrawerLayout.openDrawer(mDrawerList);
+                }
             } else {
                 mDrawerLayout.closeDrawers();
             }
@@ -1211,6 +1236,34 @@ public class FlActivity extends Activity {
         }
         // this is our fallback here
         return uri.getPath();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data); //To change body of generated methods, choose Tools | Templates.
+        if (requestCode == PREF_REQ_CODE && resultCode == Activity.RESULT_OK) {
+            Intent i = new Intent(this, FlActivity.class);
+            finish();
+            startActivity(i);
+
+        }
+    }
+
+    public void loadLocale() {
+        String langPref = "Language";
+        SharedPreferences prefs = getSharedPreferences("CommonPrefs", Activity.MODE_PRIVATE);
+        String language = prefs.getString(langPref, "");
+        if (!language.equals("")) {
+            Locale myLocale = new Locale(language);
+            Locale.setDefault(myLocale);
+            android.content.res.Configuration config = new android.content.res.Configuration();
+            config.locale = myLocale;
+            getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
+            if (adapter != null) {
+                adapter.notifyDataSetInvalidated();
+            }
+
+        }
     }
 
 }

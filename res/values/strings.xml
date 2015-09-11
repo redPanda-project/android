@@ -8,46 +8,135 @@
     <string name="settings">Settings</string>
     
     <string name="new_channel_name">New channel name</string>
+    <string name="send_text">Send text</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    
+    <string name="open">Open</string>
+    <string name="share">Share</string>
+    <string name="share_by_qr">Share by QR</string>
+    <string name="delete">Delete</string>
+    
+    
+    
+    <string name="do_you_want_to_share_the_text_with">Do you want to share the text with %1$s?</string>
+    <string name="could_not_send_text_please_restart_the_service">Could not send text. Please restart the service.</string>
+    <string name="delete_channel">Delete channel</string>    
+    <!--Preferences -->
+    <string name="general">General</string>
+    
+    <string name="search_for_update">Search for update.</string>
+    <string name="current_version">Current Version %1$s.</string>
+    <string name="update_found">Update found.</string>
+    <string name="latest_version_installed">Latest version installed.</string>
+    
+    <string name="init_new_network_discovery">Init new network discovery.</string>
+    <string name="initializes_a_full_network_discovery_may_cause_huge_traffic">Initializes a full network discovery, may cause huge traffic.</string>
+    
+    <string name="remove_old_messages">Remove old messages.</string>
+    <string name="removes_messages_older_than_one_week">Removes messages older than one week.</string>
+                    
+    <string name="reduce_traffic_over_2G_3G_4G">Reduce traffic over 2G/3G/4G.</string>
+    <string name="doesnt_stay_connected_over_mobile_internet_messages_may_be_delayed_but_saves_your_mobile_traffic">
+        Doesn\'t stay connected over mobile internet. Messages may be delayed, but saves your mobile traffic.</string>
+    
+    <string name="autostart">Autostart.</string>
+    <string name="if_checked_this_app_will_start_after_the_system_booted_recommended">
+        If checked, this app will start after the system booted. (Recommended)</string>
+   
+    <string name="import_">Import</string>
+              
+    <string name="developer_updates">Developer updates.</string>
+    <string name="if_checked_all_available_updates_will_be_displayed_maybe_annoying">If checked, all available updates will be displayed. Maybe annoying.</string>
+    <string name="add_main_channel">Add Main Channel</string>
+    <string name="adds_the_main_channel_to_your_channel_list">Adds the Main Channel to your channel list.</string>
+    <string name="export">Export</string>
+    <string name="export_channels_and_ids_to_sdcard">Export channels and IDs to SD-card.</string>
+    <string name="password">Password</string>
 
+    <string name="import_channels_and_ids_from_sdcard">Import channels and IDs from SD-card.</string>
+    <string name="path">Path</string>
+    <string name="error">Error</string>
+    <string name="no_files_to_import_found_move_the_files_to">No files to import found.\nMove the files to:\n %1$s</string>
 
+    <string name="search_nodes_on_the_local_area_network">Search nodes on the local area network.</string>
+    <string name="adds_all_local_addresses_and_set_min_con_to_100">Adds all local addresses and set MIN_CON to 100</string>
+    <string name="picture_quality">Picture quality</string>
+    <string name="percentage_to_scale_down_pictures">Percentage of quality. A lower value means more compression.</string>    
+    <string name="show_license">Show license.</string>
+    <string name="redpanda_is_distributed_over_gpl_30_license">redPanda is distributed over GPL 3.0 license.</string>  
+    <!--end pref -->  
+    
+    <!--ChannelViewElement doesnt work yet --> 
+    <string name="me_">Me: %1$s</string>
+    <string name="unkown">unkown</string>
+    <!--end CVE -->    
+    
+    <!--ChatActivity --> 
+    <string name="confirm">Confirm</string>
+    <string name="are_you_sure_you_want_to_delete_all_messages_in_this_channel">Are you sure you want to delete all messages in this channel?</string>
+    <string name="no_image_selected">No image selected.</string>
+    <string name="send_with_low_priority_if_checked_the_image_will_only_be_downloaded_from_others_if_they_are_connected_to_wifi">
+        Send with low priority? If checked, the image will only be downloaded from others if they are connected to WiFi.</string>
+    <string name="send_picture">Send picture</string>
+    <string name="do_you_want_to_send_the_picture_to">"Do you want to send the picture %1$s to %2$s?</string>
+                
+    <!--end CA-->      
+    <!--PopupListener-->   
+    <string name="message_from_redpanda">message from redPanda</string>
+    
+    <string-array name="replyChoices_array">
+        <item>Yes</item>
+        <item>No</item>
+        <item>Okay</item>
+        <item>I\'m currently busy and will answer you later.</item>
+    </string-array>
+    
+    <string name="picture...">%1$s: Picture...</string>
 
+    <!--end PL-->     
+    <!--BS-->     
+    <string name="picture">Picture</string>
+    <string name="click_to_download">Click to download.</string>  
+    <!--end BS-->   
+    <string name="unread_messages">unread messages</string>
+                            
+    <string name="do_you_realy_want_to_delete_the_channel">Do you realy want to delete the Channel %1$s?</string>
+    
 
+    <string name="set_name_for">Set name for:\n%1$s</string>
+    
+    <string name="name">Name</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    
+    
+    
+    <string name="change_language">Change language</string>
+    <string name="change_the_language_of_the_app">Change the language of the app.</string>
+    
+    <string-array name="language_array">
+        <item>English</item>
+        <item>German</item>
+    </string-array>
+    
+    
+    
+    <string name="copied_message_to_clipboard">Copied message to Clipboard</string>
+    <string name="copied_privatekey_to_clipboard">Copied PrivateKey to Clipboard</string>
+        
+    <string name="channel_name">Channel Name</string>
+    <string name="the_name_of_the_channel_visible_only_for_you">The name of the channel. Visible only for you.</string>
+        
+    <string name="silent_mode">Silent Mode</string>    
+    <string name="if_activated_the_notification_will_not_make_any_sound_or_will_vibrate">If activated, the notification will not make any sound or will vibrate.</string>
   
-    <string name="capture_name">QR Code Capture</string>
-    <string name="encoder_name">QR Code Encoder</string>
-    <string name="decoder_name">QR Code Decoder</string>
-
-    <string name="contents_contact">Contact info</string>
-    <string name="contents_email">Email address</string>
-    <string name="contents_location">Geographic coordinates</string>
-    <string name="contents_phone">Phone number</string>
-    <string name="contents_sms">SMS address</string>
-    <string name="contents_text">Plain text</string>
-
-    <string name="msg_default_contents">Contents</string>
-    <string name="msg_default_format">Format</string>
-    <string name="msg_default_meta">Metadata</string>
-    <string name="msg_default_mms_subject">Hi</string>
-    <string name="msg_default_status">Place a barcode inside the viewfinder rectangle to scan it.</string>
-    <string name="msg_default_time">Time</string>
-    <string name="msg_default_type">Type</string>
-
-    <string name="result_address_book">Found contact info</string>
-    <string name="result_calendar">Found calendar event</string>
-    <string name="result_email_address">Found email address</string>
-    <string name="result_geo">Found geographic coordinates</string>
-    <string name="result_isbn">Found book</string>
-    <string name="result_product">Found product</string>
-    <string name="result_sms">Found SMS address</string>
-    <string name="result_tel">Found phone number</string>
-    <string name="result_text">Found plain text</string>
-    <string name="result_uri">Found URL</string>
-    <string name="result_wifi">Found WLAN Configuration</string>
-
-    <string name="wifi_changing_network">Changing Network</string>
-    <string name="wifi_ssid_label">Network Name</string>
-    <string name="wifi_type_label">Type</string>
-
-    <string name="barcode_image">Barcode Image</string>
+    <string name="notifications">Notifications</string>    
+    <string name="if_disabled_you_will_not_get_any_notifications_for_new_messages">If disabled, you will not get any notifications for new messages.</string>
+        
+    
+    <!--PictureActivity-->   
+    <string name="error_could_not_load_image">Error: Could not load image.</string>        
+    <!--end PA-->     
   
 </resources>

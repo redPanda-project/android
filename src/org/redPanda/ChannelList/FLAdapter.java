@@ -57,7 +57,7 @@ public class FLAdapter extends ArrayAdapter<ChannelViewElement> {
         }
         ChannelViewElement ch = objects.get(position);
         holder.CN.setText(ch.getName());
-        holder.msg.setText(ch.getLastMessageText());
+        holder.msg.setText(ch.getLastMessageText(context));
 
         return row;
     }

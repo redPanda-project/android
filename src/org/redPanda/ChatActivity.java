@@ -4,12 +4,14 @@
  */
 package org.redPanda;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import static android.app.Activity.RESULT_OK;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import static android.content.Context.CLIPBOARD_SERVICE;
 import android.content.DialogInterface;
@@ -18,6 +20,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -37,7 +40,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -55,6 +60,7 @@ import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 import static java.lang.Thread.sleep;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -65,6 +71,7 @@ import org.redPanda.ChannelList.FlActivity;
 import org.redPanda.ChannelList.QRCodeActivity;
 
 import org.redPandaLib.Main;
+import org.redPandaLib.core.Blocks;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
@@ -87,26 +94,21 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private ChatAdapter cA;
     public static final int MENU_IMAGE = Menu.FIRST;
     private static final int SELECT_PHOTO = 100;
+    private static final int CAPTURE_PHOTO = 101;
     private boolean emojiconKeyboardVisible = false;
     private EmojiconsFragment emojiconsFragment;
     private LinearLayout mainLayoutInputAndSend;
     private boolean hasUnreadMesDev = false;
     private int jumpTo = -1;
     private Message toSendMessage = null;
+    private Menu menu;
+    private ContentResolver contentResolver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new ExceptionLogger(this);
 
-//        if (savedInstanceState != null) {
-//            Toast.makeText(ChatActivity.this, "savedInstanceState was not null", Toast.LENGTH_LONG).show();
-//            Intent intent;
-//            intent = new Intent(ChatActivity.this, FlActivity.class);
-//            startActivity(intent);
-//            finish();
-//            return;
-//        }
         Intent in = getIntent();
         String string = in.getExtras().getString("title");
 
@@ -123,8 +125,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
 
-        getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
-
+//        getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         Intent intent = new Intent(this, BS.class);
         //startService(intent);
@@ -235,11 +236,25 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         });
 
         lookForMessageToSend();
+        if (savedInstanceState != null) {
+            hasPhotoToSend = savedInstanceState.getBoolean("hasPhotoToSend");
+            photoToSend = savedInstanceState.getString("photoToSend");
+            imageSavePath = savedInstanceState.getString("imageSavePath");
+            if (hasPhotoToSend) {
+                if (mService != null) {
+                    sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+                }
+            }
+        }
 
+        contentResolver = getContentResolver();
     }
 
     private void lookForMessageToSend() {
-        //getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+////        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+////        ActionBar abar = getActionBar();
+////        abar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#80000000")));
         //look for voice-to-text message from wearable...
         CharSequence messageText = getMessageText(getIntent());
         if (messageText != null) {
@@ -265,7 +280,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                         runOnUiThread(new Runnable() {
 
                             public void run() {
-                                Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ChatActivity.this, getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -313,8 +328,10 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
         //we need the old channel for unbind!
         doUnbindService();
-        cA.mMessages.clear();
-        cA.notifyDataSetChanged();
+        if (cA != null && cA.mMessages != null) {
+            cA.mMessages.clear();
+            cA.notifyDataSetChanged();
+        }
         this.setIntent(intent);
         this.setTitle(intent.getExtras().getString("title"));
         chan = (Channel) intent.getExtras().get("Channel");
@@ -552,7 +569,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 if (initalMessage && tmc.read != oCM.isRead() && !hasUnreadMesDev) {
                     hasUnreadMesDev = true;
                     TextMessageContent tmptmc = new TextMessageContent();
-                    tmptmc.text = "unread messages";
+                    tmptmc.text = getString(R.string.unread_messages);
                     tmptmc.message_type = ChatAdapter.unreadMesDevider;
                     tmptmc.read = true;
                     cA.mMessages.add(new ChatMsg(tmptmc));
@@ -587,6 +604,9 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             // service through an IDL interface, so get a client-side
             // representation of that from the raw service object.
             mService = new Messenger(service);
+            if (hasPhotoToSend) {
+                sendPictureDialog(photoToSend, ChatActivity.this, chan, mMessenger, mService, false);
+            }
 
             // We want to monitor the service for as long as we are
             // connected to it.
@@ -784,6 +804,15 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 backToFlActivity();
                 finish();
                 return true;
+            case R.id.openCameraButtonFromChat:
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+
+                imageSavePath = BS.getAlbumStorageDir("redPanda/full res").getAbsolutePath()
+                        + "/JPEG_" + timeStamp + ".jpg";
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.parse("file:" + imageSavePath));
+                startActivityForResult(intent, CAPTURE_PHOTO);
+                return true;
             case R.id.imageSendButtonFromChat:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                 photoPickerIntent.setType("image/*");
@@ -806,7 +835,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
                 cm.setText(chan.exportForHumans());
                 Toast.makeText(ChatActivity.this,
-                        "Copied PrivateKey to Clipboard", Toast.LENGTH_SHORT).show();
+                        getString(R.string.copied_privatekey_to_clipboard), Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.cm_Ed://edit
                 Intent intent2 = new Intent(this, ChanPref.class);
@@ -818,14 +847,17 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
                 startActivity(intent2);
                 return true;
+            case R.id.cm_generateBlock:
+                Blocks.generate(chan);
+                return true;
             case R.id.cm_Del://Delete Messages
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-                builder.setTitle("Confirm");
-                builder.setMessage("Are you sure you want to delete all messages in this channel?");
+                builder.setTitle(getString(R.string.confirm));
+                builder.setMessage(getString(R.string.are_you_sure_you_want_to_delete_all_messages_in_this_channel));
 
-                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
                         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ChatActivity.this);
@@ -848,7 +880,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
                 });
 
-                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -864,6 +896,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 return super.onOptionsItemSelected(item);
         }
     }
+
 //
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
@@ -873,47 +906,98 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 //
 //        return true;
 //    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.chat_menu, menu);
         return true;
     }
 
+//    @Override
+//    public boolean onPrepareOptionsMenu(Menu menu) {
+//        MenuItem it = menu.getItem(1);
+//
+//        return super.onPrepareOptionsMenu(menu); //To change body of generated methods, choose Tools | Templates.
+//    }
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+        return super.dispatchGenericMotionEvent(ev); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static boolean hasPhotoToSend = false;
+    public static String photoToSend = "";
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("hasPhotoToSend", hasPhotoToSend);
+        outState.putString("photoToSend", photoToSend);
+        outState.putString("imageSavePath", imageSavePath);
+
+    }
+
+    String imageSavePath = "";
+
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode,
             final Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        String filePath = imageSavePath;
+        imageSavePath = "";
+        if (requestCode == SELECT_PHOTO) {
 
-        if (imageReturnedIntent == null) {
-            //no image selected...
-            runOnUiThread(new Runnable() {
+            if (resultCode != RESULT_OK) {
+                //no image selected...
+                runOnUiThread(new Runnable() {
 
-                public void run() {
-                    Toast.makeText(ChatActivity.this, "No image selected.", Toast.LENGTH_SHORT).show();
-                }
-            });
-            return;
-        }
+                    public void run() {
+                        Toast.makeText(ChatActivity.this, getString(R.string.no_image_selected), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return;
+            }
 
-        Uri selectedImage = imageReturnedIntent.getData();
-        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+            Uri selectedImage = imageReturnedIntent.getData();
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-        Cursor cursor = getContentResolver().query(
-                selectedImage, filePathColumn, null, null, null);
-        cursor.moveToFirst();
+            Cursor cursor = contentResolver.query(
+                    selectedImage, filePathColumn, null, null, null);
+            cursor.moveToFirst();
 
-        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        final String filePath = cursor.getString(columnIndex);
-        cursor.close();
-        if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK) {
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            filePath = cursor.getString(columnIndex);
+            cursor.close();
+
             Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
-            sendPictureDialog(filePath, this, chan, mMessenger, mService, false);
-        } else {
-            Toast.makeText(this, "Picture not properly selected.", Toast.LENGTH_SHORT).show();
-        }
+            photoToSend = filePath;
+            hasPhotoToSend = true;
+            if (mService != null) {
+                sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+            }
 
+        } else {
+            if (requestCode == CAPTURE_PHOTO) {
+                if (resultCode != RESULT_OK) {
+                    //no image selected...
+                    runOnUiThread(new Runnable() {
+
+                        public void run() {
+                            Toast.makeText(ChatActivity.this, getString(R.string.no_image_selected), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    return;
+                }
+                Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
+                photoToSend = filePath;
+                hasPhotoToSend = true;
+                if (mService != null) {
+                    sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+                }
+
+            } else {
+                super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+            }
+        }
     }
 
     public static void sendPictureDialog(final String filePath, final Activity act, final Channel channel, final Messenger messenger, final Messenger service, final boolean openChannel) {
@@ -929,16 +1013,18 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 sharedPref.edit().putBoolean("lastSendImageWithMinPriotiy", isChecked).commit();
             }
         });
-        checkBox.setText("Send with low priority? If checked, the image will only be downloaded from others if they are connected to WiFi.");
+        checkBox.setText(act.getString(R.string.send_with_low_priority_if_checked_the_image_will_only_be_downloaded_from_others_if_they_are_connected_to_wifi));
         AlertDialog.Builder builder = new AlertDialog.Builder(act);
 
-        builder.setTitle("Send picture");
+        builder.setTitle(act.getString(R.string.send_picture));
         String str = filePath.split("/")[filePath.split("/").length - 1];
-        builder.setMessage("Do you want to send the picture " + str + " to " + channel.getName() + "?")
+        builder.setMessage(act.getString(R.string.do_you_want_to_send_the_picture_to, str, channel.getName()))
                 .setView(checkBoxView)
                 .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton(act.getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        hasPhotoToSend = false;
+                        photoToSend = "";
                         new Thread() {
 
                             @Override
@@ -947,16 +1033,21 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                 try {
                                     if (openChannel) {
                                         Intent intent;
-                                        intent = new Intent(act, ChatActivity.class);
+                                        intent
+                                        = new Intent(act, ChatActivity.class
+                                        );
 
                                         intent.putExtra(
                                                 "title", channel.toString());
                                         intent.putExtra(
                                                 "Channel", channel);
-                                        intent.putExtra("filePath", filePath);
-                                        intent.putExtra("lowPriority", sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
+                                        intent.putExtra(
+                                                "filePath", filePath);
+                                        intent.putExtra(
+                                                "lowPriority", sharedPref.getBoolean("lastSendImageWithMinPriotiy", false));
                                         //intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
                                         act.startActivity(intent);
                                     } else {
                                         Message msg = Message.obtain(null,
@@ -981,7 +1072,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                             act.runOnUiThread(new Runnable() {
 
                                                 public void run() {
-                                                    Toast.makeText(act, "Could not send picture. Please restart the service.", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(act, act.getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                         }
@@ -1002,7 +1093,13 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                         }.start();
                     }
                 });
-        builder.setNegativeButton("No", null);
+        builder.setNegativeButton(act.getString(R.string.no), new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                hasPhotoToSend = false;
+                photoToSend = "";
+            }
+        });
         builder.show();
     }
 
@@ -1066,7 +1163,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     runOnUiThread(new Runnable() {
 
                         public void run() {
-                            Toast.makeText(ChatActivity.this, "Could not send message. Please restart the service.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ChatActivity.this, getString(R.string.could_not_send_text_please_restart_the_service), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }

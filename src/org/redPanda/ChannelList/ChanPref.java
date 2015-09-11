@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -19,11 +20,11 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
-import android.widget.CheckBox;
 import static java.lang.Thread.sleep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.BS;
+import org.redPanda.R;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Test;
 
@@ -39,11 +40,13 @@ public class ChanPref extends PreferenceActivity {
     public static String CHAN_NOTIFICATIONS = "chan_notify";
     public Intent intent;
     public Channel chan;
+    private Resources res;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         doBindService();
+        res = getResources();
         intent = getIntent();
         chan = (Channel) intent.getExtras().get("Channel");
         setPreferenceScreen(createPreferenceHierarchy());
@@ -54,13 +57,13 @@ public class ChanPref extends PreferenceActivity {
 
         //final Channel chan = (Channel) intent.getExtras().get("Channel");
         PreferenceCategory mainc = new PreferenceCategory(this);
-        mainc.setTitle("Channel Einstellungen");
+        mainc.setTitle(chan.toString());
         root.addPreference(mainc);
 
         EditTextPreference activePref = new EditTextPreference(this);
         activePref.setKey(CHAN_NAME + chan.getId()); //ToDoE: Nollpointer in this line? chan null?
-        activePref.setTitle("Channel name");
-        activePref.setSummary("The name of the channel. Visible only for you.");
+        activePref.setTitle(res.getString(R.string.channel_name));
+        activePref.setSummary(res.getString(R.string.the_name_of_the_channel_visible_only_for_you));
         activePref.setText(chan.toString());
         activePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 
@@ -83,15 +86,15 @@ public class ChanPref extends PreferenceActivity {
 
         CheckBoxPreference silentPref = new CheckBoxPreference(this);
         silentPref.setKey(CHAN_SILENT + chan.getId());
-        silentPref.setTitle("Silent Mode");
-        silentPref.setSummary("If activated, the notification will not make any sound or will vibrate.");
+        silentPref.setTitle(res.getString(R.string.silent_mode));
+        silentPref.setSummary(res.getString(R.string.if_activated_the_notification_will_not_make_any_sound_or_will_vibrate));
         silentPref.setDefaultValue(false);
         mainc.addPreference(silentPref);
 
         CheckBoxPreference noNotifications = new CheckBoxPreference(this);
         noNotifications.setKey(CHAN_NOTIFICATIONS + chan.getId());
-        noNotifications.setTitle("Notifications");
-        noNotifications.setSummary("If disabled, you will not get any notification for new messages.");
+        noNotifications.setTitle(res.getString(R.string.notifications));
+        noNotifications.setSummary(res.getString(R.string.if_disabled_you_will_not_get_any_notifications_for_new_messages));
         noNotifications.setDefaultValue(true);
         mainc.addPreference(noNotifications);
 

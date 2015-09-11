@@ -74,7 +74,6 @@ public class ConnectivityChanged extends BroadcastReceiver {
 //            }
 //            lastNoInternet = false;
 //            lastConnectionType = 2;
-
         } else if (mobile != null && mobile.isConnected()) {
 
             Settings.REDUCE_TRAFFIC = true;
@@ -94,10 +93,13 @@ public class ConnectivityChanged extends BroadcastReceiver {
                 } else {
                     Settings.connectToNewClientsTill = Long.MIN_VALUE;
 
-                    ArrayList<Peer> clonedPeerList = (ArrayList<Peer>) Test.peerList.clone();
-                    for (Peer peer : clonedPeerList) {
-                        peer.disconnect("reducing traffic...");
+                    if (Test.peerList != null) {
+                        ArrayList<Peer> clonedPeerList = (ArrayList<Peer>) Test.peerList.clone();
+                        for (Peer peer : clonedPeerList) {
+                            peer.disconnect("reducing traffic...");
+                        }
                     }
+
                 }
 
             } else {
@@ -108,7 +110,6 @@ public class ConnectivityChanged extends BroadcastReceiver {
 //                Main.internetConnectionInterrupted();
 //            }
 //            lastNoInternet = false;
-
             //lastConnectionType = 1;
         } else {
             Settings.connectToNewClientsTill = Long.MIN_VALUE;
