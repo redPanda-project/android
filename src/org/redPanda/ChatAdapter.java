@@ -88,7 +88,7 @@ public class ChatAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 4; //To change body of generated methods, choose Tools | Templates.
+        return 5; //To change body of generated methods, choose Tools | Templates.
     }
 
     public static int getImageMaxSize() {
@@ -97,16 +97,19 @@ public class ChatAdapter extends BaseAdapter {
 
     @Override
     public int getItemViewType(int position) {
-        if (mMessages.get(position).getMsgType() == ImageMsg.BYTE) {
-            return 0;
-        } //To change body of generated methods, choose Tools | Templates.
-        if (mMessages.get(position).getMsgType() == daydevider) {
-            return 2;
+        switch (mMessages.get(position).getMsgType()) {
+            case ImageMsg.BYTE:
+                return 0;
+            case daydevider:
+                return 2;
+            case unreadMesDevider:
+                return 3;
+            case BlockMsg.BYTE:
+                return 4;
+            default:
+                return 1;
         }
-        if (mMessages.get(position).getMsgType() == unreadMesDevider) {
-            return 3;
-        }
-        return 1;
+
     }
 
     @Override
@@ -131,7 +134,19 @@ public class ChatAdapter extends BaseAdapter {
         }
         if (convertView == null) {
             holder = new ViewHolder();
-            if (cM.getMsgType() != daydevider && cM.getMsgType() != unreadMesDevider) {
+            if (cM.getMsgType() == unreadMesDevider) {
+                convertView = LayoutInflater.from(mContext).inflate(R.layout.unreadmesdev, parent, false);
+                holder.bubbleText = (TextView) convertView.findViewById(R.id.umdText);
+                convertView.setTag(holder);
+            } else if (cM.getMsgType() == daydevider) {
+                convertView = LayoutInflater.from(mContext).inflate(R.layout.daydivider, parent, false);
+                holder.bubbleText = (TextView) convertView.findViewById(R.id.ddText);
+                convertView.setTag(holder);
+            } else if (cM.getMsgType() == BlockMsg.BYTE) {
+                convertView = LayoutInflater.from(mContext).inflate(R.layout.blockheader, parent, false);
+                holder.bubbleText = (TextView) convertView.findViewById(R.id.blockText);
+                convertView.setTag(holder);
+            } else {
 
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
                 holder.big = (LinearLayout) convertView.findViewById(R.id.chatrow);
@@ -150,18 +165,6 @@ public class ChatAdapter extends BaseAdapter {
                 //    holder.im = (ImageView) convertView.findViewById(R.id.thereic);
                 convertView.setTag(holder);
                 // holder.bubble.setPadding(0, 0, 0, 0);
-            } else {
-                if (cM.getMsgType() == unreadMesDevider) {
-                    convertView = LayoutInflater.from(mContext).inflate(R.layout.unreadmesdev, parent, false);
-                    holder.bubbleText = (TextView) convertView.findViewById(R.id.umdText);
-                    convertView.setTag(holder);
-                } else {
-                    if (cM.getMsgType() == daydevider) {
-                        convertView = LayoutInflater.from(mContext).inflate(R.layout.daydivider, parent, false);
-                        holder.bubbleText = (TextView) convertView.findViewById(R.id.ddText);
-                        convertView.setTag(holder);
-                    }
-                }
             }
         } else {
 
@@ -187,11 +190,11 @@ public class ChatAdapter extends BaseAdapter {
         // bub += "<small>" + time + "</small> " + content + readText;
         //holder.bubbleText.setText(Html.fromHtml(bub));
         if (cM.getMsgType() == daydevider || cM.getMsgType() == unreadMesDevider) {
-            holder.bubbleText.setText(cM.getText());
+            holder.bubbleText.setText(content);
             holder.bubbleText.setGravity(Gravity.CENTER);
             return convertView;
         } else {
-            if (cM.getMsgType() == TextMsg.BYTE || cM.getMsgType() == BlockMsg.BYTE) {
+            if (cM.getMsgType() == TextMsg.BYTE) {
                 //  holder.bubbleTime.setPadding(0, 0, 0, 0);
                 holder.bubbleDeliverd.setTextColor(Color.BLACK);
                 //   holder.bubbleText.setVisibility(View.VISIBLE);
@@ -213,6 +216,13 @@ public class ChatAdapter extends BaseAdapter {
 //                }
 //                holder.bubbleImage.setImageDrawable(null);
 //            }
+            } else if (cM.getMsgType() == BlockMsg.BYTE) {
+                if (cM.isFromMe()) {
+                    holder.bubbleText.setText(content);
+                } else {
+                    holder.bubbleText.setText("(" + cM.getName() + ") " + content);
+                }
+                return convertView;
             } else if (cM.getMsgType() == ImageMsg.BYTE) {
                 holder.bubbleDeliverd.setTextColor(Color.WHITE);
                 if (android.os.Build.VERSION.SDK_INT >= 16) {
@@ -303,6 +313,7 @@ public class ChatAdapter extends BaseAdapter {
 //            holder.im.setVisibility(View.VISIBLE);
 //            holder.im.getLayoutParams().width = 30;
 //            holder.im.getLayoutParams().height = 30;
+            holder.bubbleHead.setPadding(0, 0, 0, 0);
         } //If not mine then it is from sender to show orange background and align to left
         else {
             //  params.addRule(RelativeLayout.RIGHT_OF, R.id.bubbleHead);
@@ -331,7 +342,7 @@ public class ChatAdapter extends BaseAdapter {
             // System.out.println(" du");
             holder.big.setGravity(Gravity.LEFT);
             //lp.gravity = Gravity.LEFT;
-
+            holder.bubbleHead.setPadding(2, 2, 2, 2);
         }
         //Math.min(lp.width, (int) (getWidestView(mContext, iA)*1.05));
         //holder.bubbleLayout.setLayoutParams(params);
