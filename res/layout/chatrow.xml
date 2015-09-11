@@ -14,8 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dip"
         android:layout_marginBottom="2dip"
-
-
+        android:background="#80000000"
     />
     <RelativeLayout
         android:id="@+id/bubble"

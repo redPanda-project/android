@@ -4,6 +4,7 @@
  */
 package org.redPanda;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import static android.app.Activity.RESULT_OK;
 import android.app.AlertDialog;
@@ -19,6 +20,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -40,6 +42,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -122,8 +125,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
 
-        getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
-
+//        getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         Intent intent = new Intent(this, BS.class);
         //startService(intent);
@@ -249,7 +251,10 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     }
 
     private void lookForMessageToSend() {
-        //getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+////        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+////        ActionBar abar = getActionBar();
+////        abar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#80000000")));
         //look for voice-to-text message from wearable...
         CharSequence messageText = getMessageText(getIntent());
         if (messageText != null) {
