@@ -8,6 +8,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -19,6 +20,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.*;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -80,7 +82,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 542;
+    public static final int VERSION = 543;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -806,15 +808,22 @@ public class BS extends Service {
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
         // Set the info for the views that show in the notification panel.
         String update = getResources().getString(R.string.update_found);
-        Notification notification = new Notification(R.drawable.icon, update, System.currentTimeMillis());
-        //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
-        notification.setLatestEventInfo(getApplicationContext(), update, getResources().getString(R.string.click_to_download), contentIntent);
-        //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
-        notification.flags = Notification.FLAG_AUTO_CANCEL;
-        //notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "6");
+//////        Notification notification = new Notification(R.drawable.icon, update, System.currentTimeMillis());
+//////        //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
+//////        notification.setLatestEventInfo(getApplicationContext(), update, , contentIntent);
+//////        //notification.defaults |= Notification.FLAG_AUTO_CANCEL;
+//////        notification.flags = Notification.FLAG_AUTO_CANCEL;
+//////        //notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "6");
+//////
+//////        // Send the notification.
+//////        // We use a string id because it is a unique number.  We use it later to cancel.
 
-        // Send the notification.
-        // We use a string id because it is a unique number.  We use it later to cancel.
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(
+                this);
+        Notification notification = builder.setContentIntent(contentIntent)
+                .setSmallIcon(R.drawable.icon).setTicker(update).setWhen(System.currentTimeMillis())
+                .setAutoCancel(true).setContentTitle(getResources().getString(R.string.click_to_download))
+                .setContentText(update).build();
         ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(-10, notification);
     }
 

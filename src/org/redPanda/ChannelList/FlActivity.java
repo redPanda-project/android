@@ -54,6 +54,7 @@ import org.redPandaLib.core.Settings;
 import org.redPandaLib.core.Test;
 import android.support.v4.util.LruCache;
 import android.support.v4.widget.DrawerLayout;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import java.util.Locale;
 import org.redPanda.MenuAdapter;
@@ -112,8 +113,24 @@ public class FlActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fl);
 
+        infotext = (TextView) findViewById(R.id.infotext);
+        infotext.setTextColor(Color.GRAY);
+
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        //just here is the transparent theme active
+        if (android.os.Build.VERSION.SDK_INT >= 14) {
+
+            // Calculate ActionBar height
+            TypedValue tv = new TypedValue();
+            if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+                int actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+                infotext.setPadding(0, actionBarHeight, 0, 0);
+                mDrawerList.setPadding(0, actionBarHeight, 0, 0);
+            }
+
+        }
 
         String[] str = new String[]{this.getString(R.string.create_new_channel),
             this.getString(R.string.import_channel), this.getString(R.string.scan_qr_code), this.getString(R.string.settings)};
@@ -270,9 +287,6 @@ public class FlActivity extends Activity {
 //        Intent intent = new Intent(this, BS.class);
 //        startService(intent);
 //        Toast.makeText(FlActivity.this, "doBindService", Toast.LENGTH_SHORT).show();
-        infotext = (TextView) findViewById(R.id.infotext);
-        infotext.setTextColor(Color.GRAY);
-
 //        Button newChButton = (Button) findViewById(R.id.NKButton);
 //
 //        newChButton.setOnClickListener(new View.OnClickListener() {

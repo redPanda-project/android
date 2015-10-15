@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/imageSendButtonFromChat"
-          android:icon="@drawable/ic_action_new_attachment"
+          android:icon="@drawable/ic_attach_file_white_48dp"
           android:showAsAction="ifRoom"/>
     <item android:id="@+id/openCameraButtonFromChat"
-              android:icon="@drawable/ic_action_camera"
+              android:icon="@drawable/ic_camera_enhance_white_48dp"
               android:showAsAction="ifRoom"/>
     <item android:id="@+id/cm_Share" android:title="Share"></item>
     <item android:id="@+id/cm_QR" android:title="Share by QR"></item>
