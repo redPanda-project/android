@@ -633,6 +633,9 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                         try {
                             mService.send(toSendMessage);
                             toSendMessage = null;
+                            Intent intent = getIntent();
+                            String tmp = null;
+                            intent.putExtra("filePath", tmp);
                         } catch (RemoteException e) {
                         }
                     }
@@ -975,28 +978,26 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
             }
 
-        } else {
-            if (requestCode == CAPTURE_PHOTO) {
-                if (resultCode != RESULT_OK) {
-                    //no image selected...
-                    runOnUiThread(new Runnable() {
+        } else if (requestCode == CAPTURE_PHOTO) {
+            if (resultCode != RESULT_OK) {
+                //no image selected...
+                runOnUiThread(new Runnable() {
 
-                        public void run() {
-                            Toast.makeText(ChatActivity.this, getString(R.string.no_image_selected), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    return;
-                }
-                Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
-                photoToSend = filePath;
-                hasPhotoToSend = true;
-                if (mService != null) {
-                    sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
-                }
-
-            } else {
-                super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+                    public void run() {
+                        Toast.makeText(ChatActivity.this, getString(R.string.no_image_selected), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return;
             }
+            Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
+            photoToSend = filePath;
+            hasPhotoToSend = true;
+            if (mService != null) {
+                sendPictureDialog(photoToSend, this, chan, mMessenger, mService, false);
+            }
+
+        } else {
+            super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
         }
     }
 
@@ -1034,8 +1035,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                     if (openChannel) {
                                         Intent intent;
                                         intent
-                                        = new Intent(act, ChatActivity.class
-                                        );
+                                                = new Intent(act, ChatActivity.class
+                                                );
 
                                         intent.putExtra(
                                                 "title", channel.toString());
