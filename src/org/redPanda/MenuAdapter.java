@@ -74,6 +74,10 @@ public class MenuAdapter extends BaseAdapter {
                 holder.name.setText(text);
                 holder.icon.setImageResource(R.drawable.ic_action_settings);
                 break;
+            case 4://Help
+                holder.name.setText(text);
+                holder.icon.setImageResource(R.drawable.ic_help_outline_black_48dp);
+                break;
 
         }
         return convertView;

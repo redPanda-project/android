@@ -26,7 +26,7 @@ import org.redPandaLib.core.Test;
  */
 public class ConnectivityChanged extends BroadcastReceiver {
 
-    //private int lastConnectionType = -1; //-1: unknown, 1: mobile, 2: wlan
+    private static int lastConnectionType = -1; //-1: unknown, 1: mobile, 2: wlan
     private boolean lastNoInternet = false;
 
     @Override
@@ -36,6 +36,8 @@ public class ConnectivityChanged extends BroadcastReceiver {
 //        if (Test.localSettings == null) {
 //            return;
 //        }
+        int oldConnectionTyp = lastConnectionType;
+
         new ExceptionLogger(context);
 
         final ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -43,6 +45,19 @@ public class ConnectivityChanged extends BroadcastReceiver {
         final android.net.NetworkInfo wifi = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
         final android.net.NetworkInfo mobile = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+//        new Thread() {
+//
+//            @Override
+//            public void run() {
+////                Check if backend started successful
+//                if (Test.localSettings == null) {
+//                    return;
+//                }
+//                Main.sendBroadCastMsg("wifi: " + ((wifi != null && wifi.isConnected())) + " mobile: " + ((mobile != null && mobile.isConnected())));
+//            }
+//
+//        }.start();
 
         if (wifi != null && wifi.isConnected()) {
 
@@ -73,7 +88,7 @@ public class ConnectivityChanged extends BroadcastReceiver {
 //                Main.internetConnectionInterrupted();
 //            }
 //            lastNoInternet = false;
-//            lastConnectionType = 2;
+            lastConnectionType = 2;
         } else if (mobile != null && mobile.isConnected()) {
 
             Settings.REDUCE_TRAFFIC = true;
@@ -110,11 +125,15 @@ public class ConnectivityChanged extends BroadcastReceiver {
 //                Main.internetConnectionInterrupted();
 //            }
 //            lastNoInternet = false;
-            //lastConnectionType = 1;
+            lastConnectionType = 1;
         } else {
             Settings.connectToNewClientsTill = Long.MIN_VALUE;
-            //lastConnectionType = -1;
+            lastConnectionType = -1;
 //            lastNoInternet = true;
+            Main.internetConnectionInterrupted();
+        }
+
+        if (oldConnectionTyp != lastConnectionType) {
             Main.internetConnectionInterrupted();
         }
 

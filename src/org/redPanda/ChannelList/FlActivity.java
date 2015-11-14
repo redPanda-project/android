@@ -133,7 +133,10 @@ public class FlActivity extends Activity {
         }
 
         String[] str = new String[]{this.getString(R.string.create_new_channel),
-            this.getString(R.string.import_channel), this.getString(R.string.scan_qr_code), this.getString(R.string.settings)};
+            this.getString(R.string.import_channel),
+            this.getString(R.string.scan_qr_code),
+            this.getString(R.string.settings),
+            this.getString(R.string.help)};
         // Set the adapter for the list view
         mDrawerList.setBackgroundColor(Color.WHITE);
         mDrawerList.setAdapter(new MenuAdapter(context, str));
@@ -273,8 +276,13 @@ public class FlActivity extends Activity {
                         break;
                     case 3: //settings
                         Intent intent2 = new Intent(FlActivity.this, Preferences.class);
-
                         startActivityForResult(intent2, PREF_REQ_CODE);
+                        break;
+                    case 4: //Show help page / FAQ
+                        String urlToFAQatgithub = "https://github.com/redPanda-project/redPandaj/wiki/FAQ-for-the-android-application";
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse(urlToFAQatgithub));
+                        startActivity(i);
                         break;
 
                 }

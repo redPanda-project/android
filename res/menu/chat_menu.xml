@@ -5,7 +5,7 @@
           android:icon="@drawable/ic_attach_file_white_48dp"
           android:showAsAction="ifRoom"/>
     <item android:id="@+id/openCameraButtonFromChat"
-              android:icon="@drawable/ic_camera_enhance_white_48dp"
+              android:icon="@drawable/ic_local_see_white_48dp"
               android:showAsAction="ifRoom"/>
     <item android:id="@+id/cm_Share" android:title="Share"></item>
     <item android:id="@+id/cm_QR" android:title="Share by QR"></item>
