@@ -23,6 +23,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.text.ClipboardManager;
 import android.text.InputType;
@@ -58,6 +59,7 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import java.util.Locale;
 import org.redPanda.MenuAdapter;
+import org.redPanda.StatusActivity;
 import org.redPandaLib.core.PeerTrustData;
 
 /**
@@ -80,6 +82,7 @@ public class FlActivity extends Activity {
     private String textAction = "", imageAction = "";
     private final String[] imageFileExtensions = new String[]{"jpg", "png", "gif", "jpeg"};
     private final int PREF_REQ_CODE = 1;
+    private static final int DIALOG_SHOWN_ID = 2;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -136,6 +139,7 @@ public class FlActivity extends Activity {
             this.getString(R.string.import_channel),
             this.getString(R.string.scan_qr_code),
             this.getString(R.string.settings),
+            this.getString(R.string.status),
             this.getString(R.string.help)};
         // Set the adapter for the list view
         mDrawerList.setBackgroundColor(Color.WHITE);
@@ -278,7 +282,11 @@ public class FlActivity extends Activity {
                         Intent intent2 = new Intent(FlActivity.this, Preferences.class);
                         startActivityForResult(intent2, PREF_REQ_CODE);
                         break;
-                    case 4: //Show help page / FAQ
+                    case 4: //Show status view
+                        Intent intent3 = new Intent(FlActivity.this, StatusActivity.class);
+                        startActivity(intent3);
+                        break;
+                    case 5: //Show help page / FAQ
                         String urlToFAQatgithub = "https://github.com/redPanda-project/redPandaj/wiki/FAQ-for-the-android-application";
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(urlToFAQatgithub));
@@ -467,6 +475,28 @@ public class FlActivity extends Activity {
         }
 
 //        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.red_bg));
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        int dialogShownID = sharedPref.getInt("dialogShownID", -1);
+
+        if (dialogShownID != DIALOG_SHOWN_ID) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.welcome_dialog_message)
+                    .setTitle(R.string.welcome_dialog_title);
+            // Add the buttons
+            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    sharedPref.edit().putInt("dialogShownID", DIALOG_SHOWN_ID).commit();
+                }
+            });
+            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+            AlertDialog dialog = builder.create();
+
+            dialog.show();
+        }
     }
 
     private class OnItemClickListenerImpl implements OnItemClickListener {

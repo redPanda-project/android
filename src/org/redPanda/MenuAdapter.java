@@ -74,7 +74,11 @@ public class MenuAdapter extends BaseAdapter {
                 holder.name.setText(text);
                 holder.icon.setImageResource(R.drawable.ic_action_settings);
                 break;
-            case 4://Help
+            case 4://Status
+                holder.name.setText(text);
+                holder.icon.setImageResource(R.drawable.ic_action_help);
+                break;
+            case 5://Help
                 holder.name.setText(text);
                 holder.icon.setImageResource(R.drawable.ic_action_help);
                 break;

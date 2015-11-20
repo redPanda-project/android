@@ -438,7 +438,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                 listView.setSelection(jumpTo);
                             }
                         });
-
+                        jumpTo = -1;
                     }
                     break;
 
@@ -1035,8 +1035,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                     if (openChannel) {
                                         Intent intent;
                                         intent
-                                                = new Intent(act, ChatActivity.class
-                                                );
+                                        = new Intent(act, ChatActivity.class
+                                        );
 
                                         intent.putExtra(
                                                 "title", channel.toString());

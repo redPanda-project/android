@@ -6,6 +6,7 @@
     <string name="import_channel">Import channel</string>
     <string name="scan_qr_code">Scan QR-code</string>
     <string name="settings">Settings</string>
+    <string name="status">Status</string>
     <string name="help">Help</string>
     
     <string name="new_channel_name">New channel name</string>
@@ -139,5 +140,9 @@
     <!--PictureActivity-->   
     <string name="error_could_not_load_image">Error: Could not load image.</string>        
     <!--end PA-->     
+  
+  <!--Welcome Dialog-->
+    <string name="welcome_dialog_title">Welcome.</string>
+    <string name="welcome_dialog_message">Thank you for installing redpanda and helping to build up a innovative messaging network.\n\nPlease be aware of these things:\n• This app can cause hugh traffic since it is in a early devlopment state (please deactivate mobile traffic if you do not have a flatrate).\n• There was no security audit, so communication might not be secure!\n• Use this software at your own risk.</string>
   
 </resources>
