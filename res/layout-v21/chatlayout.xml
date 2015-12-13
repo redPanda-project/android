@@ -67,8 +67,8 @@
         <ImageButton
             android:id="@+id/emojiconEnableButton"
             android:scaleType="fitCenter"
-            android:layout_width="38sp"
-            android:layout_height="38sp"
+            android:layout_width="wrap_content"
+            android:layout_height="42sp"
             android:onClick="toggleEmojiconKeyboard"                
             style="?android:attr/borderlessButtonStyle"
             android:layout_gravity="bottom"
@@ -79,7 +79,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:isScrollContainer="true"
-            android:minHeight="38sp"
+            android:minHeight="42sp"
             android:layout_margin="5sp"
             android:layout_weight="1"
             android:inputType="textMultiLine"
@@ -88,7 +88,7 @@
             android:text=""
             emojicon:emojiconSize="28sp"
             android:textColor="#FFF"
-            
+            android:maxLines="4"            
         />
             
         <!-- <Button
@@ -108,8 +108,8 @@
         <ImageButton
             android:id="@+id/mainSendButton"
             android:scaleType="fitCenter"
-            android:layout_width="38sp"
-            android:layout_height="38sp"
+            android:layout_width="wrap_content"
+            android:layout_height="42sp"
             style="?android:attr/borderlessButtonStyle"
             android:onClick="sendMessage"
             android:layout_gravity="bottom"
