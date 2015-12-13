@@ -143,6 +143,6 @@
   
   <!--Welcome Dialog-->
     <string name="welcome_dialog_title">Welcome.</string>
-    <string name="welcome_dialog_message">Thank you for installing redpanda and helping to build up a innovative messaging network.\n\nPlease be aware of these things:\n• This app can cause hugh traffic since it is in a early devlopment state (please deactivate mobile traffic if you do not have a flatrate).\n• There was no security audit, so communication might not be secure!\n• Use this software at your own risk.</string>
+    <string name="welcome_dialog_message">Thank you for installing redPanda and helping to build up an innovative secure peer-to-peer instant messaging network.\n\nNote that redPanda is still in an early development state. Please also be aware of the following things:\n• redPanda can possibly cause unusually high traffic. If you do not have an unlimited data plan, you should deactivate mobile data .\n• redPanda has not been independently audited yet. Your communication might not be 100% secure!\n• Use this software at your own risk.</string>
   
 </resources>

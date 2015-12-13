@@ -82,7 +82,7 @@ public class FlActivity extends Activity {
     private String textAction = "", imageAction = "";
     private final String[] imageFileExtensions = new String[]{"jpg", "png", "gif", "jpeg"};
     private final int PREF_REQ_CODE = 1;
-    private static final int DIALOG_SHOWN_ID = 2;
+    private static final int DIALOG_SHOWN_ID = 3;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -80,7 +80,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 546;
+    public static final int VERSION = 548;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;

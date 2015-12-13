@@ -151,7 +151,7 @@ public class StatusActivity extends Activity {
                                 ip = ip.substring(0, 12);
                             }
 
-                            mtext += String.format("%12s %5d %4s %5d\n", ip, p.port, "" + p.authed, (p.peerTrustData != null ? p.getLoadedMsgs().size() : -1));
+                            mtext += String.format("%12s %5d %5s %5d\n", ip, p.port, "" + p.authed, (p.peerTrustData != null ? p.getLoadedMsgs().size() : -1));
                         }
 
                         final String finalText = mtext;
