@@ -67,12 +67,17 @@
         <ImageButton
             android:id="@+id/emojiconEnableButton"
             android:scaleType="fitCenter"
-            android:layout_width="wrap_content"
-            android:layout_height="42sp"
+            android:layout_width="38sp"
+            android:layout_height="38sp"
+            android:layout_marginBottom="5sp"
+            android:layout_marginLeft="5sp"
+            android:layout_marginRight="5sp"
+            android:layout_marginTop="0sp"
+            android:padding="5sp"
             android:onClick="toggleEmojiconKeyboard"                
             style="?android:attr/borderlessButtonStyle"
             android:layout_gravity="bottom"
-            android:src="@drawable/ic_insert_emoticon_white" />
+            android:src="@drawable/ic_smiley"      />
              
         <com.rockerhieu.emojicon.EmojiconEditText
             android:id="@+id/mainEditText"
@@ -80,18 +85,24 @@
             android:layout_height="wrap_content"
             android:isScrollContainer="true"
             android:minHeight="42sp"
-            android:layout_margin="5sp"
             android:layout_weight="1"
             android:inputType="textMultiLine"
             android:hint="Write here"
-            android:padding="5sp"
             android:text=""
             emojicon:emojiconSize="28sp"
             android:textColor="#FFF"
-            android:maxLines="4"            
+            android:maxLines="7"
+            android:layout_gravity="bottom"  
+            android:paddingTop="5sp"
+            android:paddingBottom="5sp"
+            android:layout_marginBottom="5sp"
+            android:layout_marginTop="0sp"
+        
         />
             
-        <!-- <Button
+        <!--
+            android:background="#FFFF00"  
+ <Button
          android:id="@+id/mainSendButton"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
@@ -108,12 +119,17 @@
         <ImageButton
             android:id="@+id/mainSendButton"
             android:scaleType="fitCenter"
-            android:layout_width="wrap_content"
-            android:layout_height="42sp"
+            android:layout_width="38sp"
+            android:layout_height="38sp"
+            android:layout_marginBottom="5sp"
+            android:layout_marginLeft="5sp"
+            android:layout_marginRight="5sp"
+            android:layout_marginTop="0sp"
+            android:padding="5sp"
             style="?android:attr/borderlessButtonStyle"
             android:onClick="sendMessage"
             android:layout_gravity="bottom"
-            android:src="@drawable/ic_send_white" />
+            android:src="@drawable/ic_send_white"       />
                   
     </LinearLayout>
 
