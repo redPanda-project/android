@@ -45,51 +45,76 @@
         android:layout_height="wrap_content"
         android:padding="0dp"
         android:layout_above="@+id/emojicons"
-        android:layout_alignParentBottom="true">
-                
-        <Button
+        android:layout_alignParentBottom="true"
+        android:baselineAligned="false">
+        <!--        
+   <Button
+       android:id="@+id/emojiconEnableButton"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_margin="5sp"
+       android:onClick="toggleEmojiconKeyboard"
+       android:paddingBottom="5sp"
+       android:paddingLeft="5sp"
+       android:paddingRight="5sp"
+       android:paddingTop="5sp"
+       android:text=":)"
+       android:textColor="#FFF"
+       android:minWidth="0dp"/>
+   />
+        -->   
+             
+        <ImageButton
             android:id="@+id/emojiconEnableButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5sp"
-            android:onClick="toggleEmojiconKeyboard"
-            android:paddingBottom="5sp"
-            android:paddingLeft="5sp"
-            android:paddingRight="5sp"
-            android:paddingTop="5sp"
-            android:text=":)"
-            android:textColor="#FFF"
-            android:minWidth="0dp"/>
-        />
-                
+            android:scaleType="fitCenter"
+            android:layout_width="38sp"
+            android:layout_height="38sp"
+            android:onClick="toggleEmojiconKeyboard"                
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_gravity="bottom"
+            android:src="@drawable/ic_insert_emoticon_white" />
+             
         <com.rockerhieu.emojicon.EmojiconEditText
             android:id="@+id/mainEditText"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
+            android:isScrollContainer="true"
+            android:minHeight="38sp"
             android:layout_margin="5sp"
             android:layout_weight="1"
+            android:inputType="textMultiLine"
             android:hint="Write here"
             android:padding="5sp"
             android:text=""
             emojicon:emojiconSize="28sp"
-            android:inputType="textMultiLine"
             android:textColor="#FFF"
+            
         />
             
-        <Button
+        <!-- <Button
+         android:id="@+id/mainSendButton"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_margin="5sp"
+         android:onClick="sendMessage"
+         android:paddingBottom="5sp"
+         android:paddingLeft="15sp"
+         android:paddingRight="15sp"
+         android:paddingTop="5sp"
+         android:text="Send"
+         android:textColor="#FFF" />
+     />
+        -->
+        <ImageButton
             android:id="@+id/mainSendButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5sp"
+            android:scaleType="fitCenter"
+            android:layout_width="38sp"
+            android:layout_height="38sp"
+            style="?android:attr/borderlessButtonStyle"
             android:onClick="sendMessage"
-            android:paddingBottom="5sp"
-            android:paddingLeft="15sp"
-            android:paddingRight="15sp"
-            android:paddingTop="5sp"
-            android:text="Send"
-            android:textColor="#FFF" />
-        />
-                
+            android:layout_gravity="bottom"
+            android:src="@drawable/ic_send_white" />
+                  
     </LinearLayout>
 
 

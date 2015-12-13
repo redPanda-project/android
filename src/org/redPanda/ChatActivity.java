@@ -49,6 +49,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -136,6 +137,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         //scrollView = (ScrollView) findViewById(R.id.mainScrollView);
         // listView = (ListView) findViewById(R.id.chatlist);
         editText = (EditText) findViewById(R.id.mainEditText);
+     //   editText.setScrollContainer(true);
         messages = new ArrayList<ChatMsg>();
         cA = new ChatAdapter(this, messages);
 
@@ -143,6 +145,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         listView.setAdapter(cA);
 
         mainLayoutInputAndSend = (LinearLayout) findViewById(R.id.mainLayoutInputAndSend);
+        
 
         //hide smiley keyboard at beginning
         emojiconsFragment = (EmojiconsFragment) getSupportFragmentManager().findFragmentById(R.id.emojicons);
@@ -150,7 +153,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         tr.hide(emojiconsFragment);
         tr.commit();
 
-        Button toogleEmojiconKeyboard = (Button) findViewById(R.id.emojiconEnableButton);
+        ImageButton toogleEmojiconKeyboard = (ImageButton) findViewById(R.id.emojiconEnableButton);
         toogleEmojiconKeyboard.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View arg0) {
@@ -224,7 +227,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 //                return false;
 //            }
 //        });
-        Button button = (Button) findViewById(R.id.mainSendButton);
+        ImageButton button = (ImageButton) findViewById(R.id.mainSendButton);
         button.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View arg0) {
