@@ -146,7 +146,7 @@ public class PictureActivity extends Activity {
             protected void onPostExecute(Drawable picture) {
                 ImageView iv = imageViewReference.get();
                 iv.setImageDrawable(picture);
-                attacher.setZoomable(!isgif);              
+                attacher.setZoomable(true);              
                 attacher.update();
             }
 
