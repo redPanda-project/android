@@ -35,6 +35,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.RemoteInput;
 import android.text.ClipboardManager;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -42,6 +43,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -137,7 +139,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         //scrollView = (ScrollView) findViewById(R.id.mainScrollView);
         // listView = (ListView) findViewById(R.id.chatlist);
         editText = (EditText) findViewById(R.id.mainEditText);
-     //   editText.setScrollContainer(true);
+        //   editText.setScrollContainer(true);
         messages = new ArrayList<ChatMsg>();
         cA = new ChatAdapter(this, messages);
 
@@ -145,7 +147,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         listView.setAdapter(cA);
 
         mainLayoutInputAndSend = (LinearLayout) findViewById(R.id.mainLayoutInputAndSend);
-        
 
         //hide smiley keyboard at beginning
         emojiconsFragment = (EmojiconsFragment) getSupportFragmentManager().findFragmentById(R.id.emojicons);
@@ -170,7 +171,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
                     lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
                     tr.hide(emojiconsFragment);
-
                     imm.showSoftInput(editText, 0);
                 } else {
                     RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
@@ -203,6 +203,16 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
             }
         });
+        editText.setOnTouchListener(new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (emojiconKeyboardVisible) {
+                    return true;
+                }
+                return false;
+            }
+        });
 
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
 //            public boolean onTouch(View arg0, MotionEvent e) {
@@ -228,6 +238,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 //            }
 //        });
         ImageButton button = (ImageButton) findViewById(R.id.mainSendButton);
+
         button.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View arg0) {
@@ -787,7 +798,6 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             RelativeLayout.LayoutParams lpEmo = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
             //lpEmo.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
             lpEmo.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
-
             RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
             lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
             tr.hide(emojiconsFragment);
@@ -1038,8 +1048,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                                     if (openChannel) {
                                         Intent intent;
                                         intent
-                                        = new Intent(act, ChatActivity.class
-                                        );
+                                                = new Intent(act, ChatActivity.class
+                                                );
 
                                         intent.putExtra(
                                                 "title", channel.toString());
