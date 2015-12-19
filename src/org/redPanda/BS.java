@@ -43,7 +43,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.redPanda.ChannelList.ChanPref;
 import org.redPanda.ChannelList.Preferences;
+import org.redPandaLib.ChannelisNotWriteableException;
 import org.redPandaLib.ImageTooLargeException;
 import org.redPandaLib.Main;
 import org.redPandaLib.NewMessageListener;
@@ -80,7 +82,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 552;
+    public static final int VERSION = 553;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -214,7 +216,10 @@ public class BS extends Service {
                         @Override
                         public void run() {
                             setPriority(Thread.MIN_PRIORITY);
-                            Main.sendMessageToChannel(schan, msgContent);
+                            try {
+                                Main.sendMessageToChannel(schan, msgContent);
+                            } catch (ChannelisNotWriteableException ex) {
+                            }
                         }
                     }.start();
                     break;
@@ -349,6 +354,8 @@ public class BS extends Service {
                                 Main.sendImageToChannel(spchan, path, lowPriority);
                             } catch (ImageTooLargeException ex) {
                                 //Toast.makeText(BS.this, "Image too large.", Toast.LENGTH_SHORT).show();
+                            } catch (ChannelisNotWriteableException ex) {
+                                Logger.getLogger(BS.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
                     }.start();
@@ -365,8 +372,15 @@ public class BS extends Service {
     @Override
     public void onCreate() {
         bs = this;
-        //Toast.makeText(this, "Sevice onCreate", Toast.LENGTH_SHORT).show();
 
+        //Set annoucement channel to silent at default.
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(BS.this);
+        boolean contains = sharedPref.contains(ChanPref.CHAN_SILENT + "-4");
+        if (!contains) {
+            sharedPref.edit().putBoolean(ChanPref.CHAN_SILENT + "-4", true).commit();
+        }
+
+        //Toast.makeText(this, "Sevice onCreate", Toast.LENGTH_SHORT).show();
 //        super.onCreate();
 //
 //        new ExceptionLogger(this);
