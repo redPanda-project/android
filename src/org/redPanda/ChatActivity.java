@@ -147,6 +147,11 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         listView.setAdapter(cA);
 
         mainLayoutInputAndSend = (LinearLayout) findViewById(R.id.mainLayoutInputAndSend);
+        if (chan.isWriteable()) {
+            mainLayoutInputAndSend.setVisibility(View.VISIBLE);
+        } else {
+            mainLayoutInputAndSend.setVisibility(View.GONE);
+        }
 
         //hide smiley keyboard at beginning
         emojiconsFragment = (EmojiconsFragment) getSupportFragmentManager().findFragmentById(R.id.emojicons);
@@ -191,24 +196,34 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             }
         });
 
-        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-
-            public void onFocusChange(View v, boolean hasFocus) {
-
-                InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
-
-                if (emojiconKeyboardVisible) {
-                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                }
-
-            }
-        });
+//        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//
+//            public void onFocusChange(View v, boolean hasFocus) {
+//
+//                InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
+//
+//                if (emojiconKeyboardVisible) {
+//                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+//                }
+//
+//            }
+//        });
         editText.setOnTouchListener(new OnTouchListener() {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (emojiconKeyboardVisible) {
-                    return true;
+                    FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+                    RelativeLayout.LayoutParams lpEmo = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
+                    //lpEmo.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    lpEmo.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+
+                    RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
+                    lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+                    tr.hide(emojiconsFragment);
+                    tr.commit();
+                    emojiconKeyboardVisible = false;
+
                 }
                 return false;
             }
@@ -351,8 +366,12 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         chan = (Channel) intent.getExtras().get("Channel");
         InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-
-        lookForMessageToSend();
+        if (chan.isWriteable()) {
+            mainLayoutInputAndSend.setVisibility(View.VISIBLE);
+            lookForMessageToSend();
+        } else {
+            mainLayoutInputAndSend.setVisibility(View.GONE);
+        }
 
         //we can binde again to the service
         doBindService();
@@ -571,9 +590,14 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             cM = new ChatMsg(tmc.getText(), time, tmc.identity, tmc.getTimestamp(), tmc.fromMe, tmc.message_type, tmc.read, tmc.database_id);
             ChatMsg oCM;
             if (cA.mMessages.isEmpty()) { // Daydivider
+                TextMessageContent tmptmc2 = new TextMessageContent();
+                tmptmc2.text = "";
+                tmptmc2.message_type = ChatAdapter.emptyView;
+                cA.mMessages.add(new ChatMsg(tmptmc2));
+
                 TextMessageContent tmptmc = new TextMessageContent();
                 tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
-                tmptmc.message_type = ChatAdapter.daydevider;
+                tmptmc.message_type = ChatAdapter.dayDivider;
                 cA.mMessages.add(new ChatMsg(tmptmc));
             } else {
                 oCM = cA.mMessages.get(cA.mMessages.size() - 1);
@@ -584,7 +608,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                     hasUnreadMesDev = true;
                     TextMessageContent tmptmc = new TextMessageContent();
                     tmptmc.text = getString(R.string.unread_messages);
-                    tmptmc.message_type = ChatAdapter.unreadMesDevider;
+                    tmptmc.message_type = ChatAdapter.unreadMesDivider;
                     tmptmc.read = true;
                     cA.mMessages.add(new ChatMsg(tmptmc));
                     jumpTo = cA.mMessages.size() - 1;
@@ -592,7 +616,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 if (!d.equals(oD)) {
                     TextMessageContent tmptmc = new TextMessageContent();
                     tmptmc.text = ChatAdapter.formatTime(new Date(tmc.timestamp), true);
-                    tmptmc.message_type = ChatAdapter.daydevider;
+                    tmptmc.message_type = ChatAdapter.dayDivider;
                     tmptmc.read = true;
                     cA.mMessages.add(new ChatMsg(tmptmc));
                 }
@@ -762,6 +786,21 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     @Override
     protected void onResume() {
         super.onResume();
+        if (emojiconKeyboardVisible) {
+            FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+            RelativeLayout.LayoutParams lpEmo = (RelativeLayout.LayoutParams) emojiconsFragment.getView().getLayoutParams();
+            //lpEmo.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            lpEmo.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+
+            RelativeLayout.LayoutParams lpLin = (RelativeLayout.LayoutParams) mainLayoutInputAndSend.getLayoutParams();
+            lpLin.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            tr.hide(emojiconsFragment);
+            tr.commit();
+            emojiconKeyboardVisible = false;
+        } else if (editText != null) {
+            InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+        }
         if (chan != null) {
             BS.currentViewedChannel = chan.getId();
             NotificationManager mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -837,13 +876,9 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
 
             case R.id.cm_QR://Share by QR
                 Intent inte;
-                inte
-                        = new Intent(ChatActivity.this, QRCodeActivity.class
-                        );
-                inte.putExtra(
-                        "title", chan.getName());
-                inte.putExtra(
-                        "Key", chan.exportForHumans());
+                inte = new Intent(ChatActivity.this, QRCodeActivity.class);
+                inte.putExtra("title", chan.getName());
+                inte.putExtra("Key", chan.exportForHumans());
                 startActivity(inte);
                 return true;
             case R.id.cm_Share://Share
@@ -927,6 +962,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         this.menu = menu;
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.chat_menu, menu);
+        menu.setGroupVisible(R.id.menu_group_writeable, chan.isWriteable());
         return true;
     }
 

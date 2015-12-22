@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.Display;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.google.zxing.BarcodeFormat;
@@ -17,7 +18,6 @@ import com.jwetherell.quick_response_code.data.Contents;
 import com.jwetherell.quick_response_code.qrcode.QRCodeEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.redPanda.ChatAdapter;
 import org.redPanda.R;
 
 /**
@@ -31,15 +31,18 @@ public class QRCodeActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.qrview);
         Intent in = getIntent();
-        
-     
+
         ImageView iv = (ImageView) findViewById(R.id.QRImage);
         TextView tv = (TextView) findViewById(R.id.QRText);
+        Display display = getWindowManager().getDefaultDisplay();
+        int width = display.getWidth();  // deprecated
+        int height = display.getHeight();  // deprecated
+
+        int i = Math.min(width, height);
         QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(in.getExtras().getString("Key"),
                 null,
                 Contents.Type.TEXT,
-                BarcodeFormat.QR_CODE.toString(),
-                720);
+                BarcodeFormat.QR_CODE.toString(), i);
         Bitmap bitmap = null;
         try {
             bitmap = qrCodeEncoder.encodeAsBitmap();

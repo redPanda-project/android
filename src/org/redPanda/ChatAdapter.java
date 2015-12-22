@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -59,8 +59,9 @@ import org.redPandaLib.core.messages.TextMsg;
 public class ChatAdapter extends BaseAdapter {
 
     static ExecutorService newThreadPool = Executors.newCachedThreadPool();
-    final static int daydevider = 5;
-    final static int unreadMesDevider = 6;
+    final static int dayDivider = 5;
+    final static int unreadMesDivider = 6;
+    final static int emptyView=7;
     public final static int imageMaxSize = Resources.getSystem().getDisplayMetrics().widthPixels;
     private Context mContext;
     public ArrayList<ChatMsg> mMessages;
@@ -88,7 +89,7 @@ public class ChatAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 5; //To change body of generated methods, choose Tools | Templates.
+        return 6; //To change body of generated methods, choose Tools | Templates.
     }
 
     public static int getImageMaxSize() {
@@ -100,12 +101,14 @@ public class ChatAdapter extends BaseAdapter {
         switch (mMessages.get(position).getMsgType()) {
             case ImageMsg.BYTE:
                 return 0;
-            case daydevider:
+            case dayDivider:
                 return 2;
-            case unreadMesDevider:
+            case unreadMesDivider:
                 return 3;
             case BlockMsg.BYTE:
                 return 4;
+            case emptyView:
+                return 5;
             default:
                 return 1;
         }
@@ -134,11 +137,11 @@ public class ChatAdapter extends BaseAdapter {
         }
         if (convertView == null) {
             holder = new ViewHolder();
-            if (cM.getMsgType() == unreadMesDevider) {
+            if (cM.getMsgType() == unreadMesDivider) {
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.unreadmesdev, parent, false);
                 holder.bubbleText = (TextView) convertView.findViewById(R.id.umdText);
                 convertView.setTag(holder);
-            } else if (cM.getMsgType() == daydevider) {
+            } else if (cM.getMsgType() == dayDivider) {
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.daydivider, parent, false);
                 holder.bubbleText = (TextView) convertView.findViewById(R.id.ddText);
                 convertView.setTag(holder);
@@ -146,8 +149,11 @@ public class ChatAdapter extends BaseAdapter {
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.blockheader, parent, false);
                 holder.bubbleText = (TextView) convertView.findViewById(R.id.blockText);
                 convertView.setTag(holder);
-            } else {
-
+            } else if (cM.getMsgType() == emptyView){
+                convertView = LayoutInflater.from(mContext).inflate(R.layout.emptyview, parent, false);
+                holder.bubbleText = (TextView) convertView.findViewById(R.id.emptyText);
+                convertView.setTag(holder);              
+            } else{    
                 convertView = LayoutInflater.from(mContext).inflate(R.layout.chatrow, parent, false);
                 holder.big = (LinearLayout) convertView.findViewById(R.id.chatrow);
                 holder.bubbleLayout = (RelativeLayout) convertView.findViewById(R.id.bubble);
@@ -189,9 +195,16 @@ public class ChatAdapter extends BaseAdapter {
         //inAdapter iA = new inAdapter(mContext, mMessages.get(position).text);
         // bub += "<small>" + time + "</small> " + content + readText;
         //holder.bubbleText.setText(Html.fromHtml(bub));
-        if (cM.getMsgType() == daydevider || cM.getMsgType() == unreadMesDevider) {
+        if (cM.getMsgType() == dayDivider || cM.getMsgType() == unreadMesDivider || cM.getMsgType() == emptyView) {
             holder.bubbleText.setText(content);
             holder.bubbleText.setGravity(Gravity.CENTER);
+            if (cM.getMsgType() == emptyView){
+                final TypedArray styledAttributes = mContext.getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+                int mActionBarSize = (int) styledAttributes.getDimension(0, 0);
+                styledAttributes.recycle();
+                holder.bubbleText.setHeight(mActionBarSize);             
+            } 
             return convertView;
         } else {
             if (cM.getMsgType() == TextMsg.BYTE) {
