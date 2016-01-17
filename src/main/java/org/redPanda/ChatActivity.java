@@ -128,6 +128,8 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
         chan = (Channel) in.getExtras().get("Channel");
         setContentView(R.layout.chatlayout);
 
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
 //        getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         Intent intent = new Intent(this, BS.class);
@@ -391,14 +393,13 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
      */
     boolean mIsBound;
 
-    private void backToFlActivity() {
+    public static void backToFlActivity(Context context) {
         //super.onBackPressed();
         Intent intent;
-        intent = new Intent(ChatActivity.this, FlActivity.class);
+        intent = new Intent(context, FlActivity.class);
         //TODO look at flags
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        startActivity(intent);
+        context.startActivity(intent);
     }
 
     @Override
@@ -848,7 +849,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
             return;
         }
 
-        backToFlActivity();
+        backToFlActivity(ChatActivity.this);
         finish();
     }
 
@@ -856,7 +857,7 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                backToFlActivity();
+                backToFlActivity(ChatActivity.this);
                 finish();
                 return true;
             case R.id.openCameraButtonFromChat:

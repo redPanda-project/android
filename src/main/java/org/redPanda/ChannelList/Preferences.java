@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.*;
 import android.text.InputType;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -34,6 +35,7 @@ import java.util.Date;
 import java.util.Locale;
 import org.hsqldb.lib.LineReader;
 import org.redPanda.BS;
+import org.redPanda.ChatActivity;
 import org.redPanda.ExceptionLogger;
 import static org.redPanda.ExceptionLogger.stacktrace2String;
 import org.redPanda.License;
@@ -63,6 +65,7 @@ public class Preferences extends PreferenceActivity {
 
         super.onCreate(savedInstanceState);
         setPreferenceScreen(createPreferenceHierarchy());
+        getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private PreferenceScreen createPreferenceHierarchy() {
@@ -638,5 +641,17 @@ public class Preferences extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
         Settings.connectToNewClientsTill = Long.MAX_VALUE;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                ChatActivity.backToFlActivity(Preferences.this);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

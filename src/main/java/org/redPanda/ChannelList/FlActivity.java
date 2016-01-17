@@ -110,6 +110,8 @@ public class FlActivity extends Activity {
 
         context = this;
 
+        getActionBar().setHomeButtonEnabled(true);
+
         new ExceptionLogger(this);
         //startService(new Intent(this, BS.class));
         //Settings.connectToNewClientsTill = System.currentTimeMillis() + 1000*60*5;

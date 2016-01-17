@@ -20,10 +20,13 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
+import android.view.MenuItem;
+
 import static java.lang.Thread.sleep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.BS;
+import org.redPanda.ChatActivity;
 import org.redPanda.R;
 import org.redPandaLib.core.Channel;
 import org.redPandaLib.core.Test;
@@ -50,6 +53,7 @@ public class ChanPref extends PreferenceActivity {
         intent = getIntent();
         chan = (Channel) intent.getExtras().get("Channel");
         setPreferenceScreen(createPreferenceHierarchy());
+        getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private PreferenceScreen createPreferenceHierarchy() {
@@ -169,6 +173,18 @@ public class ChanPref extends PreferenceActivity {
             unbindService(mConnection);
             mIsBound = false;
 
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                ChatActivity.backToFlActivity(ChanPref.this);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }
