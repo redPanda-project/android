@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:id="@+id/umdText"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:shadowDx="1"
+    android:shadowDy="1"
+    android:textColor="#FFFFFF"
+    android:text="Medium Text"
+    android:layout_centerHorizontal="true"
+    android:textSize="20sp"
+    android:textStyle="normal"
+    android:paddingBottom="5dp"
+    android:paddingTop="5dp"
+>  
+</TextView>
+
+
+    
+    
+
+
+  

@@ -1,8 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources>
-  <string name="create_new_channel">Neuen Channel erstellen</string>
-  <string name="import_channel">Channel importieren</string>
-  <string name="scan_qr_code">QR-Code scannen</string>
-  <string name="settings">Einstellungen</string>
-  <string name="new_channel_name">Name des neuen Channels.</string>
-</resources>
