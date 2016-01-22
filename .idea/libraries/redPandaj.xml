@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="redPandaj">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/redPandaj.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
