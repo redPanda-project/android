@@ -146,21 +146,42 @@ public class AndroidSaver implements SaverInterface {
     }
 
     public void saveIdentities(ArrayList<Channel> identities) {
-        try {
+        FileOutputStream fileOutputStream = null;
+        ObjectOutputStream objectOutputStream = null;
 
+
+        try {
             File mkdirs = new File(context.getFilesDir(), SAVE_DIR);
             mkdirs.mkdir();
 
-            File file = new File(context.getFilesDir(), SAVE_DIR + "/identities.dat");
-            file.createNewFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            File fileTmp = new File(context.getFilesDir(), SAVE_DIR + "/identities-tmp.dat");
+
+            fileTmp.createNewFile();
+            fileOutputStream = new FileOutputStream(fileTmp);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(identities);
             objectOutputStream.close();
             fileOutputStream.close();
 
-        } catch (IOException ex) {
+            File originFile = new File(context.getFilesDir(), SAVE_DIR + "/identities.dat");
+            originFile.delete();
+            fileTmp.renameTo(originFile);
+
+        } catch (final IOException ex) {
             Logger.getLogger(AndroidSaver.class.getName()).log(Level.SEVERE, null, ex);
+            if (objectOutputStream != null) {
+                try {
+                    objectOutputStream.close();
+                } catch (IOException ex1) {
+                }
+            }
+
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException ex1) {
+                }
+            }
         }
 
     }

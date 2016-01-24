@@ -6,9 +6,9 @@ android {
     defaultConfig {
         applicationId 'org.redPanda'
         minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 560
-        versionName '0.1.560'
+        targetSdkVersion 22
+        versionCode 563
+        versionName '0.1.563'
     }
     buildTypes {
         release {

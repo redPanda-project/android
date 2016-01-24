@@ -27,6 +27,8 @@ import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.redPanda.ChannelList.FlActivity;
+import org.redPandaLib.Main;
+
 import pl.droidsonroids.gif.GifDrawable;
 import uk.co.senab.photoview.PhotoViewAttacher;
 import pl.droidsonroids.gif.GifImageView;
@@ -81,6 +83,7 @@ public class PictureActivity extends Activity {
             protected Drawable doInBackground(Integer... params) {
                 Drawable picture = null;
                 isgif = false;
+
                 if (true) {//(path.endsWith(".gif")) { // HACK because all pictures are saved as .jpg
 
                     //Try to load gif in GifImageView
@@ -92,12 +95,20 @@ public class PictureActivity extends Activity {
                         isgif = false;
                     }
                 }
+
                 //If the file is not a gif or loading the gif fails display it as bitmap
                 if (!isgif) {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+
                     Bitmap bitmap = null;
                     try {
+                        options.inJustDecodeBounds = true;
+                        bitmap = BitmapFactory.decodeFile(path, options);
+                        options.inSampleSize = calculateInSampleSize(options, 500, 500);
+
+                        options.inJustDecodeBounds = false;
                         bitmap = BitmapFactory.decodeFile(path, options);
                     } catch (Throwable th) {
                         Logger.getLogger(PictureActivity.class.getName()).log(Level.SEVERE, null, th);
@@ -155,5 +166,28 @@ public class PictureActivity extends Activity {
         pat.execute();
         setContentView(mImageView);
 
+    }
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 }

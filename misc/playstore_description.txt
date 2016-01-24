@@ -1,26 +1,28 @@
 redPanda is open sourced via https://github.com/redPanda-project/.
 
 
-Our aim is to develop a instant messenger with the same comfort as commercial centralized messengers (cf. WhatsApp, Facebook Messenger, etc) but with a secure decentralized infrastructure.
+Our aim is to develop an instant messenger with the same comfort as commercial centralized messengers (cf. WhatsApp, Facebook Messenger, etc) but with a secure decentralized infrastructure.
 
+
+FAQ and answers are located in the wiki http://git.io/vZpQY and forum http://forum.redPamda.im.
 
 What is working for now?
-- Chatting with emojicons.
-- Sending and receiving images.
-- Received status of messages and pictures.
-- Enlarged view of images and playing gifs.
-- Share and import channels (private keys) with QR-Codes.
-- Rename users by long press on name.
-- Disable notifications and sounds for individual channels.
-- Export and import of private keys and names as backup on SD card.
-- Send images with low priority (these images are only downloaded if connected via WLAN).
+• Chatting with emojicons.
+• Sending and receiving images.
+• Received status of messages and pictures.
+• Enlarged view of images and playing gifs.
+• Share and import channels (private keys) with QR-Codes.
+• Rename users by long press on name.
+• Disable notifications and sounds for individual channels.
+• Export and import of private keys and names as backup on SD card.
+• Send images with low priority (these images are only downloaded if connected via WLAN).
 
 
 For discussions you may visit our subreddit http://www.reddit.com/r/redPandaProject/.
 
 
 *The System*
-Addresses are private keys. You just need such a key to write messages to a given channel. A channel can be just one person or a group of people. At this stage of development you share the private keys directly. Because of this you have to be careful with key sharing. Once a person got your key he can read all your messages.
+Addresses are private keys. You just need such a key to write messages to a given channel. A channel can be just one person or a group of people. At this stage of development you share the private keys directly. Because of this you have to be careful with sharing keys. Once a person got your key he can read all your messages.
 
 
 There is currently also a desktop client for windows and linux based on java with basic functionality only.
@@ -36,4 +38,4 @@ RedPanda uses currently elliptic curve, AES256 and the broken and risky ARC4. El
 
 
 *Attention*
-Currently all clients send crashing and debugging informations over the redPanda-network to the so called 'Main Channel'. We need them to fix bugs fast at this stage of development. We only guarantee that the latest version is able to receive messages. Nothing is fixed at this moment, everything can change.
+Currently all clients send crashing and debugging information over the redPanda-network to the so called 'Main Channel'. We need them to fix bugs fast at this stage of development. We only guarantee that the latest version is able to receive messages. Nothing is fixed at this moment, everything can change.
