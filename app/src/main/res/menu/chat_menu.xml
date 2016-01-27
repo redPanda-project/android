@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    
+    <group android:id="@+id/menu_group_writeable" >
+        <item android:id="@+id/cm_Share" android:title="Share"></item>
+        <item android:id="@+id/cm_QR" android:title="Share by QR"></item>
+        <item android:id="@+id/imageSendButtonFromChat"
+              android:icon="@drawable/ic_attach_file_white_48dp"
+              android:showAsAction="ifRoom"/>
+        <item android:id="@+id/openCameraButtonFromChat"
+              android:icon="@drawable/ic_local_see_white_48dp"
+              android:showAsAction="ifRoom"/> 
+        <item android:id="@+id/cm_generateBlock" android:title="Generate block (beta)"></item>
+    </group>
+    <item android:id="@+id/cm_Del" android:title="Delete messages"></item>
+    <item android:id="@+id/cm_Ed" android:title="Settings"></item>
+</menu>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>    
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#80000000"
+>
+    <TextView
+        android:id="@+id/QRText"        
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:text="Medium Text"
+        android:textSize="17sp"
+        android:gravity="center"
+    >  
+    </TextView>
+    <ImageView
+        android:id="@+id/QRImage"        
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true">       
+    </ImageView>
+</LinearLayout>
