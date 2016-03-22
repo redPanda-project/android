@@ -1082,10 +1082,12 @@ public class FlActivity extends Activity {
 
                         final int messageCount = Test.messageStore.getMessageCount();
 
+                        final int backupNodes = Test.messageStore.getPeerConnectionInformationSize();
+
                         infotext.post(new Runnable() {
 
                             public void run() {
-                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + " - " + clonedTrusts.size() + " - " + trustedIpsFinal + ". Msgs: " + messageCount);
+                                infotext.setText("Nodes: " + activeConnections + "/" + connectingConnections + "/" + list.size() + "+" + backupNodes + " - " + clonedTrusts.size() + " - " + trustedIpsFinal + ". Msgs: " + messageCount);
                             }
                         });
                     } else {

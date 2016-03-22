@@ -199,19 +199,7 @@ public class Preferences extends PreferenceActivity {
 //            }
 //        });
 //        mainc.addPreference(activePref);
-        Preference fullSyncInit = new Preference(this);
-        fullSyncInit.setTitle(getString(R.string.init_new_network_discovery));
-        fullSyncInit.setSummary(getString(R.string.initializes_a_full_network_discovery_may_cause_huge_traffic));
-        fullSyncInit.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference pref) {
-                Intent i = new Intent(Preferences.this, BS.class);
-                i.setAction("c");
-                i.putExtra("cmd", "fullSync");
-                startService(i);
-                return true;
-            }
-        });
-        mainc.addPreference(fullSyncInit);
+
 
         Preference removeOldMessages = new Preference(this);
         removeOldMessages.setTitle(getString(R.string.remove_old_messages));

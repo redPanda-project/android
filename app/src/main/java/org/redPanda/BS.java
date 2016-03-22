@@ -82,7 +82,7 @@ public class BS extends Service {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    public static final int VERSION = 564;
+    public static final int VERSION = 565;
     public static boolean updateAbleViaWeb = false;
     public static final int SEND_MSG = 1;
     public static final int MSG_REGISTER_CLIENT = 2;
@@ -846,12 +846,7 @@ public class BS extends Service {
         if (intent != null && intent.getAction() != null) {
             if (intent.getAction().equals("c")) {
                 String cmd = intent.getStringExtra("cmd");
-                if (cmd.equals("fullSync")) {
-                    Settings.initFullNetworkSync = true;
-
-                    Test.peerTrusts = new ArrayList<PeerTrustData>();
-
-                } else if (cmd.equals("removeOldMessages")) {
+                if (cmd.equals("removeOldMessages")) {
                     Main.removeOldMessagesDecryptedContent();
                     Main.removeOldMessages();
                 }

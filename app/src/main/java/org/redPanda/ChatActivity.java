@@ -106,26 +106,37 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
     private Message toSendMessage = null;
     private Menu menu;
     private ContentResolver contentResolver;
+    private String title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         new ExceptionLogger(this);
 
-        Intent in = getIntent();
-        String string = in.getExtras().getString("title");
+        if (savedInstanceState != null) {//restore title and channel from save Bundle (activity was closed by android)
+            title = savedInstanceState.getString("title");
+            chan = (Channel) savedInstanceState.getSerializable("Channel");
+        } else {//retrieve title and channel from Intent (delivered due to call of this activity)
+            Intent in = getIntent();
+            if (in.getExtras() == null || (title = in.getExtras().getString("title")) == null) {
+                //Toast.makeText(ChatActivity.this, "oops, no channel defined...", Toast.LENGTH_LONG).show();
+                Intent intent;
+                intent = new Intent(ChatActivity.this, FlActivity.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
 
-        if (string == null) {
-            Toast.makeText(ChatActivity.this, "oops, no channel defined...", Toast.LENGTH_LONG).show();
-            Intent intent;
-            intent = new Intent(ChatActivity.this, FlActivity.class);
-            startActivity(intent);
-            finish();
-            return;
+            chan = (Channel) in.getExtras().get("Channel");
         }
 
-        this.setTitle(string);
-        chan = (Channel) in.getExtras().get("Channel");
+
+        this.setTitle(title);
+
+
+
+
+
         setContentView(R.layout.chatlayout);
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -1238,5 +1249,15 @@ public class ChatActivity extends FragmentActivity implements EmojiconGridFragme
                 return super.onKeyUp(keyCode, event);
         }
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // Save the user's current game state
+        savedInstanceState.putString("title", title);
+        savedInstanceState.putSerializable("Channel",chan);
+
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
     }
 }

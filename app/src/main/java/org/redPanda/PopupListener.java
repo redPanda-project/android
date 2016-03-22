@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
@@ -77,7 +78,6 @@ public class PopupListener implements NewMessageListener {
         Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         // The PendingIntent to launch our activity if the user selects this notification
-//        Intent i = new Intent(context, MainActivity.class);
         Intent intent;
         intent = new Intent(context, ChatActivity.class);
         intent.putExtra("title", msg.getChannel().toString());
@@ -88,7 +88,17 @@ public class PopupListener implements NewMessageListener {
         PendingIntent contentIntent = PendingIntent.getActivity(context, msg.getChannel().getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
         // Set the info for the views that show in the notification panel.
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setContentIntent(contentIntent);
+
+        int icon;
+        // Check if we're running on Android 5.0 or higher
+        if (Build.VERSION.SDK_INT >= 21) {
+            icon = R.drawable.icon_white;
+        } else {
+           icon = R.drawable.icon;
+        }
+
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(icon).setContentTitle(msg.getChannel().toString()).setContentText(msg.getText()).setContentIntent(contentIntent);
 
         mBuilder.setAutoCancel(true);
 
