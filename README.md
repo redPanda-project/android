@@ -1,6 +1,8 @@
 android
 =======
 
+DEPRECATED, see readme of the library. This application will be replaced by an ionic app.
+
 redPanda client for android.
 
 
