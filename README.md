@@ -1,7 +1,12 @@
 android
 =======
 
-DEPRECATED, see readme of the library. This application will be replaced by an ionic app.
+DEPRECATED, see readme of the library. This application will be replaced by an ionic app:
+
+https://github.com/redPanda-project/ionic
+
+
+
 
 redPanda client for android.
 
