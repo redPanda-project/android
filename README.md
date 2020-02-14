@@ -1,7 +1,7 @@
 DEPRECATED
 =======
 
-see readme of the library. This application will be replaced by an Flutter (since Ionic needs to much time to start) app:
+see readme of the library. This application will be replaced by an Flutter app (since Ionic needs to much time to start):
 
 https://github.com/redPanda-project/app
 
